@@ -51,9 +51,20 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 - `01_preparar_dataset_equinos.ipynb` (37 celdas). Bloque 1 (descarga e inventario), Bloque 2
   (segmentación en clips de 5–7 s) y Bloque 3 (extracción de frames): implementados y **ejecutados
   con éxito**.
-- `02_roi_y_normalizacion.ipynb` (43 celdas). Detección del equino, keypoints faciales, ROI y
-  normalización de pose. **Escrito y con la geometría verificada, pero todavía no ejecutado**: los
-  modelos preentrenados requieren GPU y descarga de pesos, disponibles sólo en Colab.
+- `02_roi_y_normalizacion.ipynb` (44 celdas). Detección del equino, keypoints faciales, ROI y
+  normalización de pose. Geometría verificada con 21 pruebas y **modelo de pose confirmado
+  funcionando en Colab** sobre un clip real (14/08/2026). Falta la corrida completa de los 92 clips.
+
+  **Estructura que devuelve `deeplabcut.video_inference_superanimal`** (confirmada, no supuesta):
+  un `dict` indexado por ruta de video, cuyo valor es un `DataFrame` con columnas MultiIndex
+  `scorer / individuals / bodyparts / coords`, filas = índice de frame, y `coords` ∈
+  {`x`, `y`, `likelihood`}. Entre los bodyparts hay `nose` y `upper_jaw`.
+
+  Rendimiento medido: ~15 s de detector + ~20 s de pose + ~10 s de video etiquetado por clip en
+  GPU, es decir **alrededor de una hora para los 92 clips**. DeepLabCut deja un `.h5`, un
+  `.pickle` y un video etiquetado junto a cada clip; el notebook los borra tras extraer los
+  keypoints, porque el video etiquetado pesa casi como el clip original y ensucia
+  `clips_equinos/`, que otros pasos recorren.
 - `tests/test_geometria.py`. 21 pruebas de las funciones geométricas del notebook 02, extraídas del
   propio notebook para que no puedan divergir. Corren sin GPU ni internet.
 

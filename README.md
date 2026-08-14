@@ -72,9 +72,9 @@ Recorta la cara del equino y la alinea, de modo que el ojo y el hocico caigan si
 posición. Sin esto, un modelo puede separar las clases mirando el fondo —los 3 videos de Disgustado
 son interior de box y el resto exterior— en lugar de la expresión facial.
 
-**En la primera ejecución hay que detenerse en el Paso 10.** Esa celda imprime la estructura real
-que devuelve la versión instalada del modelo de pose, y la extracción de coordenadas debe adaptarse
-a ella antes de procesar los 92 clips.
+El Paso 10 imprime el esquema de keypoints que expone el modelo y deja explícito cuáles eligió como
+ojo y hocico. La extracción ya está adaptada a la estructura real de DeepLabCut, verificada en
+Colab. **La corrida completa lleva alrededor de una hora** para los 92 clips.
 
 El **Paso 14 decide si el pipeline sirve**: si la cobertura de keypoints no supera el umbral, hay
 que ajustar umbrales o pasar a anotar manualmente las 92 ROI. La alternativa manual está prevista

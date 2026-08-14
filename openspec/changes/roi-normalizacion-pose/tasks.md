@@ -31,10 +31,14 @@
 
 ## 5. Keypoints faciales
 
-- [x] 5.1 Cargar el modelo de pose para cuadrúpedos
+- [x] 5.1 Cargar el modelo de pose para cuadrúpedos (DeepLabCut SuperAnimal-Quadruped)
 - [x] 5.2 **Descubrir el esquema de keypoints en tiempo de ejecución** e imprimirlo completo
 - [x] 5.3 Seleccionar el punto ocular y el del hocico a partir del esquema, dejando explícito
       cuáles se eligieron
+- [x] 5.6 Adaptar la extracción a la estructura real confirmada en Colab: dict indexado por ruta,
+      DataFrame con columnas MultiIndex `scorer/individuals/bodyparts/coords`
+- [x] 5.7 Elegir el ojo por frame según `likelihood`, porque en perfil sólo uno es visible
+- [x] 5.8 Borrar los auxiliares que deja DeepLabCut (`.h5`, `.pickle`, video etiquetado)
 - [x] 5.4 Filtrar keypoints por confianza mínima
 - [x] 5.5 Degradar a la ROI de la caja cuando falte el par ojo/hocico
 
