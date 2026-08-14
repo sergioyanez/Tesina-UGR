@@ -1,0 +1,39 @@
+schema: spec-driven
+
+context: |
+  Tesina UGR (Lic. en Ciencias de Datos) — "Detección Automática de Expresiones Faciales
+  en Equinos mediante Aprendizaje Profundo en Secuencias de Video". Entrega: septiembre 2026.
+
+  El contexto completo (dataset, pipeline, riesgos, cronograma) está en `openspec/project.md`.
+  LEERLO antes de generar cualquier artefacto.
+
+  Resumen operativo:
+  - Stack: Google Colab + Python 3, OpenCV, pandas, numpy, gdown, matplotlib, scikit-learn,
+    PyTorch (modelo). Previstos: TensorFlow, DeepLabCut.
+  - Datos: 34 videos en Google Drive, una carpeta por clase — Sereno (23), Interesado (8),
+    Disgustado (3). 1080x1920 vertical, ~30 fps, 8-37 s. Nunca versionar datos crudos.
+  - Artefacto actual: 01_preparar_dataset_equinos.ipynb — Bloque 1 (descarga e inventario),
+    Bloque 2 (segmentación en clips de 5-7 s: 34 videos -> 92 clips, 22 caballos),
+    Bloque 3 (16 frames uniformes por clip). Falta: ROI facial, modelo, interfaz.
+  - La unidad de análisis es el CLIP, no el video ni el frame suelto.
+  - Idioma: TODO en español (código, comentarios, variables, documentación).
+  - Notebooks numerados (NN_nombre.ipynb), organizados en "Bloques" con "Pasos" numerados.
+  - Reproducibilidad: random_state=42.
+
+rules:
+  proposal:
+    - Escribir en español.
+    - Indicar a qué objetivo específico del plan de trabajo (1 a 4) contribuye la propuesta.
+  spec:
+    - Escribir en español.
+    - Toda evaluación de modelos debe especificar F1 macro y balanced accuracy; la accuracy
+      global NO es métrica válida por el desbalance de clases (68/24/9).
+    - Todo split de datos debe particionar por video y por caballo (prefijo numérico del
+      nombre de archivo), nunca por frame — evita fuga de datos.
+  design:
+    - Escribir en español.
+    - "Justificar las decisiones de arquitectura contra la restricción real del dataset:
+      34 videos. Priorizar transfer learning y aumentación por sobre entrenar desde cero."
+  tasks:
+    - Escribir en español.
+    - Dividir las tareas en bloques ejecutables como celdas o secciones de notebook.

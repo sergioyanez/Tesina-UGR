@@ -1,0 +1,62 @@
+# ============================================================
+# Datos crudos — NUNCA se versionan
+# ============================================================
+# La carpeta videos/ pesa ~1.9 GB y tres archivos superan los 100 MB,
+# que es el límite duro de GitHub. El dataset vive en Google Drive.
+videos/
+clips_equinos/
+frames_equinos/
+dataset_equinos_videos/
+processed_equinos/
+
+# Videos y frames sueltos, estén donde estén
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# ============================================================
+# Salidas generadas por el pipeline
+# ============================================================
+resultados_equinos/
+modelos_equinos/
+runs/
+*.pt
+*.pth
+*.h5
+*.ckpt
+
+# Los CSV son reproducibles ejecutando el notebook
+inventario_videos.csv
+inventario_clips.csv
+dataset_frames.csv
+
+# ============================================================
+# Backups y temporales
+# ============================================================
+*.bak
+*.ipynb.bak
+.ipynb_checkpoints/
+*.tmp
+*~
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.Python
+
+# ============================================================
+# Sistema operativo
+# ============================================================
+.DS_Store
+Thumbs.db
+desktop.ini
+# exFAT / Windows en discos externos
+System Volume Information/
+$RECYCLE.BIN/

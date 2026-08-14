@@ -1,0 +1,84 @@
+# Detección Automática de Expresiones Faciales en Equinos
+
+Tesina de la **Licenciatura en Ciencias de Datos** — Universidad del Gran Rosario (UGR).
+Asignatura: Seminario de Trabajo Final.
+
+Detección y clasificación de expresiones faciales en equinos a partir de secuencias de video
+cortas (5–7 s) mediante aprendizaje profundo.
+
+**Integrantes:** Héctor R. Liceaga · Sergio M. Yañez
+**Docentes:** Alejandro Hernández · Brian Gauna · Jorge Fernández
+
+---
+
+## Contexto del proyecto
+
+El documento de referencia es **[`openspec/project.md`](openspec/project.md)**: contiene los
+objetivos, el estado de cada uno, la caracterización del dataset, el pipeline, las convenciones y
+—sobre todo— las **limitaciones conocidas** que condicionan cualquier resultado. Leerlo antes de
+tocar el código.
+
+El plan de trabajo original está en [`plan_de_trabajo.pdf`](plan_de_trabajo.pdf).
+
+## Estructura
+
+```
+├── 01_preparar_dataset_equinos.ipynb   Pipeline de datos (Colab)
+├── openspec/
+│   ├── project.md                      Contexto completo del proyecto
+│   └── config.yaml                     Reglas para generación de artefactos
+├── plan_de_trabajo.pdf                 Plan de trabajo presentado
+└── videos/                             Dataset — NO versionado (ver abajo)
+```
+
+## Los datos no están en el repositorio
+
+La carpeta `videos/` pesa ~1.9 GB y tres archivos superan los 100 MB, el límite duro de GitHub.
+El dataset vive en **Google Drive** y el notebook lo descarga solo con `gdown`.
+
+Para trabajar en local, copiar la carpeta de Drive a `videos/` respetando la estructura
+`videos/<clase>/<archivo>.mp4`. La subcarpeta **es** la etiqueta.
+
+## El notebook
+
+`01_preparar_dataset_equinos.ipynb` está pensado para Google Colab y se ejecuta de arriba a abajo.
+
+| Bloque | Qué hace | Salida |
+|---|---|---|
+| 1 | Descarga desde Drive e inventario técnico | `inventario_videos.csv` |
+| 2 | Segmentación en clips de 5–7 s | `inventario_clips.csv` + `clips_equinos/` |
+| 3 | Extracción de 16 frames uniformes por clip | `dataset_frames.csv` + `frames_equinos/` |
+| 4 | Modelo, entrenamiento y evaluación | *pendiente* |
+
+El **Paso 0 borra las carpetas temporales** de Colab antes de empezar: es intencional, cada sesión
+parte de cero y vuelve a descargar desde Drive.
+
+## Dos reglas que no se negocian
+
+Están justificadas en detalle en `openspec/project.md`, pero se repiten acá porque invalidan
+cualquier resultado si se ignoran:
+
+1. **Particionar por caballo, nunca por frame ni por clip.** Los 16 frames de un clip son casi
+   idénticos y varios videos comparten ejemplar. Usar `GroupKFold` sobre la columna `id_caballo`.
+   El tamaño muestral efectivo son los **22 caballos**, no los 92 clips ni los 1472 frames.
+
+2. **La accuracy global no es una métrica válida.** Las clases están desbalanceadas
+   (64 % / 25 % / 11 %): predecir siempre "Sereno" ya da 64 %. Reportar **F1 macro**,
+   **balanced accuracy** y matriz de confusión.
+
+## Estado actual del dataset
+
+| Clase | Videos | Clips (5–7 s) | Caballos distintos |
+|---|---:|---:|---:|
+| Sereno | 23 | 59 | 15 |
+| Interesado | 8 | 23 | 8 |
+| Disgustado | 3 | 10 | **1** |
+| **Total** | **34** | **92** | **22** |
+
+En ampliación. La prioridad de recolección es **Disgustado en otros ejemplares**: hoy la clase
+proviene de un solo caballo, lo que la vuelve no evaluable bajo partición por caballo.
+
+## Stack
+
+Google Colab · Python 3 · OpenCV · pandas · numpy · gdown · matplotlib · scikit-learn · PyTorch
+Previstos: TensorFlow, DeepLabCut.
