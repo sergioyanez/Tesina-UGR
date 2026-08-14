@@ -23,10 +23,14 @@ El plan de trabajo original está en [`plan_de_trabajo.pdf`](plan_de_trabajo.pdf
 ## Estructura
 
 ```
-├── 01_preparar_dataset_equinos.ipynb   Pipeline de datos (Colab)
+├── 01_preparar_dataset_equinos.ipynb   Descarga, clips de 5-7 s y frames (Colab)
+├── 02_roi_y_normalizacion.ipynb        ROI facial y normalización de pose (Colab)
+├── tests/
+│   └── test_geometria.py               Pruebas de la geometría del notebook 02
 ├── openspec/
 │   ├── project.md                      Contexto completo del proyecto
-│   └── config.yaml                     Reglas para generación de artefactos
+│   ├── config.yaml                     Reglas para generación de artefactos
+│   └── changes/                        Cambios planificados (propuesta, spec, diseño, tareas)
 ├── plan_de_trabajo.pdf                 Plan de trabajo presentado
 └── videos/                             Dataset — NO versionado (ver abajo)
 ```
@@ -39,19 +43,57 @@ El dataset vive en **Google Drive** y el notebook lo descarga solo con `gdown`.
 Para trabajar en local, copiar la carpeta de Drive a `videos/` respetando la estructura
 `videos/<clase>/<archivo>.mp4`. La subcarpeta **es** la etiqueta.
 
-## El notebook
+## Los notebooks
 
-`01_preparar_dataset_equinos.ipynb` está pensado para Google Colab y se ejecuta de arriba a abajo.
+Ambos están pensados para Google Colab y se ejecutan de arriba a abajo, en orden.
+
+### `01_preparar_dataset_equinos.ipynb`
 
 | Bloque | Qué hace | Salida |
 |---|---|---|
 | 1 | Descarga desde Drive e inventario técnico | `inventario_videos.csv` |
 | 2 | Segmentación en clips de 5–7 s | `inventario_clips.csv` + `clips_equinos/` |
 | 3 | Extracción de 16 frames uniformes por clip | `dataset_frames.csv` + `frames_equinos/` |
-| 4 | Modelo, entrenamiento y evaluación | *pendiente* |
 
 El **Paso 0 borra las carpetas temporales** de Colab antes de empezar: es intencional, cada sesión
 parte de cero y vuelve a descargar desde Drive.
+
+### `02_roi_y_normalizacion.ipynb` — requiere GPU
+
+| Bloque | Qué hace | Salida |
+|---|---|---|
+| 1 | Configuración y funciones geométricas | — |
+| 2 | Detección del equino y suavizado temporal | — |
+| 3 | Keypoints faciales | `keypoints_faciales.csv` |
+| 4 | ROI, alineación y recorte | `dataset_frames_alineados.csv` + `frames_alineados/` |
+| 5 | Control de calidad y decisión | reporte de cobertura |
+
+Recorta la cara del equino y la alinea, de modo que el ojo y el hocico caigan siempre en la misma
+posición. Sin esto, un modelo puede separar las clases mirando el fondo —los 3 videos de Disgustado
+son interior de box y el resto exterior— en lugar de la expresión facial.
+
+**En la primera ejecución hay que detenerse en el Paso 10.** Esa celda imprime la estructura real
+que devuelve la versión instalada del modelo de pose, y la extracción de coordenadas debe adaptarse
+a ella antes de procesar los 92 clips.
+
+El **Paso 14 decide si el pipeline sirve**: si la cobertura de keypoints no supera el umbral, hay
+que ajustar umbrales o pasar a anotar manualmente las 92 ROI. La alternativa manual está prevista
+en el diseño, no es un plan de emergencia.
+
+### Pendiente
+
+Los objetivos específicos 3 y 4 —modelo de clasificación, entrenamiento, evaluación e interfaz de
+uso— todavía no están implementados.
+
+## Pruebas
+
+```
+python3 tests/test_geometria.py
+```
+
+Verifica las funciones geométricas del notebook 02 —suavizado, relleno, transformada de similitud y
+cálculo de ROI— con 21 casos que incluyen los degenerados. **Las extrae del propio notebook**, así
+que no hay dos copias que puedan divergir. No requiere GPU, internet ni pesos preentrenados.
 
 ## Dos reglas que no se negocian
 

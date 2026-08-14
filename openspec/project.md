@@ -42,14 +42,24 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | Objetivo específico | Estado |
 |---|---|
 | 1. Base de datos de videos cortos (5–7 s) | 🟢 Cumplido — 34 videos → 92 clips segmentados |
-| 2. Pipeline de preprocesamiento | 🟡 Parcial — segmentación y frames OK; **ROI facial no implementada** |
+| 2. Pipeline de preprocesamiento | 🟡 Implementado, **pendiente de validar en Colab** |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
-**Artefacto existente:** `01_preparar_dataset_equinos.ipynb` (Google Colab, 37 celdas).
-Bloque 1 (descarga e inventario), Bloque 2 (segmentación en clips de 5–7 s) y Bloque 3
-(extracción de frames) implementados; Bloque 4 —modelo, entrenamiento, evaluación— sólo
-enunciado en markdown.
+**Artefactos existentes:**
+
+- `01_preparar_dataset_equinos.ipynb` (37 celdas). Bloque 1 (descarga e inventario), Bloque 2
+  (segmentación en clips de 5–7 s) y Bloque 3 (extracción de frames): implementados y **ejecutados
+  con éxito**.
+- `02_roi_y_normalizacion.ipynb` (43 celdas). Detección del equino, keypoints faciales, ROI y
+  normalización de pose. **Escrito y con la geometría verificada, pero todavía no ejecutado**: los
+  modelos preentrenados requieren GPU y descarga de pesos, disponibles sólo en Colab.
+- `tests/test_geometria.py`. 21 pruebas de las funciones geométricas del notebook 02, extraídas del
+  propio notebook para que no puedan divergir. Corren sin GPU ni internet.
+
+**Qué falta para cerrar el objetivo 2:** ejecutar el notebook 02 en Colab, adaptar la extracción de
+coordenadas del Paso 10 a la estructura real que devuelva el modelo de pose, y evaluar el reporte
+de cobertura del Paso 14. Ver `openspec/changes/roi-normalizacion-pose/`.
 
 ## Dataset
 
@@ -97,6 +107,14 @@ Drive (carpetas por clase)
   → extracción de 16 frames uniformes por CLIP (np.linspace sobre CAP_PROP_FRAME_COUNT)
                                      → /content/frames_equinos/<clase>/<clip>/frame_NNN.jpg
   → registro de frames               → resultados_equinos/dataset_frames.csv
+
+  [notebook 02 — requiere GPU, todavía no ejecutado]
+  → detección del equino             · YOLO preentrenado en COCO, clase "horse"
+  → suavizado temporal por clip      · mediana móvil + relleno de huecos
+  → keypoints faciales               → resultados_equinos/keypoints_faciales.csv
+  → ROI cuadrada + alineación        · transformada de similitud (ojo, hocico)
+                                     → /content/frames_alineados/<clase>/<clip>/frame_NNN.jpg
+                                     → resultados_equinos/dataset_frames_alineados.csv
 ```
 
 **Segmentación (Bloque 2).** Ventanas de `DURACION_CLIP = 6.0 s` (configurable), sin solape por
