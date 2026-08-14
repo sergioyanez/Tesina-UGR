@@ -24,7 +24,7 @@ rules:
   proposal:
     - Escribir en español.
     - Indicar a qué objetivo específico del plan de trabajo (1 a 4) contribuye la propuesta.
-  spec:
+  specs:
     - Escribir en español.
     - Toda evaluación de modelos debe especificar F1 macro y balanced accuracy; la accuracy
       global NO es métrica válida por el desbalance de clases (68/24/9).
