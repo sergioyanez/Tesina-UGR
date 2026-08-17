@@ -22,6 +22,11 @@ processed_equinos/
 resultados_equinos/
 modelos_equinos/
 runs/
+frames_alineados/
+
+# Raíz de artefactos cuando el pipeline corre fuera de Colab (equinos.rutas).
+# En Colab la raíz vive en Google Drive y no toca el repo.
+datos_equinos/
 *.pt
 *.pth
 *.h5
