@@ -98,11 +98,33 @@ def _progreso_checkpoint(nombre: str) -> tuple[int, str | None]:
     return len(datos.get("unidades_completas", [])), datos.get("actualizado")
 
 
+def _artefacto_valido(ruta) -> bool:
+    """Un artefacto cuenta como producido sólo si además tiene contenido.
+
+    La existencia sola es un criterio demasiado débil: un CSV con nada más que el encabezado
+    aparece igual que uno con 1472 filas, y haría pasar por completa una etapa que no procesó
+    nada. En un pipeline de tesina ese falso positivo es caro, porque el error no se manifiesta
+    acá sino mucho después, como métricas calculadas sobre un dataset vacío.
+    """
+    if not ruta.exists():
+        return False
+    if ruta.stat().st_size == 0:
+        return False
+    if ruta.suffix.lower() == ".csv":
+        try:
+            with ruta.open(encoding="utf-8", errors="replace") as archivo:
+                next(archivo, None)              # encabezado
+                return next(archivo, None) is not None   # al menos una fila de datos
+        except OSError:
+            return False
+    return True
+
+
 def estado(nombre: str) -> dict:
     """Estado de una etapa, sin ejecutarla ni modificar ningún artefacto."""
     etapa = PIPELINE[nombre]
 
-    faltan_artefactos = [a for a in etapa.artefactos if not (rutas.raiz() / a).exists()]
+    faltan_artefactos = [a for a in etapa.artefactos if not _artefacto_valido(rutas.raiz() / a)]
     faltan_caches = [c for c in etapa.caches if not cache.esta_disponible(c)]
     procesadas, actualizado = _progreso_checkpoint(nombre)
 

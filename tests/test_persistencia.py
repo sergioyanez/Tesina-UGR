@@ -263,11 +263,20 @@ check("con progreso y sin salidas la etapa está parcial",
 check("informa cuántas unidades lleva",
       etapas.estado("preparar_dataset")["unidades_procesadas"] == 1)
 
-# Con todos los artefactos y la caché: completa.
+# Un CSV con sólo el encabezado NO alcanza: existe pero no contiene nada.
 for artefacto in etapas.PIPELINE["preparar_dataset"].artefactos:
     (raiz / artefacto).parent.mkdir(parents=True, exist_ok=True)
     (raiz / artefacto).write_text("clase,clip\n")
 cache.empaquetar(origen, "frames_equinos")
+check("un CSV con sólo encabezado no cuenta como artefacto producido",
+      etapas.estado("preparar_dataset")["estado"] != etapas.COMPLETA,
+      str(etapas.estado("preparar_dataset")))
+check("un artefacto vacío se reporta como faltante",
+      len(etapas.estado("preparar_dataset")["artefactos_faltantes"]) == 3)
+
+# Con contenido real: completa.
+for artefacto in etapas.PIPELINE["preparar_dataset"].artefactos:
+    (raiz / artefacto).write_text("clase,clip\nSereno,013_clip_01\n")
 check("con todas las salidas la etapa está completa",
       etapas.estado("preparar_dataset")["estado"] == etapas.COMPLETA,
       str(etapas.estado("preparar_dataset")))
