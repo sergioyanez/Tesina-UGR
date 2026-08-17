@@ -48,10 +48,16 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 
 **Artefactos existentes:**
 
-- `01_preparar_dataset_equinos.ipynb` (37 celdas). Bloque 1 (descarga e inventario), Bloque 2
+- `00_pipeline.ipynb` (11 celdas). Orquestador: ejecuta las etapas en orden con `papermill`,
+  saltea las que ya están completas, corta la cadena ante un fallo y guarda una copia ejecutada de
+  cada notebook. Es el único notebook que hace falta abrir para correr el pipeline.
+- `equinos/` — paquete de infraestructura de ejecución (`rutas`, `checkpoint`, `cache`, `etapas`).
+  No contiene lógica científica: resuelve dónde viven los artefactos, cómo se reanuda una etapa
+  interrumpida y en qué estado está el pipeline.
+- `01_preparar_dataset_equinos.ipynb` (41 celdas). Bloque 1 (inventario), Bloque 2
   (segmentación en clips de 5–7 s) y Bloque 3 (extracción de frames): implementados y **ejecutados
-  con éxito**.
-- `02_roi_y_normalizacion.ipynb` (44 celdas). Detección del equino, keypoints faciales, ROI y
+  con éxito**. La segmentación es reanudable, con checkpoint por video.
+- `02_roi_y_normalizacion.ipynb` (48 celdas). Detección del equino, keypoints faciales, ROI y
   normalización de pose. Geometría verificada con 21 pruebas y **modelo de pose confirmado
   funcionando en Colab** sobre un clip real (14/08/2026). Falta la corrida completa de los 92 clips.
 
@@ -67,6 +73,9 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
   `clips_equinos/`, que otros pasos recorren.
 - `tests/test_geometria.py`. 21 pruebas de las funciones geométricas del notebook 02, extraídas del
   propio notebook para que no puedan divergir. Corren sin GPU ni internet.
+- `tests/test_persistencia.py`. 46 pruebas del paquete `equinos`: resolución de rutas,
+  reanudación, invalidación del checkpoint ante cambio de configuración, integridad de la caché y
+  estado de las etapas. También sin GPU ni internet.
 
 **Qué falta para cerrar el objetivo 2:** ejecutar el notebook 02 en Colab, adaptar la extracción de
 coordenadas del Paso 10 a la estructura real que devuelva el modelo de pose, y evaluar el reporte
@@ -105,27 +114,61 @@ fps ~30 (algunos casos a 29.97 / 30.03 / 59.94); duración entre **8 y 37 segund
 (p. ej. `037_box-7-1_28oDPfEr.mp4`, `155_20260707_092149.mp4`) — el prefijo numérico identifica al
 **caballo**, y varios videos comparten ejemplar.
 
-## Pipeline implementado en el notebook
+## Almacenamiento de los artefactos
+
+Todo cuelga de una **raíz de proyecto persistente**, que en Colab vive en Google Drive y fuera de
+Colab en un directorio local. La resuelve `equinos.rutas`, que detecta el entorno solo: el mismo
+código de notebook corre en la máquina de desarrollo (sin GPU, para verificar geometría) y en
+Colab.
 
 ```
-Drive (carpetas por clase)
-  → gdown.download_folder            → /content/dataset_equinos_videos/<clase>/*.mp4
-  → inventario técnico (OpenCV)      → resultados_equinos/inventario_videos.csv
-  [Bloque 2]
-  → segmentación en clips de 5-7 s   → /content/clips_equinos/<clase>/<video>_clip_NN.mp4
-  → inventario de clips              → resultados_equinos/inventario_clips.csv
-  [Bloque 3]
-  → extracción de 16 frames uniformes por CLIP (np.linspace sobre CAP_PROP_FRAME_COUNT)
-                                     → /content/frames_equinos/<clase>/<clip>/frame_NNN.jpg
-  → registro de frames               → resultados_equinos/dataset_frames.csv
+MyDrive/tesina_equinos/            <- RAIZ (equinos.rutas.NOMBRE_PROYECTO)
+├── videos/<clase>/*.mp4           datos crudos, se leen montados
+├── clips/<clase>/*.mp4            92 clips, ~2.7 GB
+├── resultados/*.csv               inventarios, datasets y reporte de cobertura
+├── cache/<etapa>.zip              frames empaquetados + manifiesto .json
+├── checkpoints/<etapa>.json       estado de reanudación + CSV parcial
+├── ejecuciones/<etapa>_<ts>.ipynb copias ejecutadas por papermill
+├── modelos/                       pesos entrenados (objetivo 3)
+└── codigo/equinos/                copia del paquete, para el bootstrap en Colab
+```
 
-  [notebook 02 — requiere GPU, todavía no ejecutado]
+**Qué va a Drive y qué al disco local de la sesión.** El criterio es el tamaño *unitario*, no el
+total: Drive montado tiene una latencia por archivo que domina con archivos chicos, al punto de que
+escribir los ~1472 JPEG de frames tarda más que escribir los 2.7 GB de clips. Los CSV y los clips
+van directo a Drive; los frames se generan en `/content` y se persisten en un único `.zip`.
+
+**Las rutas de los CSV son relativas a la raíz.** Guardarlas absolutas (`/content/clips_equinos/…`)
+fue la causa directa de que el notebook 02 no encontrara los clips del 01: en una sesión nueva no
+apuntaban a nada. Relativas, el mismo CSV sirve en Colab, en local y en otra cuenta de Drive.
+
+## Pipeline implementado
+
+Se ejecuta desde `00_pipeline.ipynb`, que encadena las etapas y saltea las ya completas.
+
+```
+[00_pipeline] papermill, un kernel por etapa, salteo de etapas completas
+
+  [01 — etapa preparar_dataset]
+  → videos leídos de Drive montado   · sin descarga, sin gdown
+  → inventario técnico (OpenCV)      → resultados/inventario_videos.csv
+  → segmentación en clips de 5-7 s   → clips/<clase>/<video>_clip_NN.mp4
+     · reanudable, checkpoint por video
+  → inventario de clips              → resultados/inventario_clips.csv
+  → 16 frames uniformes por CLIP (np.linspace sobre CAP_PROP_FRAME_COUNT)
+                                     → /content + cache/frames_equinos.zip
+  → registro de frames               → resultados/dataset_frames.csv
+
+  [02 — etapa roi_normalizacion, requiere GPU]
   → detección del equino             · YOLO preentrenado en COCO, clase "horse"
   → suavizado temporal por clip      · mediana móvil + relleno de huecos
-  → keypoints faciales               → resultados_equinos/keypoints_faciales.csv
+  → keypoints faciales               → resultados/keypoints_faciales.csv
+     · reanudable, checkpoint por clip; el clip se copia al disco local antes de inferir
+       porque DeepLabCut escribe sus auxiliares junto al archivo de entrada
   → ROI cuadrada + alineación        · transformada de similitud (ojo, hocico)
-                                     → /content/frames_alineados/<clase>/<clip>/frame_NNN.jpg
-                                     → resultados_equinos/dataset_frames_alineados.csv
+                                     → /content + cache/frames_alineados.zip
+                                     → resultados/dataset_frames_alineados.csv
+  → reporte de cobertura             → resultados/reporte_cobertura.csv
 ```
 
 **Segmentación (Bloque 2).** Ventanas de `DURACION_CLIP = 6.0 s` (configurable), sin solape por
@@ -163,13 +206,29 @@ confiable como conteo exacto**.
 `id_caballo` (prefijo numérico del nombre original, vía `obtener_id_caballo`) se arrastra hasta el
 nivel de frame: es la clave de agrupamiento para particionar sin fuga entre conjuntos.
 
-Todas las rutas son **efímeras** (`/content/...`): el notebook arranca borrándolas (Paso 0) y
-vuelve a descargar desde Drive en cada sesión.
+`ruta`, `ruta_clip` y `ruta_frame` se guardan **relativas** a la raíz de proyecto y se resuelven con
+`equinos.rutas.resolver()`. `ruta_frame` es relativa al directorio de frames, que es donde se
+expande la caché.
+
+## Reanudación
+
+Colab corta la sesión por límite de tiempo o por inactividad, y la etapa de keypoints tarda
+alrededor de una hora. Las etapas largas persisten su progreso por unidad de trabajo —el video en
+la segmentación, el clip en los keypoints— y al relanzarse retoman en la primera pendiente.
+
+El checkpoint registra los parámetros con los que se generó y **se invalida solo** si cambian. Esto
+no es comodidad: reanudar con otra configuración produciría un artefacto que mezcla dos corridas,
+que no falla ni avisa y arrastra el error hasta las métricas finales. Cada etapa declara qué claves
+la afectan; la extracción de keypoints declara la lista vacía a propósito, porque DeepLabCut
+devuelve coordenadas y likelihood sin depender de ningún umbral nuestro —el filtrado ocurre
+después—, así que barrer umbrales no obliga a reinferir la hora de cómputo.
 
 ## Stack técnico
 
 - **Entorno:** Google Colab (GPU) + Python 3
-- **Datos / video:** `gdown`, `opencv-python`, `pandas`, `numpy`, `tqdm`
+- **Orquestación:** `papermill` (un kernel por etapa, copia ejecutada de cada notebook)
+- **Infraestructura propia:** paquete `equinos` (rutas persistentes, checkpointing, caché, estado)
+- **Datos / video:** `opencv-python`, `pandas`, `numpy`, `tqdm`
 - **Visualización:** `matplotlib`
 - **ML:** `scikit-learn` (métricas, validación cruzada), **PyTorch** (previsto para el modelo)
 - **Previsto en el plan:** TensorFlow y **DeepLabCut** como alternativas / pose estimation
