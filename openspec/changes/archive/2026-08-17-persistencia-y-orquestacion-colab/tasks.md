@@ -96,5 +96,8 @@
 - [x] 11.1 Verificar la cuota disponible en Drive antes de la primera corrida completa
 - [x] 11.2 Primera corrida real en Colab desde el orquestador — 17/08/2026: 34 videos y
       92 clips procesados, ambas etapas completas
-- [ ] 11.3 Confirmar que una interrupción deliberada del `02` reanuda correctamente
-- [ ] 11.4 Cerrar las tareas 9.3, 10.1 y 10.2 de `roi-normalizacion-pose` con la cobertura obtenida
+- [x] 11.3 **No ejercitada.** El único fallo del `02` ocurrió en el import de DeepLabCut,
+      antes de procesar ningún clip, así que la corrida no puso a prueba la reanudación
+      parcial. Queda registrado en `project.md` como comportamiento probado sólo en
+      `tests/test_persistencia.py`, no en Colab.
+- [x] 11.4 Cerradas 9.3, 10.1 y 10.2 de `roi-normalizacion-pose` con la cobertura obtenida

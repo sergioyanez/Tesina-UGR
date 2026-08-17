@@ -71,5 +71,8 @@
 ## 10. Decisión posterior a la primera corrida
 
 - [x] 10.1 Evaluar el reporte de cobertura — 59,5 % global, por debajo del umbral de 70 %
-- [ ] 10.2 Si es insuficiente, decidir entre ajustar umbrales o pasar a anotación manual de las
-      92 ROI
+- [x] 10.2 Decisión tomada (17/08/2026): **no bajar el umbral**. La confianza del par es
+      bimodal —o ~0,7-0,85 o ~0,05-0,25, sin masa intermedia—, así que relajar de 0,50 a
+      0,20 sólo lleva del 59,5 % al 69,5 % y aceptando keypoints que el propio modelo da
+      por malos. Elegir entre cambiar de bodypart y anotar manualmente requiere el
+      diagnóstico de `reporte.cuello_de_botella()` y se resuelve en un change nuevo.

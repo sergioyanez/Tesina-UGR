@@ -42,7 +42,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | Objetivo específico | Estado |
 |---|---|
 | 1. Base de datos de videos cortos (5–7 s) | 🟢 Cumplido — 34 videos → 92 clips segmentados |
-| 2. Pipeline de preprocesamiento | 🟢 Ejecutado — 92/92 clips. **Cobertura de alineación 59,5 %, bajo el umbral** |
+| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 92/92 clips, pero **alineación 59,5 %, bajo el umbral de 70 %** |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
@@ -272,6 +272,50 @@ Dos consecuencias que condicionan el objetivo 3:
    coordenadas y su likelihood para los 1472 frames, y el filtrado ocurre después. `equinos.reporte.confianzas()`
    calcula qué cobertura daría cada umbral leyendo ese CSV: segundos, no la hora de inferencia.
    Es la primera vía a explorar antes de decidir anotación manual.
+
+## Punto de partida de la próxima sesión
+
+Al 17/08/2026 no hay changes activos: `roi-normalizacion-pose` y
+`persistencia-y-orquestacion-colab` están archivados y sus specs sincronizadas en
+`openspec/specs/` (`preprocesamiento-facial`, `persistencia-artefactos`,
+`orquestacion-notebooks`).
+
+**La decisión abierta es una sola:** qué hacer con el 40 % de frames que no se alinean.
+
+Ya está descartada la vía barata: **no bajar `CONF_MINIMA_KEYPOINT`**. La confianza del par
+ojo/hocico es bimodal —o ~0,7-0,85 o ~0,05-0,25, sin masa intermedia—, así que relajar de 0,50 a
+0,20 sólo lleva del 59,5 % al 69,5 %, sigue sin alcanzar el umbral, y lo hace aceptando keypoints
+que el propio modelo da por malos. Alinear sobre un keypoint mal puesto es peor que no alinear:
+mete distorsión geométrica sistemática en vez de un recorte honesto sin normalizar.
+
+**Primer paso concreto:** correr en Colab
+
+```python
+from equinos import reporte
+reporte.cuello_de_botella()
+```
+
+Según cuál de los dos keypoints falle, el camino se bifurca:
+
+| Resultado | Camino | Costo |
+|---|---|---|
+| Falla el **hocico** | Probar el otro bodypart de DeepLabCut (`nose` contra `upper_jaw`) | Reinferir, ~1 h |
+| Falla el **ojo** | Verificar si son tomas de perfil cerrado; puede requerir alinear con un solo punto | A definir |
+| Fallan **ambos** | El modelo no ve la cara: anotación manual de ROI | Horas de trabajo humano |
+
+En los tres casos la anotación manual queda **acotada a los ejemplares que fallan**
+—`031`, `053`, `054`, `055`, `920` están por debajo del 50 % incluso con umbral 0,20— y no a los
+92 clips. Sea cual sea el camino, corresponde abrir un change nuevo antes de tocar código.
+
+**Antes de entrenar hay que resolver el confounder.** El dataset actual mezcla ~60 % de recortes
+alineados con ~40 % de recortes de caja sin alinear, y cuál le toca a cada frame está correlacionado
+con el ejemplar, que a su vez predice la clase. Una opción que ataca el problema de raíz es
+**descartar los frames no alineados** en lugar de incluirlos degradados: quedan 876 frames, y
+combinado con el plan B de 2 clases (Sereno vs Interesado) daría ~800 frames sin el confounder.
+
+**Comportamiento no verificado en Colab.** La reanudación parcial tras una interrupción está
+probada en `tests/test_persistencia.py` pero nunca se ejercitó en una corrida real: el único fallo
+del notebook 02 ocurrió antes de procesar ningún clip. Conviene no darla por segura hasta verla.
 
 ## Stack técnico
 
