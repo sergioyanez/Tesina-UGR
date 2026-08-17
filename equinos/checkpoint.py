@@ -166,13 +166,18 @@ class Checkpoint:
             self.ruta_parcial, mode="a", header=nuevo, index=False
         )
 
-    def filas(self):
-        """DataFrame con todo lo acumulado hasta ahora. Vacío si no hay nada."""
+    def filas(self, **opciones):
+        """DataFrame con todo lo acumulado hasta ahora. Vacío si no hay nada.
+
+        Las `opciones` van a `pd.read_csv`. Importa poder pasar `dtype`: al releer, pandas
+        infiere tipos y convierte `id_caballo` "031" en el entero 31, perdiendo el cero inicial
+        y la correspondencia con el nombre del archivo de origen.
+        """
         import pandas as pd
 
         if not self.ruta_parcial.exists():
             return pd.DataFrame()
-        return pd.read_csv(self.ruta_parcial)
+        return pd.read_csv(self.ruta_parcial, **opciones)
 
 
 def abrir(etapa: str, config: dict, claves_relevantes: Sequence[str], verbose: bool = True) -> Checkpoint:

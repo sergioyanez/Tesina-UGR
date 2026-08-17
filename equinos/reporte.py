@@ -181,3 +181,81 @@ def confianzas(umbrales=(0.20, 0.30, 0.40, 0.50, 0.60), piso_por_ejemplar: float
     print("\nBajar el umbral no cuesta reinferir, pero un keypoint poco confiable puede estar")
     print("mal puesto: antes de fijar uno, mirar los recortes del Paso 16 con ese valor.")
     return resultados
+
+
+def cuello_de_botella(umbral: float = 0.50) -> dict:
+    """Cuál de los dos keypoints limita la alineación: el ojo o el hocico.
+
+    La alineación exige que AMBOS superen el umbral, así que basta con que uno falle. Saber cuál
+    cambia por completo la respuesta: si el que falla es el hocico, cabe probar otro bodypart
+    —DeepLabCut expone `nose` y `upper_jaw`— y eso sí requiere reinferir, pero es un cambio de
+    configuración. Si fallan los dos a la vez, el modelo directamente no está viendo la cara y no
+    hay umbral ni bodypart que lo arregle.
+    """
+    kp = _leer("keypoints_faciales.csv")
+    caballo = {c["clip"]: c["id_caballo"] for c in _leer("inventario_clips.csv")}
+
+    solo_ojo = solo_hocico = ambos = ninguno = sin_coords = 0
+    conf_ojo, conf_hocico = [], []
+    fallas: dict[str, list[int]] = {}
+
+    for fila in kp:
+        ojo, hocico = _a_float(fila["conf_ojo"]), _a_float(fila["conf_hocico"])
+        x_ojo, x_hocico = _a_float(fila["x_ojo"]), _a_float(fila["x_hocico"])
+
+        if x_ojo != x_ojo or x_hocico != x_hocico:
+            sin_coords += 1
+            continue
+
+        conf_ojo.append(ojo)
+        conf_hocico.append(hocico)
+
+        ok_ojo, ok_hocico = ojo >= umbral, hocico >= umbral
+        if ok_ojo and ok_hocico:
+            ambos += 1
+        elif ok_ojo:
+            solo_ojo += 1
+        elif ok_hocico:
+            solo_hocico += 1
+        else:
+            ninguno += 1
+
+        acc = fallas.setdefault(caballo.get(fila["clip"], "?"), [0, 0, 0])
+        acc[0] += 1
+        acc[1] += not ok_ojo
+        acc[2] += not ok_hocico
+
+    total = ambos + solo_ojo + solo_hocico + ninguno
+    if not total:
+        raise ValueError("Ningún frame con coordenadas.")
+
+    def mediana(valores):
+        ordenados = sorted(v for v in valores if v == v)
+        return ordenados[len(ordenados) // 2] if ordenados else float("nan")
+
+    print(f"Frames con coordenadas: {total}   sin coordenadas: {sin_coords}")
+    print(f"\nConfianza mediana   ojo {mediana(conf_ojo):.3f}   hocico {mediana(conf_hocico):.3f}")
+    print(f"\nCon umbral {umbral:.2f}:")
+    print(f"  ambos superan       {ambos:>5}  ({ambos / total:.1%})   <- alineables")
+    print(f"  sólo el ojo         {solo_ojo:>5}  ({solo_ojo / total:.1%})   lo frena el hocico")
+    print(f"  sólo el hocico      {solo_hocico:>5}  ({solo_hocico / total:.1%})   lo frena el ojo")
+    print(f"  ninguno             {ninguno:>5}  ({ninguno / total:.1%})   no ve la cara")
+
+    print("\nPor ejemplar (% de frames donde falla cada keypoint):")
+    for nombre in sorted(fallas, key=lambda n: -max(fallas[n][1], fallas[n][2]) / fallas[n][0]):
+        n, f_ojo, f_hocico = fallas[nombre]
+        print(f"  {nombre:<6} ojo {f_ojo / n:6.1%}   hocico {f_hocico / n:6.1%}   ({n} frames)")
+
+    print("\n" + "-" * 58)
+    if ninguno > max(solo_ojo, solo_hocico):
+        print("Domina 'ninguno': el modelo de pose no está encontrando la cara. Ni bajar el")
+        print("umbral ni cambiar de bodypart lo resuelve; hace falta anotación manual.")
+    elif solo_ojo > solo_hocico:
+        print("El cuello de botella es el HOCICO. Vale probar el otro bodypart disponible")
+        print("(`nose` vs `upper_jaw`) antes de anotar a mano.")
+    else:
+        print("El cuello de botella es el OJO, que en perfil cerrado suele quedar oculto.")
+        print("Revisar si esos clips son tomas de perfil.")
+
+    return {"ambos": ambos, "solo_ojo": solo_ojo, "solo_hocico": solo_hocico,
+            "ninguno": ninguno, "sin_coordenadas": sin_coords}
