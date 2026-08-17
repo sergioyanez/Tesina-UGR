@@ -42,7 +42,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | Objetivo específico | Estado |
 |---|---|
 | 1. Base de datos de videos cortos (5–7 s) | 🟢 Cumplido — 34 videos → 92 clips segmentados |
-| 2. Pipeline de preprocesamiento | 🟡 Implementado, **pendiente de validar en Colab** |
+| 2. Pipeline de preprocesamiento | 🟢 Ejecutado — 92/92 clips. **Cobertura de alineación 59,5 %, bajo el umbral** |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
@@ -51,15 +51,16 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 - `00_pipeline.ipynb` (11 celdas). Orquestador: ejecuta las etapas en orden con `papermill`,
   saltea las que ya están completas, corta la cadena ante un fallo y guarda una copia ejecutada de
   cada notebook. Es el único notebook que hace falta abrir para correr el pipeline.
-- `equinos/` — paquete de infraestructura de ejecución (`rutas`, `checkpoint`, `cache`, `etapas`).
+- `equinos/` — paquete de infraestructura de ejecución (`rutas`, `checkpoint`, `cache`, `etapas`,
+  `reporte`).
   No contiene lógica científica: resuelve dónde viven los artefactos, cómo se reanuda una etapa
   interrumpida y en qué estado está el pipeline.
 - `01_preparar_dataset_equinos.ipynb` (41 celdas). Bloque 1 (inventario), Bloque 2
   (segmentación en clips de 5–7 s) y Bloque 3 (extracción de frames): implementados y **ejecutados
   con éxito**. La segmentación es reanudable, con checkpoint por video.
 - `02_roi_y_normalizacion.ipynb` (48 celdas). Detección del equino, keypoints faciales, ROI y
-  normalización de pose. Geometría verificada con 21 pruebas y **modelo de pose confirmado
-  funcionando en Colab** sobre un clip real (14/08/2026). Falta la corrida completa de los 92 clips.
+  normalización de pose. Geometría verificada con 21 pruebas y **ejecutado completo sobre los 92
+  clips** (17/08/2026). Ver más abajo la cobertura medida.
 
   **Estructura que devuelve `deeplabcut.video_inference_superanimal`** (confirmada, no supuesta):
   un `dict` indexado por ruta de video, cuyo valor es un `DataFrame` con columnas MultiIndex
@@ -77,14 +78,14 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
   reanudación, invalidación del checkpoint ante cambio de configuración, integridad de la caché y
   estado de las etapas. También sin GPU ni internet.
 
-**Qué falta para cerrar el objetivo 2:** ejecutar el notebook 02 en Colab, adaptar la extracción de
-coordenadas del Paso 10 a la estructura real que devuelva el modelo de pose, y evaluar el reporte
-de cobertura del Paso 14. Ver `openspec/changes/roi-normalizacion-pose/`.
+**Qué falta para cerrar el objetivo 2:** decidir qué hacer con la cobertura de 59,5 %, que quedó
+bajo el umbral de 70 % — barrer `CONF_MINIMA_KEYPOINT` (no requiere reinferir) o pasar a anotación
+manual de las ROI de los ejemplares peores. Ver `openspec/changes/roi-normalizacion-pose/`.
 
 ## Dataset
 
-**Origen.** Carpeta de Google Drive (`folder_url` embebida en el notebook, descarga vía `gdown`),
-con **una subcarpeta por clase** — la subcarpeta *es* la etiqueta. Existe además una copia local
+**Origen.** Carpeta de Google Drive montada en `MyDrive/tesina_equinos/videos/`, con **una
+subcarpeta por clase** — la subcarpeta *es* la etiqueta. Existe además una copia local
 en `videos/<clase>/` (1.8 GB, idéntica a Drive), usada para verificar el pipeline fuera de Colab.
 **No versionar esa carpeta.**
 
@@ -222,6 +223,55 @@ que no falla ni avisa y arrastra el error hasta las métricas finales. Cada etap
 la afectan; la extracción de keypoints declara la lista vacía a propósito, porque DeepLabCut
 devuelve coordenadas y likelihood sin depender de ningún umbral nuestro —el filtrado ocurre
 después—, así que barrer umbrales no obliga a reinferir la hora de cómputo.
+
+## Cobertura medida del preprocesamiento facial
+
+Primera corrida completa: **17/08/2026**, los 92 clips en Colab con GPU.
+
+Los 1472 frames se generaron (100 %), pero eso no es la métrica que importa: el notebook siempre
+produce un recorte, y cuando el par ojo/hocico no supera el umbral cae al camino degradado, una ROI
+cuadrada desde la caja del detector **sin alinear**. Lo que decide es cuántos se alinearon de
+verdad por keypoints.
+
+| | Frames | Alineados por keypoints |
+|---|---:|---:|
+| **Global** | 1472 | **876 (59,5 %)** |
+| Sereno | 944 | 54,8 % |
+| Interesado | 368 | 76,9 % |
+| Disgustado | 160 | 47,5 % |
+
+**59,5 % está por debajo del umbral de 70 %** fijado en la spec, con
+`CONF_MINIMA_KEYPOINT = 0.50`.
+
+Cobertura por ejemplar, los ocho peores:
+
+| Caballo | Cobertura |
+|---|---:|
+| 920 | 8,8 % |
+| 053 | 14,6 % |
+| 031 | 29,2 % |
+| 057 | 32,8 % |
+| 155 | 43,8 % |
+| 054 | 44,8 % |
+| 055 | 46,9 % |
+| 037 | 47,5 % |
+
+**El fallo es sistemático, no aleatorio.** No se reparte parejo entre frames: se concentra en
+ejemplares concretos, que quedan casi enteros sin alinear mientras otros funcionan bien. Las
+diferencias por clase son en realidad diferencias por caballo — Disgustado baja porque `037` baja,
+y `037` es el único ejemplar de esa clase.
+
+Dos consecuencias que condicionan el objetivo 3:
+
+1. **El dataset actual mezcla dos tipos de imagen**: ~60 % recortes normalizados por pose y ~40 %
+   recortes de caja sin alinear. Cuál le toca a cada frame está correlacionado con el ejemplar, así
+   que el modelo podría separar clases por el aspecto del recorte en vez de por la expresión. Es el
+   mismo problema del fondo que este preprocesamiento venía a resolver, reintroducido por la puerta
+   de atrás.
+2. **`CONF_MINIMA_KEYPOINT` se puede barrer sin reinferir.** `keypoints_faciales.csv` guarda las
+   coordenadas y su likelihood para los 1472 frames, y el filtrado ocurre después. `equinos.reporte.confianzas()`
+   calcula qué cobertura daría cada umbral leyendo ese CSV: segundos, no la hora de inferencia.
+   Es la primera vía a explorar antes de decidir anotación manual.
 
 ## Stack técnico
 

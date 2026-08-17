@@ -66,10 +66,10 @@
 
 - [x] 9.1 Actualizar `openspec/project.md` con el estado del objetivo específico 2
 - [x] 9.2 Actualizar el `README.md` con el nuevo notebook y su salida
-- [ ] 9.3 Registrar en `project.md` la cobertura obtenida la primera vez que corra en Colab
+- [x] 9.3 Registrar en `project.md` la cobertura obtenida la primera vez que corra en Colab
 
 ## 10. Decisión posterior a la primera corrida
 
-- [ ] 10.1 Evaluar el reporte de cobertura
+- [x] 10.1 Evaluar el reporte de cobertura — 59,5 % global, por debajo del umbral de 70 %
 - [ ] 10.2 Si es insuficiente, decidir entre ajustar umbrales o pasar a anotación manual de las
       92 ROI

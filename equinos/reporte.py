@@ -101,3 +101,83 @@ def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
                       for c, (t, o) in por_clase.items()},
         "ejemplares_bajo_umbral": [f["id_caballo"] for f in problematicos],
     }
+
+
+def _a_float(valor) -> float:
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        return float("nan")
+
+
+def confianzas(umbrales=(0.20, 0.30, 0.40, 0.50, 0.60), piso_por_ejemplar: float = 0.50) -> list[dict]:
+    """Qué cobertura daría cada umbral de confianza, sin volver a inferir nada.
+
+    La etapa de keypoints se diseñó para NO depender de ningún umbral nuestro: DeepLabCut ya dejó
+    en `keypoints_faciales.csv` las coordenadas y su likelihood para los 1472 frames, y el filtrado
+    por CONF_MINIMA_KEYPOINT ocurre después. Por eso barrer el umbral cuesta segundos de lectura de
+    CSV en vez de la hora de inferencia.
+
+    Un frame cuenta como alineable si el ojo Y el hocico superan el umbral y tienen coordenadas,
+    que es exactamente la condición `par_valido` del Paso 11.
+
+    `piso_por_ejemplar` es la cobertura mínima que se le exige a cada caballo: el promedio global
+    puede verse bien mientras un ejemplar concreto queda inutilizable, y eso mete sesgo
+    sistemático en lugar de ruido.
+    """
+    kp = _leer("keypoints_faciales.csv")
+    if not kp:
+        raise ValueError("keypoints_faciales.csv no tiene filas.")
+
+    caballo = {c["clip"]: c["id_caballo"] for c in _leer("inventario_clips.csv")}
+    clase = {c["clip"]: c["clase"] for c in _leer("inventario_clips.csv")}
+
+    # Un par vale lo que valga su keypoint más flojo: ambos deben superar el umbral.
+    pares = []
+    for fila in kp:
+        ojo, hocico = _a_float(fila["conf_ojo"]), _a_float(fila["conf_hocico"])
+        tiene_coords = _a_float(fila["x_ojo"]) == _a_float(fila["x_ojo"]) \
+            and _a_float(fila["x_hocico"]) == _a_float(fila["x_hocico"])
+        peor = min(ojo, hocico) if tiene_coords else float("nan")
+        pares.append((fila["clip"], peor))
+
+    validos = [p for _, p in pares if p == p]
+    validos.sort()
+    print(f"Frames con keypoints: {len(pares)}   con coordenadas: {len(validos)}")
+
+    if validos:
+        print("\nDistribución del keypoint más flojo de cada par:")
+        for pct in (10, 25, 50, 75, 90):
+            print(f"  p{pct:<3} {validos[min(len(validos) - 1, pct * len(validos) // 100)]:.3f}")
+
+    print(f"\n{'umbral':>7} {'global':>8} {'ejemplares bajo el piso':>26}")
+    print("-" * 44)
+
+    resultados = []
+    for umbral in umbrales:
+        por_caballo: dict[str, list[int]] = {}
+        por_clase: dict[str, list[int]] = {}
+        for clip, peor in pares:
+            ok = peor == peor and peor >= umbral
+            for mapa, llave in ((por_caballo, caballo.get(clip, "?")),
+                                (por_clase, clase.get(clip, "?"))):
+                acc = mapa.setdefault(llave, [0, 0])
+                acc[0] += 1
+                acc[1] += ok
+
+        total = sum(a[0] for a in por_caballo.values())
+        alineables = sum(a[1] for a in por_caballo.values())
+        flojos = sorted(c for c, (t, o) in por_caballo.items() if o / t < piso_por_ejemplar)
+
+        print(f"{umbral:>7.2f} {alineables / total:>7.1%} {len(flojos):>4}  {' '.join(flojos[:6])}")
+
+        resultados.append({
+            "umbral": umbral,
+            "tasa_global": alineables / total,
+            "por_clase": {c: o / t for c, (t, o) in por_clase.items()},
+            "ejemplares_bajo_piso": flojos,
+        })
+
+    print("\nBajar el umbral no cuesta reinferir, pero un keypoint poco confiable puede estar")
+    print("mal puesto: antes de fijar uno, mirar los recortes del Paso 16 con ese valor.")
+    return resultados
