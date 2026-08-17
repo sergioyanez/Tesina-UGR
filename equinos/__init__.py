@@ -13,8 +13,9 @@ Módulos:
     checkpoint  estado reanudable por etapa, invalidado ante cambio de configuración
     cache       empaquetado de artefactos numerosos, que Drive montado maneja mal
     etapas      registro del pipeline y diagnóstico de su estado
+    reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import cache, checkpoint, etapas, rutas
+from equinos import cache, checkpoint, etapas, reporte, rutas
 
-__all__ = ["rutas", "checkpoint", "cache", "etapas"]
+__all__ = ["rutas", "checkpoint", "cache", "etapas", "reporte"]
