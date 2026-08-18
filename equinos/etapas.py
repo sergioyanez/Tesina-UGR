@@ -53,6 +53,7 @@ PIPELINE: dict[str, Etapa] = {
         descripcion="Detección del equino, keypoints faciales, ROI y normalización de pose",
         depende_de=("preparar_dataset",),
         artefactos=(
+            "resultados/pose_completa.csv",
             "resultados/keypoints_faciales.csv",
             "resultados/dataset_frames_alineados.csv",
             "resultados/reporte_cobertura.csv",
