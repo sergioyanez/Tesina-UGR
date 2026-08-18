@@ -275,47 +275,64 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-Al 17/08/2026 no hay changes activos: `roi-normalizacion-pose` y
-`persistencia-y-orquestacion-colab` están archivados y sus specs sincronizadas en
-`openspec/specs/` (`preprocesamiento-facial`, `persistencia-artefactos`,
-`orquestacion-notebooks`).
+**Change activo: `pose-completa-y-bodypart-hocico`.** La parte de código está implementada y
+verificada localmente; lo que falta son los pasos que sólo se pueden correr en Colab.
 
-**La decisión abierta es una sola:** qué hacer con el 40 % de frames que no se alinean.
+### Qué se sabe (diagnóstico del 18/08/2026)
 
-Ya está descartada la vía barata: **no bajar `CONF_MINIMA_KEYPOINT`**. La confianza del par
-ojo/hocico es bimodal —o ~0,7-0,85 o ~0,05-0,25, sin masa intermedia—, así que relajar de 0,50 a
-0,20 sólo lleva del 59,5 % al 69,5 %, sigue sin alcanzar el umbral, y lo hace aceptando keypoints
-que el propio modelo da por malos. Alinear sobre un keypoint mal puesto es peor que no alinear:
-mete distorsión geométrica sistemática en vez de un recorte honesto sin normalizar.
+`reporte.cuello_de_botella()` cerró la pregunta que estaba abierta: **el hocico frena 359 frames y
+el ojo sólo 10**, una relación de 36 a 1. Confianza mediana 0,891 en el ojo contra 0,709 en el
+hocico. Si el hocico se resolviera del todo, la cobertura pasaría de 59,5 % a **83,9 %**; para
+cruzar el umbral de 70 % alcanza con recuperar 155 de esos 359 frames (43 %). El piso irreducible
+—140 frames sin coordenadas más 87 donde no se ve ninguno de los dos— es 227 frames, 15,4 %.
 
-**Primer paso concreto:** correr en Colab
+La causa es una asimetría del código: el ojo se resolvía tomando el más confiable de cada frame,
+mientras que el hocico se fijaba con el primer candidato de una lista escrita a mano (`nose`).
 
-```python
-from equinos import reporte
-reporte.cuello_de_botella()
-```
+Sigue descartado **bajar `CONF_MINIMA_KEYPOINT`**: la confianza del par es bimodal (o ~0,7-0,85 o
+~0,05-0,25), así que relajar de 0,50 a 0,20 sólo llega a 69,5 % aceptando keypoints que el propio
+modelo da por malos. No re-litigar esto.
 
-Según cuál de los dos keypoints falle, el camino se bifurca:
+### Qué ya está hecho
 
-| Resultado | Camino | Costo |
-|---|---|---|
-| Falla el **hocico** | Probar el otro bodypart de DeepLabCut (`nose` contra `upper_jaw`) | Reinferir, ~1 h |
-| Falla el **ojo** | Verificar si son tomas de perfil cerrado; puede requerir alinear con un solo punto | A definir |
-| Fallan **ambos** | El modelo no ve la cara: anotación manual de ROI | Horas de trabajo humano |
+- `02_roi_y_normalizacion.ipynb` persiste `resultados/pose_completa.csv` (formato largo: una fila
+  por frame y bodypart) y **deriva** de ahí `keypoints_faciales.csv`. Elegir otro keypoint ya no
+  cuesta una reinferencia.
+- `equinos/pose.py`: criterio de selección del par facial y `barrido()` de candidatos, con el
+  desglose por clase y por caballo y la variación de la distancia ojo-hocico. Sin pandas, como
+  `reporte`, porque DeepLabCut deja el stack en un estado del que pandas no se recupera.
+- `BODYPART_HOCICO` es parámetro de la etapa, inyectable desde `00_pipeline.ipynb`.
+- `tests/test_pose.py`: 24 verificaciones, todas pasando localmente sin GPU.
 
-En los tres casos la anotación manual queda **acotada a los ejemplares que fallan**
-—`031`, `053`, `054`, `055`, `920` están por debajo del 50 % incluso con umbral 0,20— y no a los
-92 clips. Sea cual sea el camino, corresponde abrir un change nuevo antes de tocar código.
+### Qué falta, y en este orden
 
-**Antes de entrenar hay que resolver el confounder.** El dataset actual mezcla ~60 % de recortes
-alineados con ~40 % de recortes de caja sin alinear, y cuál le toca a cada frame está correlacionado
-con el ejemplar, que a su vez predice la clase. Una opción que ataca el problema de raíz es
-**descartar los frames no alineados** en lugar de incluirlos degradados: quedan 876 frames, y
-combinado con el plan B de 2 clases (Sereno vs Interesado) daría ~800 frames sin el confounder.
+1. **Sincronizar el código** al Drive y subir `00_pipeline.ipynb` a mano (queda excluido del sync).
+2. **Forzar la reinferencia** con `ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]`.
+   Es imprescindible: agregar videos a Drive **no** re-dispara el pipeline —`etapas.estado()` mira
+   artefactos y cachés, no los datos de entrada—, y por eso la corrida del 18/08 devolvió los
+   mismos 1472 frames aunque se habían sumado videos a Disgustado.
+3. **Mirar qué bodyparts expone el modelo.** Es el dato que decide si el change tiene camino: si
+   `nose` resultara el único candidato de hocico, hay que replantearlo.
+4. **Correr `pose.barrido()`** y fijar `BODYPART_HOCICO` con el resultado.
+5. **Re-derivar los recortes** —no requiere reinferir— y medir la cobertura contra el 70 % y contra
+   el 59,5 % de partida.
+
+### Advertencias que siguen vigentes
+
+**Los números de referencia dejan de ser comparables.** 59,5 %, 359 frames y 83,9 % son sobre 1472
+frames; con los videos nuevos el denominador cambia. Hay que reportar ambos.
+
+**Antes de entrenar hay que resolver el confounder.** El dataset mezcla recortes alineados con
+recortes de caja sin alinear, y cuál le toca a cada frame está correlacionado con el ejemplar, que
+a su vez predice la clase. Una opción que ataca el problema de raíz es **descartar los frames no
+alineados** en lugar de incluirlos degradados; combinado con el plan B de 2 clases (Sereno vs
+Interesado), daría un dataset sin el confounder.
 
 **Comportamiento no verificado en Colab.** La reanudación parcial tras una interrupción está
-probada en `tests/test_persistencia.py` pero nunca se ejercitó en una corrida real: el único fallo
-del notebook 02 ocurrió antes de procesar ningún clip. Conviene no darla por segura hasta verla.
+probada en `tests/test_persistencia.py` pero nunca se ejercitó en una corrida real.
+
+**Deuda conocida, sin change abierto:** el pipeline no detecta que el dataset de entrada cambió.
+Merece uno propio; incorporar el conteo de videos al `hash_config` de la caché alcanzaría.
 
 ## Stack técnico
 
