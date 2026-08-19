@@ -259,3 +259,113 @@ def cuello_de_botella(umbral: float = 0.50) -> dict:
 
     return {"ambos": ambos, "solo_ojo": solo_ojo, "solo_hocico": solo_hocico,
             "ninguno": ninguno, "sin_coordenadas": sin_coords}
+
+
+def frames_perdidos(umbral: float = 0.50, peores: int = 10) -> dict:
+    """Frames que la detección extrajo pero que nunca llegaron a recorte.
+
+    Hay dos pérdidas distintas y conviene no confundirlas. Una es la de alineación: el frame se
+    genera pero sin normalizar pose, porque el par ojo/hocico no supera el umbral. Esa la mide
+    `cobertura()`. La otra es anterior y más cara: el frame **no se genera en absoluto**, porque
+    no hay caja de detección utilizable —ni propia ni rellenada por el suavizado— o porque el
+    recorte resultante es degenerado.
+
+    La segunda se pierde antes de que los keypoints importen, así que ningún ajuste de umbral ni
+    cambio de bodypart la recupera. Y no se ve en la tasa que reporta `cobertura()`, que divide
+    por los frames generados y no por los esperados: el 19/08/2026 esa distinción era 68,1 %
+    contra 51,9 %.
+
+    Este reporte los agrupa por video, por clase y por extensión de archivo, que es lo que
+    permite distinguir "el detector falla parejo" de "hay un subconjunto de videos que el
+    pipeline no digiere".
+    """
+    kp = _leer("keypoints_faciales.csv")
+    alineados = _leer("dataset_frames_alineados.csv")
+    clips = {c["clip"]: c for c in _leer("inventario_clips.csv")}
+
+    try:
+        videos = {v["archivo"]: v for v in _leer("inventario_videos.csv")}
+    except FileNotFoundError:
+        videos = {}
+
+    generados = {(f["clip"], str(f["orden"])) for f in alineados}
+    esperados = [(f["clip"], str(f["orden"]), f) for f in kp]
+
+    perdidos = [(clip, orden, fila) for clip, orden, fila in esperados
+                if (clip, orden) not in generados]
+
+    if not esperados:
+        raise ValueError("keypoints_faciales.csv no tiene filas.")
+
+    # De los perdidos, cuáles tenían el par facial en condiciones. Son los que más duelen: el
+    # modelo de pose los resolvió bien y se descartaron igual, en la etapa anterior.
+    recuperables = 0
+    for _, _, fila in perdidos:
+        ojo, hocico = _a_float(fila["conf_ojo"]), _a_float(fila["conf_hocico"])
+        x_ojo, x_hoc = _a_float(fila["x_ojo"]), _a_float(fila["x_hocico"])
+        if x_ojo == x_ojo and x_hoc == x_hoc and ojo >= umbral and hocico >= umbral:
+            recuperables += 1
+
+    print("=" * 62)
+    print("FRAMES PERDIDOS ANTES DEL RECORTE")
+    print("=" * 62)
+    print(f"Frames con detección : {len(esperados)}")
+    print(f"Frames generados     : {len(generados)}")
+    print(f"Perdidos             : {len(perdidos)}  ({len(perdidos) / len(esperados):.1%})")
+    print(f"  de ellos, con par ojo/hocico válido: {recuperables}")
+    print("  (esos se habrían alineado; se perdieron por la caja, no por los keypoints)")
+
+    def _agrupar(clave_de):
+        acumulado: dict[str, list[int]] = {}
+        for clip, orden, _ in esperados:
+            clave = clave_de(clip)
+            if clave is None:
+                continue
+            fila = acumulado.setdefault(clave, [0, 0])
+            fila[0] += 1
+            fila[1] += (clip, orden) not in generados
+        return acumulado
+
+    def _origen(clip):
+        return clips.get(clip, {}).get("video_origen")
+
+    def _extension(clip):
+        origen = _origen(clip)
+        return Path(origen).suffix.lower() if origen else None
+
+    por_extension = _agrupar(_extension)
+    print("\nPor extensión de archivo:")
+    for ext, (total, faltan) in sorted(por_extension.items(),
+                                       key=lambda kv: -kv[1][1] / max(kv[1][0], 1)):
+        print(f"  {ext:<6} {faltan:>5} / {total:<5} perdidos   {faltan / total:6.1%}")
+
+    por_clase = _agrupar(lambda c: clips.get(c, {}).get("clase"))
+    print("\nPor clase:")
+    for clase, (total, faltan) in sorted(por_clase.items()):
+        print(f"  {clase:<14} {faltan:>5} / {total:<5} perdidos   {faltan / total:6.1%}")
+
+    por_video = _agrupar(_origen)
+    con_perdida = [(v, t, f) for v, (t, f) in por_video.items() if f]
+    con_perdida.sort(key=lambda r: (-r[2] / r[1], -r[2]))
+
+    print(f"\nPeores {min(peores, len(con_perdida))} videos de origen "
+          f"({len(con_perdida)} con alguna pérdida, de {len(por_video)}):")
+    for video, total, faltan in con_perdida[:peores]:
+        info = videos.get(video, {})
+        forma = f"{info.get('ancho', '?')}x{info.get('alto', '?')}" if info else ""
+        print(f"  {faltan:>4}/{total:<4} {faltan / total:6.1%}  {forma:<11} {video[:44]}")
+
+    completos = [v for v, t, f in con_perdida if f == t]
+    if completos:
+        print(f"\n{len(completos)} videos perdieron TODOS sus frames. Son los que hay que mirar "
+              "primero:\n  no es que el detector falle a veces, es que no ve nada en ellos.")
+
+    return {
+        "esperados": len(esperados),
+        "generados": len(generados),
+        "perdidos": len(perdidos),
+        "recuperables": recuperables,
+        "por_extension": {k: {"total": t, "perdidos": f} for k, (t, f) in por_extension.items()},
+        "por_clase": {k: {"total": t, "perdidos": f} for k, (t, f) in por_clase.items()},
+        "videos_totalmente_perdidos": completos,
+    }
