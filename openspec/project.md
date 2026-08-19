@@ -275,64 +275,68 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-**Change activo: `pose-completa-y-bodypart-hocico`.** La parte de código está implementada y
-verificada localmente; lo que falta son los pasos que sólo se pueden correr en Colab.
+Estado al 19/08/2026. Dos changes activos: `pose-completa-y-bodypart-hocico` (cerrado en lo
+esencial) y `orientacion-de-video-en-origen` (falta la verificación visual).
 
-### Qué se sabe (diagnóstico del 18/08/2026)
+### El dataset creció y cambió de composición
 
-`reporte.cuello_de_botella()` cerró la pregunta que estaba abierta: **el hocico frena 359 frames y
-el ojo sólo 10**, una relación de 36 a 1. Confianza mediana 0,891 en el ojo contra 0,709 en el
-hocico. Si el hocico se resolviera del todo, la cobertura pasaría de 59,5 % a **83,9 %**; para
-cruzar el umbral de 70 % alcanza con recuperar 155 de esos 359 frames (43 %). El piso irreducible
-—140 frames sin coordenadas más 87 donde no se ve ninguno de los dos— es 227 frames, 15,4 %.
+| | antes | ahora |
+|---|---|---|
+| Videos | 34 → 62 | **146** |
+| Clips | 92 → 105 | **210** |
+| Frames esperados | 1680 | **3360** |
+| Frames generados | 76,2 % | **100,0 %** |
+| Alineados / esperados | 51,9 % | **68,0 %** |
 
-La causa es una asimetría del código: el ojo se resolvía tomando el más confiable de cada frame,
-mientras que el hocico se fijaba con el primer candidato de una lista escrita a mano (`nose`).
+Frames por clase: Sereno 1680 (50 %), Interesado 1312 (39 %), Disgustado 368 (11 %). El desbalance
+persiste, pero **Disgustado ya no proviene de un solo caballo**: aparecen al menos `037`, `153`,
+`022`, `054` y `909`. Eso levanta la restricción que motivaba el plan B de 2 clases, y habilita
+evaluar las tres bajo partición por ejemplar.
 
-Sigue descartado **bajar `CONF_MINIMA_KEYPOINT`**: la confianza del par es bimodal (o ~0,7-0,85 o
-~0,05-0,25), así que relajar de 0,50 a 0,20 sólo llega a 69,5 % aceptando keypoints que el propio
-modelo da por malos. No re-litigar esto.
+### Lo que se resolvió
 
-### Qué ya está hecho
+**La causa real de la baja cobertura era la orientación de video.** Los videos de celular guardan
+la rotación como metadato y OpenCV entrega el frame como está almacenado: 42 de los 146 videos
+están rotados, y perdían el 55,6 % de sus frames porque el detector no reconoce un caballo girado
+90 grados. Corregido con `CAP_PROP_ORIENTATION_AUTO`; la pérdida quedó en 0,0 % y con paridad
+entre rotados y derechos.
 
-- `02_roi_y_normalizacion.ipynb` persiste `resultados/pose_completa.csv` (formato largo: una fila
-  por frame y bodypart) y **deriva** de ahí `keypoints_faciales.csv`. Elegir otro keypoint ya no
-  cuesta una reinferencia.
-- `equinos/pose.py`: criterio de selección del par facial y `barrido()` de candidatos, con el
-  desglose por clase y por caballo y la variación de la distancia ojo-hocico. Sin pandas, como
-  `reporte`, porque DeepLabCut deja el stack en un estado del que pandas no se recupera.
-- `BODYPART_HOCICO` es parámetro de la etapa, inyectable desde `00_pipeline.ipynb`.
-- `tests/test_pose.py`: 24 verificaciones, todas pasando localmente sin GPU.
+**El bodypart del hocico queda en `nose`.** El barrido lo midió: `upper_jaw` da 54,4 % contra
+62,4 %, y la estrategia de máxima confianza por frame gana 1,5 puntos a cambio de 9,0 % de
+dispersión en la distancia ojo-hocico. Resultado negativo, documentado y cerrado — no re-litigar.
 
-### Qué falta, y en este orden
+**Tampoco bajar `CONF_MINIMA_KEYPOINT`:** la confianza del par es bimodal.
 
-1. **Sincronizar el código** al Drive y subir `00_pipeline.ipynb` a mano (queda excluido del sync).
-2. **Forzar la reinferencia** con `ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]`.
-   Es imprescindible: agregar videos a Drive **no** re-dispara el pipeline —`etapas.estado()` mira
-   artefactos y cachés, no los datos de entrada—, y por eso la corrida del 18/08 devolvió los
-   mismos 1472 frames aunque se habían sumado videos a Disgustado.
-3. **Mirar qué bodyparts expone el modelo.** Es el dato que decide si el change tiene camino: si
-   `nose` resultara el único candidato de hocico, hay que replantearlo.
-4. **Correr `pose.barrido()`** y fijar `BODYPART_HOCICO` con el resultado.
-5. **Re-derivar los recortes** —no requiere reinferir— y medir la cobertura contra el 70 % y contra
-   el 59,5 % de partida.
+### Lo que falta, en orden
 
-### Advertencias que siguen vigentes
+1. **Verificar visualmente los recortes** de videos rotados (Pasos 15 y 16 de la copia ejecutada
+   `roi_normalizacion_20260819_031622.ipynb`). Es lo único que puede delatar una cara invertida, y
+   sin eso el 68 % no es confiable.
+2. **Investigar `920`**, que tiene 144 frames y sólo 6,9 % de alineación — unos 134 frames sin
+   alinear, contra los 66 que faltan para el umbral. Es la palanca más corta que queda.
+3. Revisar los otros ejemplares por debajo del umbral: `153`, `912`, `031`, `057`, `175`, `053`,
+   `055`.
 
-**Los números de referencia dejan de ser comparables.** 59,5 %, 359 frames y 83,9 % son sobre 1472
-frames; con los videos nuevos el denominador cambia. Hay que reportar ambos.
+### Deudas conocidas, sin change abierto
 
-**Antes de entrenar hay que resolver el confounder.** El dataset mezcla recortes alineados con
-recortes de caja sin alinear, y cuál le toca a cada frame está correlacionado con el ejemplar, que
-a su vez predice la clase. Una opción que ataca el problema de raíz es **descartar los frames no
-alineados** en lugar de incluirlos degradados; combinado con el plan B de 2 clases (Sereno vs
-Interesado), daría un dataset sin el confounder.
+- **El pipeline no detecta que el dataset de entrada cambió.** `etapas.estado()` mira artefactos y
+  cachés, no los datos. Agregar videos a Drive no re-dispara nada; hay que usar `ETAPAS_A_FORZAR`.
+  Incorporar el conteo de videos al `hash_config` alcanzaría.
+- **El orquestador muestra una carpeta de videos que las etapas no usan.** Imprime el contenido de
+  `Videos de prueba`, pero el notebook 01 lee `tesina_equinos/videos`. La discrepancia ya costó una
+  corrida.
+- **No hay modo de re-derivar sin recomputar.** Cambiar el bodypart y regenerar los recortes exige
+  correr el notebook 02 suelto: por el orquestador, la única forma de no saltear la etapa es
+  forzarla, y eso borra el checkpoint.
+- **Etiquetado:** `501_8v1_LY1ucwR9.avi` estaba en Interesado y en Disgustado como archivo
+  idéntico; se resolvió como Disgustado el 19/08. La validación sólo detecta homónimos, así que
+  copias con nombres distintos en dos clases pasarían sin aviso.
 
-**Comportamiento no verificado en Colab.** La reanudación parcial tras una interrupción está
-probada en `tests/test_persistencia.py` pero nunca se ejercitó en una corrida real.
+### Antes de entrenar
 
-**Deuda conocida, sin change abierto:** el pipeline no detecta que el dataset de entrada cambió.
-Merece uno propio; incorporar el conteo de videos al `hash_config` de la caché alcanzaría.
+El confounder de alineación sigue vigente: el dataset mezcla recortes alineados con recortes de
+caja sin alinear, y cuál le toca a cada frame está correlacionado con el ejemplar, que a su vez
+predice la clase. La opción que lo ataca de raíz es descartar los frames no alineados.
 
 ## Stack técnico
 
