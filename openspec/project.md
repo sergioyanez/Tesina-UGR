@@ -275,68 +275,91 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-Estado al 19/08/2026. Dos changes activos: `pose-completa-y-bodypart-hocico` (cerrado en lo
-esencial) y `orientacion-de-video-en-origen` (falta la verificación visual).
+Estado al cierre del 19/08/2026. Todo pusheado en `main`, árbol limpio, último commit del código
+`8b9152e`.
 
-### El dataset creció y cambió de composición
+### La primera acción, concreta
 
-| | antes | ahora |
+**Re-derivar los recortes con el encuadre nuevo.** El código está implementado y verificado
+localmente; falta correrlo. No requiere reinferir.
+
+1. En `00_pipeline.ipynb`: `SINCRONIZAR_CODIGO = True` y ejecutar **sólo la celda de arranque**.
+   Verificar que imprima `8b9152e`. **No ejecutar la celda de ejecución encadenada.**
+2. Abrir desde Drive `tesina_equinos/codigo/02_roi_y_normalizacion.ipynb` y **confirmar que
+   `LIMPIAR_ETAPA = False`** antes de correr nada: en `True` borra el checkpoint y cuesta 2 h.
+3. Ejecutar todas sus celdas. El bucle debe informar `Clips pendientes: 0 de 210` — ésa es la
+   señal de que la pose persistida está evitando la reinferencia. Unos 30-45 min.
+4. Medir: `reporte.calidad_recortes()`, `reporte.cobertura()`.
+
+Por el orquestador no se puede: vería la etapa completa y la saltearía, y la única forma de que no
+la saltee es forzarla, lo que borra el checkpoint.
+
+### Dónde quedó el dataset
+
+| | inicio | ahora |
 |---|---|---|
-| Videos | 34 → 62 | **146** |
-| Clips | 92 → 105 | **210** |
-| Frames esperados | 1680 | **3360** |
-| Frames generados | 76,2 % | **100,0 %** |
-| Alineados / esperados | 51,9 % | **68,0 %** |
+| Videos | 34 | **146** |
+| Clips | 92 | **210** |
+| Frames esperados | 1472 | **3360** |
+| Frames generados | 100 % | **100 %** |
+| Alineados / esperados | 59,5 % | **68,0 %** |
 
-Frames por clase: Sereno 1680 (50 %), Interesado 1312 (39 %), Disgustado 368 (11 %). El desbalance
-persiste, pero **Disgustado ya no proviene de un solo caballo**: aparecen al menos `037`, `153`,
-`022`, `054` y `909`. Eso levanta la restricción que motivaba el plan B de 2 clases, y habilita
-evaluar las tres bajo partición por ejemplar.
+Frames por clase: Sereno 1680 (50 %), Interesado 1312 (39 %), Disgustado 368 (11 %). Entre los
+2286 alineados el reparto es Sereno ~1038, Interesado ~1035, Disgustado ~212.
 
-### Lo que se resolvió
+**Disgustado ya no proviene de un solo caballo:** aparecen `037`, `153`, `022`, `054` y `909`. Eso
+levanta la restricción que motivaba el plan B de 2 clases y habilita evaluar las tres bajo
+partición por ejemplar.
 
-**La causa real de la baja cobertura era la orientación de video.** Los videos de celular guardan
-la rotación como metadato y OpenCV entrega el frame como está almacenado: 42 de los 146 videos
-están rotados, y perdían el 55,6 % de sus frames porque el detector no reconoce un caballo girado
-90 grados. Corregido con `CAP_PROP_ORIENTATION_AUTO`; la pérdida quedó en 0,0 % y con paridad
-entre rotados y derechos.
+### Tres causas encontradas y resueltas, en orden de tamaño
 
-**El bodypart del hocico queda en `nose`.** El barrido lo midió: `upper_jaw` da 54,4 % contra
-62,4 %, y la estrategia de máxima confianza por frame gana 1,5 puntos a cambio de 9,0 % de
-dispersión en la distancia ojo-hocico. Resultado negativo, documentado y cerrado — no re-litigar.
+1. **Orientación de video** (720 frames en juego). 42 de los 146 videos guardan la rotación como
+   metadato y OpenCV entregaba el frame acostado; el detector no reconocía un caballo girado 90
+   grados. Perdían el 55,6 % de sus frames contra 0,0 % de los derechos. Corregido con
+   `CAP_PROP_ORIENTATION_AUTO`; verificado: 0,0 % de pérdida y paridad entre ambos grupos.
+2. **Encuadre canónico imposible** (2228 recortes afectados). El recorte abarcaba 2,5 veces la
+   distancia ojo-hocico, que es el 26 % de la diagonal: pedía 1454 px de lado en cuadros de 1080
+   de ancho. Sólo el 2,5 % salía sin relleno. Corregido a separación 0,60 más `BORDER_REPLICATE`;
+   **falta verificar**.
+3. **Bodypart del hocico** (24 frames). Refutado: `upper_jaw` da 54,4 % contra 62,4 % de `nose`.
+   Queda `nose` fijo. Resultado negativo, documentado y cerrado.
 
-**Tampoco bajar `CONF_MINIMA_KEYPOINT`:** la confianza del par es bimodal.
+### Lo que hay que recordar sobre el método
 
-### Lo que falta, en orden
+Las tres causas se manifestaban tarde y apuntando al lugar equivocado. Lo que destapó la más
+grande fue **medir la pérdida contra los frames esperados en vez de contra los generados**:
+`cobertura()` informaba 68,1 % cuando la cifra honesta era 51,9 %. Y la segunda apareció al
+preguntarse si un recorte geométricamente exacto era además utilizable — el Paso 16 da error
+1e-13 aunque el hocico esté sobre una oreja, porque mide la transformada contra los mismos puntos
+con que se construyó.
 
-1. **Verificar visualmente los recortes** de videos rotados (Pasos 15 y 16 de la copia ejecutada
-   `roi_normalizacion_20260819_031622.ipynb`). Es lo único que puede delatar una cara invertida, y
-   sin eso el 68 % no es confiable.
-2. **Investigar `920`**, que tiene 144 frames y sólo 6,9 % de alineación — unos 134 frames sin
-   alinear, contra los 66 que faltan para el umbral. Es la palanca más corta que queda.
-3. Revisar los otros ejemplares por debajo del umbral: `153`, `912`, `031`, `057`, `175`, `053`,
-   `055`.
+Conviene desconfiar de toda métrica cuyo denominador no se haya elegido a propósito.
+
+### Cuando se cierre el objetivo 2
+
+El umbral del 70 % se fijó con 34 videos y 92 clips sobre la mesa, como proxy de "¿es utilizable
+el pipeline automático?". Con 146 videos, 2286 frames alineados y Disgustado multi-caballo, vale
+preguntarse si esa pregunta no está contestada por otra vía aunque el número quede en 68,0 %.
+**Es una decisión de Sergio, no una conclusión.**
+
+Los 2286 frames alineados forman por sí solos un dataset sin el confounder de mezclar recortes
+alineados con recortes de caja — que era el problema a resolver antes de entrenar. Son 2,6 veces
+los 876 de partida, y el balance entre Sereno e Interesado queda 45/45.
 
 ### Deudas conocidas, sin change abierto
 
 - **El pipeline no detecta que el dataset de entrada cambió.** `etapas.estado()` mira artefactos y
-  cachés, no los datos. Agregar videos a Drive no re-dispara nada; hay que usar `ETAPAS_A_FORZAR`.
-  Incorporar el conteo de videos al `hash_config` alcanzaría.
-- **El orquestador muestra una carpeta de videos que las etapas no usan.** Imprime el contenido de
-  `Videos de prueba`, pero el notebook 01 lee `tesina_equinos/videos`. La discrepancia ya costó una
-  corrida.
-- **No hay modo de re-derivar sin recomputar.** Cambiar el bodypart y regenerar los recortes exige
-  correr el notebook 02 suelto: por el orquestador, la única forma de no saltear la etapa es
-  forzarla, y eso borra el checkpoint.
-- **Etiquetado:** `501_8v1_LY1ucwR9.avi` estaba en Interesado y en Disgustado como archivo
-  idéntico; se resolvió como Disgustado el 19/08. La validación sólo detecta homónimos, así que
-  copias con nombres distintos en dos clases pasarían sin aviso.
-
-### Antes de entrenar
-
-El confounder de alineación sigue vigente: el dataset mezcla recortes alineados con recortes de
-caja sin alinear, y cuál le toca a cada frame está correlacionado con el ejemplar, que a su vez
-predice la clase. La opción que lo ataca de raíz es descartar los frames no alineados.
+  cachés, no los datos. Incorporar el conteo de videos al `hash_config` alcanzaría.
+- **El orquestador muestra una carpeta que las etapas no usan.** Imprime `Videos de prueba` (159
+  archivos) pero el notebook 01 lee `tesina_equinos/videos` (146). Ya costó una corrida.
+- **No hay modo de re-derivar sin recomputar por el orquestador.** Hay que correr el notebook 02
+  suelto.
+- **`00_pipeline.ipynb` no se sincroniza** y hay que subirlo a mano, lo que además apaga el
+  permiso del secret `GITHUB_TOKEN` para ese notebook.
+- **Etiquetado:** `501_8v1_LY1ucwR9.avi` estaba como archivo idéntico en Interesado y Disgustado;
+  se resolvió como Disgustado. La validación sólo detecta homónimos, así que copias con nombres
+  distintos en dos clases pasarían sin aviso. Conviene revisar el criterio con que se armaron las
+  carpetas.
 
 ## Stack técnico
 
