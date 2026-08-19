@@ -481,3 +481,86 @@ def orientacion_videos(peores: int = 12) -> dict:
         print("Siguiente sospecha: mirar un frame de los videos que perdieron todo.")
 
     return {"videos": filas, "por_rotacion": {str(k): v for k, v in por_rotacion.items()}}
+
+
+def prueba_orientacion(archivo: str | None = None) -> dict:
+    """Qué hace realmente OpenCV con un video rotado, en ESTE entorno.
+
+    No es una pregunta retórica: el comportamiento cambia entre versiones y backends de OpenCV.
+    En 4.10 local la rotación se aplica sola; el inventario producido en Colab sugiere que ahí
+    no. Y la diferencia importa mucho, porque si se rota un frame que OpenCV ya rotó, el dataset
+    entero queda al revés — un error peor que el original, y silencioso.
+
+    Compara, sobre un video con rotación declarada, las dimensiones almacenadas contra la forma
+    real del frame entregado, con la auto-orientación apagada y encendida.
+    """
+    import cv2
+
+    videos = _leer("inventario_videos.csv")
+    por_archivo = {v["archivo"]: v for v in videos}
+
+    if archivo is None:
+        for v in videos:
+            ruta = rutas.resolver(v["ruta"])
+            if not ruta.exists():
+                continue
+            cap = cv2.VideoCapture(str(ruta))
+            rot = cap.get(cv2.CAP_PROP_ORIENTATION_META) if cap.isOpened() else 0
+            cap.release()
+            if rot:
+                archivo = v["archivo"]
+                break
+
+    if archivo is None or archivo not in por_archivo:
+        raise ValueError(
+            "No se encontró ningún video con rotación declarada en el inventario. "
+            "Pasar un nombre de archivo explícito si se quiere inspeccionar uno concreto."
+        )
+
+    video = por_archivo[archivo]
+    ruta = rutas.resolver(video["ruta"])
+
+    print("=" * 62)
+    print("COMPORTAMIENTO DE OPENCV ANTE UN VIDEO ROTADO")
+    print("=" * 62)
+    print(f"OpenCV        : {cv2.__version__}")
+    print(f"Video         : {archivo}")
+    print(f"Inventario    : {video.get('ancho')} x {video.get('alto')}  (ancho x alto)")
+
+    medidas = {}
+    for etiqueta, auto in (("auto OFF", 0), ("auto ON", 1)):
+        cap = cv2.VideoCapture(str(ruta))
+        if not cap.isOpened():
+            raise ValueError(f"No se pudo abrir {ruta}")
+        cap.set(cv2.CAP_PROP_ORIENTATION_AUTO, auto)
+        meta = cap.get(cv2.CAP_PROP_ORIENTATION_META)
+        prop = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        ok, frame = cap.read()
+        cap.release()
+        forma = (frame.shape[1], frame.shape[0]) if ok else None
+        medidas[etiqueta] = {"meta": meta, "propiedades": prop, "frame": forma}
+        print(f"\n{etiqueta}")
+        print(f"  rotación declarada : {meta:.0f}")
+        print(f"  propiedades        : {prop[0]} x {prop[1]}")
+        print(f"  frame entregado    : {forma[0]} x {forma[1]}" if forma else "  frame: no se pudo leer")
+
+    off, on = medidas["auto OFF"]["frame"], medidas["auto ON"]["frame"]
+
+    print("\n" + "-" * 62)
+    if off != on:
+        print("La bandera SÍ cambia el frame entregado. Activar CAP_PROP_ORIENTATION_AUTO")
+        print("al leer los videos de origen alcanza para corregirlo.")
+        veredicto = "bandera_efectiva"
+    elif off and off[0] > off[1]:
+        print("La bandera NO cambia nada y el frame sale APAISADO pese a la rotación")
+        print("declarada: OpenCV entrega los píxeles como están almacenados. Hay que rotar")
+        print("a mano con cv2.rotate() según el metadato.")
+        veredicto = "rotar_a_mano"
+    else:
+        print("La bandera no cambia nada, pero el frame ya sale en vertical: OpenCV aplica")
+        print("la rotación por su cuenta. La pérdida de frames tiene otra causa y NO hay que")
+        print("rotar nada — hacerlo dejaría el dataset al revés.")
+        veredicto = "ya_rotado"
+
+    return {"archivo": archivo, "opencv": cv2.__version__,
+            "medidas": medidas, "veredicto": veredicto}
