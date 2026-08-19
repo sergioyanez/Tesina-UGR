@@ -564,3 +564,138 @@ def prueba_orientacion(archivo: str | None = None) -> dict:
 
     return {"archivo": archivo, "opencv": cv2.__version__,
             "medidas": medidas, "veredicto": veredicto}
+
+
+def calidad_recortes(lado: int = 224, frac_ojo: float = 0.34, frac_hocico: float = 0.74,
+                     peores: int = 12) -> dict:
+    """Calidad geométrica de los recortes alineados, sin abrir una sola imagen.
+
+    Que la alineación sea numéricamente exacta no dice nada sobre si sirve. La transformada de
+    similitud lleva el par ojo/hocico DETECTADO a su posición canónica con error de punto
+    flotante, aunque el modelo haya puesto el hocico sobre una oreja: el error queda en cero
+    igual, porque se mide contra los mismos puntos que se usaron para construirla.
+
+    Dos cosas sí son medibles desde la geometría, y son las que separan un recorte utilizable de
+    uno que sólo parece estarlo:
+
+    - **Relleno.** `warpAffine` completa con negro lo que cae fuera del frame de origen. Si la
+      cabeza está contra el borde, o el animal lejos y la escala se agranda, el cuadrado canónico
+      se sale y el recorte queda mayormente vacío.
+    - **Distancia ojo-hocico en el origen.** Fija la escala. Una distancia muy chica significa
+      que la cara ocupaba pocos píxeles y el recorte es una ampliación de casi nada; una absurda
+      —comparable al cuadro entero— delata que los keypoints no están sobre la misma cabeza.
+    """
+    import math
+
+    kp = {(f["clip"], str(f["orden"])): f for f in _leer("keypoints_faciales.csv")}
+    alineados = [f for f in _leer("dataset_frames_alineados.csv") if _es_si(f["alineado"])]
+    clips = {c["clip"]: c for c in _leer("inventario_clips.csv")}
+    videos = {v["archivo"]: v for v in _leer("inventario_videos.csv")}
+
+    dest_ojo = (lado * 0.5, lado * frac_ojo)
+    dest_hocico = (lado * 0.5, lado * frac_hocico)
+    dist_destino = dest_hocico[1] - dest_ojo[1]
+
+    # Muestreo del cuadrado canónico: se lleva cada punto al origen con la transformada inversa
+    # y se cuenta cuántos caen fuera del frame. Aproximar con una grilla alcanza y evita tener
+    # que calcular el área exacta de un cuadrado rotado contra un rectángulo.
+    paso = 8
+    rejilla = [(i * lado / (paso - 1), j * lado / (paso - 1))
+               for i in range(paso) for j in range(paso)]
+
+    filas = []
+    for fila in alineados:
+        clave = (fila["clip"], str(fila["orden"]))
+        punto = kp.get(clave)
+        origen = clips.get(fila["clip"], {}).get("video_origen")
+        info = videos.get(origen, {})
+        if not punto or not info:
+            continue
+
+        try:
+            ancho, alto = int(info["ancho"]), int(info["alto"])
+        except (KeyError, ValueError):
+            continue
+
+        x_ojo, y_ojo = _a_float(punto["x_ojo"]), _a_float(punto["y_ojo"])
+        x_hoc, y_hoc = _a_float(punto["x_hocico"]), _a_float(punto["y_hocico"])
+        if x_ojo != x_ojo or x_hoc != x_hoc:
+            continue
+
+        dist_origen = math.hypot(x_hoc - x_ojo, y_hoc - y_ojo)
+        if dist_origen <= 0:
+            continue
+
+        escala = dist_destino / dist_origen
+
+        # Rotación que la transformada directa aplica: lleva el eje ojo->hocico del origen a la
+        # vertical del recorte. La inversa usa su traspuesta. Escribirla al revés no falla ni
+        # desalinea el par —los dos puntos de anclaje salen bien igual— y sólo se manifiesta
+        # como un relleno mal medido, así que se verificó punto por punto contra el par conocido.
+        theta = math.pi / 2 - math.atan2(y_hoc - y_ojo, x_hoc - x_ojo)
+        cos_t, sin_t = math.cos(theta), math.sin(theta)
+
+        fuera = 0
+        for qx, qy in rejilla:
+            dx, dy = (qx - dest_ojo[0]) / escala, (qy - dest_ojo[1]) / escala
+            px = x_ojo + dx * cos_t + dy * sin_t
+            py = y_ojo - dx * sin_t + dy * cos_t
+            if not (0 <= px < ancho and 0 <= py < alto):
+                fuera += 1
+
+        filas.append({
+            "clip": fila["clip"],
+            "orden": fila["orden"],
+            "video_origen": origen,
+            "id_caballo": fila.get("id_caballo", "?"),
+            "clase": fila.get("clase", "?"),
+            "relleno": fuera / len(rejilla),
+            "dist_origen": dist_origen,
+            "diagonal": math.hypot(ancho, alto),
+        })
+
+    if not filas:
+        raise ValueError("No se pudo evaluar ningún recorte alineado.")
+
+    print("=" * 62)
+    print("CALIDAD GEOMÉTRICA DE LOS RECORTES ALINEADOS")
+    print("=" * 62)
+    print(f"Recortes evaluados: {len(filas)}")
+
+    for etiqueta, minimo in (("nada", 0.0), ("algo (>10 %)", 0.10),
+                             ("mucho (>30 %)", 0.30), ("mayormente vacío (>50 %)", 0.50)):
+        n = sum(1 for f in filas if f["relleno"] > minimo) if minimo else \
+            sum(1 for f in filas if f["relleno"] == 0)
+        print(f"  relleno {etiqueta:<26} {n:>5}  ({n / len(filas):5.1%})")
+
+    proporciones = sorted(f["dist_origen"] / f["diagonal"] for f in filas)
+    def _pct(p):
+        return proporciones[min(int(p * len(proporciones)), len(proporciones) - 1)]
+    print("\nDistancia ojo-hocico como fracción de la diagonal del cuadro:")
+    for p in (0.05, 0.25, 0.50, 0.75, 0.95):
+        print(f"  p{int(p * 100):<3} {_pct(p):.3f}")
+
+    sospechosos = [f for f in filas if f["relleno"] > 0.30 or
+                   f["dist_origen"] / f["diagonal"] < 0.02 or
+                   f["dist_origen"] / f["diagonal"] > 0.60]
+    print(f"\nRecortes sospechosos: {len(sospechosos)} ({len(sospechosos) / len(filas):.1%})")
+    print("  (relleno > 30 %, o distancia ojo-hocico < 2 % o > 60 % de la diagonal)")
+
+    por_caballo: dict = {}
+    for f in filas:
+        acc = por_caballo.setdefault(f["id_caballo"], [0, 0])
+        acc[0] += 1
+        acc[1] += f in sospechosos if False else 0
+    for f in sospechosos:
+        por_caballo[f["id_caballo"]][1] += 1
+
+    ranking = sorted(((c, t, s) for c, (t, s) in por_caballo.items() if s),
+                     key=lambda r: -r[2] / r[1])
+    if ranking:
+        print(f"\nPeores {min(peores, len(ranking))} ejemplares:")
+        for caballo, total, malos in ranking[:peores]:
+            print(f"  {caballo:<7} {malos:>4}/{total:<4} {malos / total:6.1%} sospechosos")
+
+    return {"evaluados": len(filas), "sospechosos": len(sospechosos),
+            "por_caballo": {c: {"total": t, "sospechosos": s}
+                            for c, (t, s) in por_caballo.items()}}
