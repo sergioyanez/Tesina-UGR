@@ -1,10 +1,10 @@
 ## 1. Verificar el terreno antes de escribir código
 
-- [ ] 1.1 Confirmar en Colab qué bodyparts expone realmente el modelo de pose (el notebook 02 ya los
+- [x] 1.1 Confirmar en Colab qué bodyparts expone realmente el modelo de pose (el notebook 02 ya los
       imprime en el paso de descubrimiento del esquema) y cuáles de `nose`, `snout`, `muzzle`,
       `upper_jaw` y `mouth` existen. **Si `nose` es el único candidato de hocico, este change no
       tiene camino y hay que replantearlo antes de seguir.**
-- [ ] 1.2 Inventariar los videos nuevos de Disgustado: cuántos son, qué duración tienen y qué
+- [x] 1.2 Inventariar los videos nuevos de Disgustado: cuántos son, qué duración tienen y qué
       ejemplares aportan. Registrar si alguno es distinto de `037`, porque de eso depende que la
       clase sea evaluable bajo partición por caballo.
 
@@ -45,18 +45,18 @@
 
 ## 5. Reinferencia con los videos nuevos
 
-- [ ] 5.1 Sincronizar el código al Drive (`SINCRONIZAR_CODIGO = True`) y subir a mano
+- [x] 5.1 Sincronizar el código al Drive (`SINCRONIZAR_CODIGO = True`) y subir a mano
       `00_pipeline.ipynb`, que queda excluido del sync.
-- [ ] 5.2 Poner `ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]` y lanzar la corrida.
-- [ ] 5.3 Mirar el primer latido para confirmar que el checkpoint avanza — la reanudación parcial
+- [x] 5.2 Poner `ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]` y lanzar la corrida.
+- [x] 5.3 Mirar el primer latido para confirmar que el checkpoint avanza — la reanudación parcial
       nunca se ejercitó en una corrida real.
-- [ ] 5.4 Anotar el nuevo total de frames y clips: los números de referencia del análisis
+- [x] 5.4 Anotar el nuevo total de frames y clips: los números de referencia del análisis
       (59,5 %, 359 frames, 83,9 %) son sobre 1472 y dejan de ser comparables.
 
 ## 6. Decidir el bodypart y cerrar
 
-- [ ] 6.1 Correr el barrido sobre la pose recién persistida.
-- [ ] 6.2 Decidir el bodypart con el criterio de la decisión 4 del diseño, y **documentar la decisión
+- [x] 6.1 Correr el barrido sobre la pose recién persistida.
+- [x] 6.2 Decidir el bodypart con el criterio de la decisión 4 del diseño, y **documentar la decisión
       junto con los candidatos descartados y su cobertura**.
 - [ ] 6.3 Re-derivar los recortes con el bodypart elegido. No requiere reinferir.
 - [ ] 6.4 Verificar la cobertura contra el umbral de 70 % y contra el 59,5 % de partida. Si no
@@ -64,3 +64,29 @@
       `031`, `053`, `054`, `055` y `920`).
 - [ ] 6.5 Actualizar `openspec/project.md` —cobertura medida y punto de partida de la próxima
       sesión— y el `README.md` si quedó desactualizado.
+
+## 7. Resultado del barrido (19/08/2026)
+
+El modelo expone 39 bodyparts. De los cinco candidatos a hocico sólo existen dos: `nose` y
+`upper_jaw` — `snout`, `muzzle` y `mouth` no están.
+
+| estrategia | alineables | tasa |
+|---|---|---|
+| `nose` | 1049 / 1680 | 62,4 % |
+| `upper_jaw` | 914 / 1680 | 54,4 % |
+| más confiable por frame | 1073 / 1680 | 63,9 % |
+
+**La hipótesis queda refutada.** `upper_jaw` es peor, no mejor: el hocico era el cuello de botella
+porque es genuinamente difícil de ver en estos videos, no porque estuviera mal elegido.
+
+**Decisión: `BODYPART_HOCICO` queda en `nose`.** La estrategia de máxima confianza por frame gana
+1,5 puntos —24 frames— a cambio de una dispersión del 9,0 % en la distancia ojo-hocico (mediana
+593 px contra 654 px), que se traslada a la escala del recorte. El criterio de la decisión 4 del
+diseño la admitía por debajo del 10 %, pero 24 frames no justifican meter variación sistemática de
+escala en la señal temporal que el objetivo 3 va a modelar, y de todos modos no acerca al umbral.
+
+**Lo que el barrido sí produjo** fue descartar la vía barata y obligar a medir la pérdida contra
+los frames esperados en vez de contra los generados. Eso destapó la causa real —400 frames que se
+perdían por orientación de video, tratada en `orientacion-de-video-en-origen`— que vale 720 frames
+contra los 24 de esta vía. El valor del change está en la infraestructura que dejó: la pose
+persistida vuelve gratis cualquier revisión posterior de keypoints.
