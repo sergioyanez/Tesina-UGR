@@ -369,3 +369,115 @@ def frames_perdidos(umbral: float = 0.50, peores: int = 10) -> dict:
         "por_clase": {k: {"total": t, "perdidos": f} for k, (t, f) in por_clase.items()},
         "videos_totalmente_perdidos": completos,
     }
+
+
+def _perdidos_por_video() -> dict[str, tuple[int, int]]:
+    """{video_origen: (frames_con_deteccion, frames_perdidos)}, leído de los artefactos."""
+    kp = _leer("keypoints_faciales.csv")
+    alineados = _leer("dataset_frames_alineados.csv")
+    clips = {c["clip"]: c for c in _leer("inventario_clips.csv")}
+
+    generados = {(f["clip"], str(f["orden"])) for f in alineados}
+    acumulado: dict[str, list[int]] = {}
+    for fila in kp:
+        origen = clips.get(fila["clip"], {}).get("video_origen")
+        if not origen:
+            continue
+        cuenta = acumulado.setdefault(origen, [0, 0])
+        cuenta[0] += 1
+        cuenta[1] += (fila["clip"], str(fila["orden"])) not in generados
+    return {k: (v[0], v[1]) for k, v in acumulado.items()}
+
+
+def orientacion_videos(peores: int = 12) -> dict:
+    """Rotación declarada en los metadatos de cada video, cruzada con los frames perdidos.
+
+    Los videos de celular guardan la orientación como metadato en vez de rotar los píxeles.
+    OpenCV NO la aplica al leer: un video grabado en vertical se entrega acostado. Un detector
+    entrenado sobre imágenes derechas no reconoce un caballo girado 90 grados, así que no hay
+    caja, y sin caja el frame no se recorta ni llega al dataset. El síntoma es exactamente el que
+    dejó 6 videos con el 100 % de sus frames perdidos el 19/08/2026.
+
+    Si el cruce muestra que la pérdida se concentra en los videos con rotación distinta de cero,
+    la corrección es barata: `cv2.CAP_PROP_ORIENTATION_AUTO` hace que OpenCV entregue el frame ya
+    rotado, y hay que activarlo donde se leen los videos de origen.
+
+    cv2 se importa acá adentro y no arriba: este módulo tiene que poder importarse aunque el
+    stack de numpy esté en el estado que deja DeepLabCut.
+    """
+    import cv2
+
+    videos = _leer("inventario_videos.csv")
+    perdidos = _perdidos_por_video()
+
+    filas = []
+    for video in videos:
+        ruta = rutas.resolver(video["ruta"])
+        if not ruta.exists():
+            continue
+        cap = cv2.VideoCapture(str(ruta))
+        rotacion = cap.get(cv2.CAP_PROP_ORIENTATION_META) if cap.isOpened() else float("nan")
+        cap.release()
+
+        total, faltan = perdidos.get(video["archivo"], (0, 0))
+        filas.append({
+            "archivo": video["archivo"],
+            "rotacion": int(rotacion) if rotacion == rotacion else None,
+            "ancho": video.get("ancho", "?"),
+            "alto": video.get("alto", "?"),
+            "frames": total,
+            "perdidos": faltan,
+        })
+
+    if not filas:
+        raise ValueError("No se pudo abrir ningún video del inventario.")
+
+    print("=" * 62)
+    print("ORIENTACIÓN DE LOS VIDEOS Y PÉRDIDA DE FRAMES")
+    print("=" * 62)
+    print(f"Videos inspeccionados: {len(filas)}")
+
+    por_rotacion: dict = {}
+    for f in filas:
+        acc = por_rotacion.setdefault(f["rotacion"], [0, 0, 0])
+        acc[0] += 1
+        acc[1] += f["frames"]
+        acc[2] += f["perdidos"]
+
+    print(f"\n{'rotación':<10}{'videos':>8}{'frames':>9}{'perdidos':>10}{'tasa':>9}")
+    print("-" * 62)
+    for rot, (n, total, faltan) in sorted(por_rotacion.items(),
+                                          key=lambda kv: (kv[0] is None, kv[0])):
+        etiqueta = "sin dato" if rot is None else f"{rot}°"
+        tasa = f"{faltan / total:.1%}" if total else "-"
+        print(f"{etiqueta:<10}{n:>8}{total:>9}{faltan:>10}{tasa:>9}")
+
+    rotados = [f for f in filas if f["rotacion"]]
+    derechos = [f for f in filas if f["rotacion"] == 0]
+
+    def _tasa(grupo):
+        total = sum(f["frames"] for f in grupo)
+        return sum(f["perdidos"] for f in grupo) / total if total else 0.0
+
+    print("\nVideos con más pérdida:")
+    for f in sorted(filas, key=lambda f: (-(f["perdidos"] / f["frames"]) if f["frames"] else 0,
+                                          -f["perdidos"]))[:peores]:
+        if not f["perdidos"]:
+            break
+        rot = "sin dato" if f["rotacion"] is None else f"{f['rotacion']}°"
+        print(f"  {f['perdidos']:>4}/{f['frames']:<4} {f['perdidos'] / f['frames']:6.1%}  "
+              f"rot {rot:<9} {f['archivo'][:40]}")
+
+    print("\n" + "-" * 62)
+    if rotados and derechos:
+        print(f"Rotados  ({len(rotados):>3} videos): {_tasa(rotados):6.1%} de pérdida")
+        print(f"Derechos ({len(derechos):>3} videos): {_tasa(derechos):6.1%} de pérdida")
+        if _tasa(rotados) > 2 * max(_tasa(derechos), 0.01):
+            print("\nLa pérdida se concentra en los videos rotados: OpenCV entrega el frame")
+            print("acostado y el detector no reconoce al equino. Corrección: activar")
+            print("CAP_PROP_ORIENTATION_AUTO donde se leen los videos de origen.")
+    elif not rotados:
+        print("Ningún video declara rotación: la pérdida tiene otra causa.")
+        print("Siguiente sospecha: mirar un frame de los videos que perdieron todo.")
+
+    return {"videos": filas, "por_rotacion": {str(k): v for k, v in por_rotacion.items()}}
