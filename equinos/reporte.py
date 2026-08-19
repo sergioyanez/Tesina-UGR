@@ -566,7 +566,7 @@ def prueba_orientacion(archivo: str | None = None) -> dict:
             "medidas": medidas, "veredicto": veredicto}
 
 
-def calidad_recortes(lado: int = 224, frac_ojo: float = 0.34, frac_hocico: float = 0.74,
+def calidad_recortes(lado: int = 224, frac_ojo: float = 0.20, frac_hocico: float = 0.80,
                      peores: int = 12) -> dict:
     """Calidad geométrica de los recortes alineados, sin abrir una sola imagen.
 
