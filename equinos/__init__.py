@@ -10,6 +10,7 @@ terminar de ejecutar de forma confiable.
 
 Módulos:
     rutas       raíz de proyecto persistente, montaje de Drive, resolución de rutas
+    catalogo    qué videos de Drive pertenecen a cada clase, incluidas sus subcarpetas
     checkpoint  estado reanudable por etapa, invalidado ante cambio de configuración
     cache       empaquetado de artefactos numerosos, que Drive montado maneja mal
     etapas      registro del pipeline y diagnóstico de su estado
@@ -17,6 +18,6 @@ Módulos:
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import cache, checkpoint, etapas, pose, reporte, rutas
+from equinos import cache, catalogo, checkpoint, etapas, pose, reporte, rutas
 
-__all__ = ["rutas", "checkpoint", "cache", "etapas", "pose", "reporte"]
+__all__ = ["rutas", "catalogo", "checkpoint", "cache", "etapas", "pose", "reporte"]
