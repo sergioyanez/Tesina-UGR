@@ -28,10 +28,12 @@ El plan de trabajo original está en [`plan_de_trabajo.pdf`](plan_de_trabajo.pdf
 ├── 02_roi_y_normalizacion.ipynb        ROI facial y normalización de pose (Colab)
 ├── equinos/                            Infraestructura de ejecución
 │   ├── rutas.py                        Raíz persistente en Drive y resolución de rutas
+│   ├── catalogo.py                     Qué videos de Drive pertenecen a cada clase
 │   ├── checkpoint.py                   Reanudación de etapas interrumpidas
 │   ├── cache.py                        Empaquetado de artefactos numerosos
 │   └── etapas.py                       Registro del pipeline y su estado
 ├── tests/
+│   ├── test_catalogo.py                Pruebas del catálogo de videos por clase
 │   ├── test_geometria.py               Pruebas de la geometría del notebook 02
 │   └── test_persistencia.py            Pruebas del paquete equinos
 ├── openspec/
@@ -48,8 +50,28 @@ La carpeta `videos/` pesa ~1.9 GB y tres archivos superan los 100 MB, el límite
 El dataset vive en **Google Drive**, y los notebooks lo leen desde ahí montando la unidad: no se
 descarga nada en cada sesión.
 
-Para trabajar en local, copiar la carpeta de Drive a `videos/` respetando la estructura
-`videos/<clase>/<archivo>.mp4`. La subcarpeta **es** la etiqueta.
+Para trabajar en local, copiar la carpeta de Drive a `videos/` respetando su estructura, y
+apuntar el pipeline ahí con `export TESINA_EQUINOS_VIDEOS=/ruta/a/videos`.
+
+**La carpeta de una clase no es toda la clase.** Parte del material etiquetado vive en subcarpetas
+de trabajo, y cuáles suman **no es igual en todas**:
+
+```
+Videos de prueba/
+├── Disgustado/                         videos sueltos
+│   ├── Seleccionar cabeza?/            + suma a Disgustado
+│   └── Se tapa una parte de la cara/   + suma a Disgustado
+├── Interesado/
+│   └── Seleccionar cabeza?/            + suma a Interesado
+└── Sereno/
+    ├── Seleccionar cabeza?/            + suma a Sereno
+    └── Separar cabeza?/                NO suma: sin etiqueta decidida
+```
+
+Esa declaración vive en `equinos/catalogo.py` (`SUBCARPETAS_POR_CLASE`) y es el único lugar donde
+se decide qué entra al dataset. Lo que no está declarado queda afuera, pero el pipeline lo informa
+con nombre y conteo al arrancar: descartar y perder no son lo mismo. Para incorporar una
+subcarpeta alcanza con agregarla ahí.
 
 ## Cómo se ejecuta
 
@@ -58,8 +80,10 @@ en orden, saltea las que ya están completas y guarda una copia ejecutada de cad
 
 **Preparación, una sola vez:**
 
-1. En Google Drive, crear la carpeta `MyDrive/tesina_equinos/` y adentro `videos/`, con una
-   subcarpeta por clase (`Sereno`, `Interesado`, `Disgustado`) y los `.mp4` correspondientes.
+1. En Google Drive, agregar un **acceso directo** a la carpeta compartida `Videos de prueba` en
+   Mi unidad (Compartidos conmigo → clic derecho → Organizar → Agregar acceso directo). No copia
+   ni mueve los videos, y sin eso Colab no puede leerla como ruta. Es la carpeta que contiene
+   `Sereno`, `Interesado` y `Disgustado`.
 2. En Colab, cargar un secret `GITHUB_TOKEN` (panel izquierdo, icono de llave) con permiso de
    lectura del repo. Es necesario porque el repositorio es privado. Alternativa sin token: copiar
    a mano la carpeta `equinos/` y los notebooks `NN_*.ipynb` a `MyDrive/tesina_equinos/codigo/`.

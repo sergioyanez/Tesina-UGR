@@ -84,10 +84,20 @@ manual de las ROI de los ejemplares peores. Ver `openspec/changes/roi-normalizac
 
 ## Dataset
 
-**Origen.** Carpeta de Google Drive montada en `MyDrive/tesina_equinos/videos/`, con **una
-subcarpeta por clase** — la subcarpeta *es* la etiqueta. Existe además una copia local
-en `videos/<clase>/` (1.8 GB, idéntica a Drive), usada para verificar el pipeline fuera de Colab.
-**No versionar esa carpeta.**
+**Origen.** La carpeta compartida `Videos de prueba` de Google Drive, con **una carpeta por
+clase**. Vive en "Compartidos conmigo", así que Colab sólo la ve si tiene un ACCESO DIRECTO en Mi
+unidad (Drive → clic derecho → Organizar → Agregar acceso directo); eso no copia ni mueve nada.
+`catalogo.raiz_videos()` la localiza y `00_pipeline.ipynb` se la pasa a la etapa 01 como parámetro.
+Existe además una copia local en `videos/<clase>/` (1.8 GB), usada para verificar el pipeline
+fuera de Colab. **No versionar esa carpeta.**
+
+**La carpeta de una clase NO es toda la clase.** Parte del material etiquetado vive en subcarpetas
+de trabajo, y **cuáles suman no es igual en todas las clases**: `Disgustado` suma
+`Seleccionar cabeza?` y `Se tapa una parte de la cara`; `Interesado` y `Sereno`, sólo
+`Seleccionar cabeza?`. La declaración está en `equinos/catalogo.py` (`SUBCARPETAS_POR_CLASE`) y es
+el único lugar donde se decide qué entra al dataset. Lo no declarado queda afuera pero se informa
+con nombre y conteo — `Separar cabeza?`, bajo `Sereno`, es el caso vigente. Sobre el espejo local
+esa declaración lleva el catálogo de 122 a 133 videos, y `Disgustado` de 31 a 41.
 
 **Composición actual (34 videos) — el dataset se ampliará en los próximos días:**
 
@@ -197,8 +207,10 @@ confiable como conteo exacto**.
 
 **CSV generados:**
 
-- `inventario_videos.csv` — `archivo`, `carpeta`, `ruta`, `fps`, `frames`, `duracion_seg`,
-  `ancho`, `alto`.
+- `inventario_videos.csv` — `archivo`, `clase`, `carpeta`, `ruta`, `fps`, `frames`,
+  `duracion_seg`, `ancho`, `alto`. **`clase` es la etiqueta** (sale del catálogo); `carpeta` es la
+  carpeta real de la que salió el archivo, que puede ser una subcarpeta y entonces no coincide con
+  la clase. Los CSV anteriores a esta convención no tienen `clase`.
 - `inventario_clips.csv` — `clase`, `id_caballo`, `video_origen`, `clip`, `ruta_clip`,
   `frame_inicio`, `frame_fin`, `frames`, `fps`, `duracion_seg`.
 - `dataset_frames.csv` — `clase`, `id_caballo`, `video_origen`, `clip`, `frame`, `ruta_frame`,
@@ -350,15 +362,14 @@ los 876 de partida, y el balance entre Sereno e Interesado queda 45/45.
 
 - **El pipeline no detecta que el dataset de entrada cambió.** `etapas.estado()` mira artefactos y
   cachés, no los datos. Incorporar el conteo de videos al `hash_config` alcanzaría.
-- **El orquestador muestra una carpeta que las etapas no usan.** Imprime `Videos de prueba` (159
-  archivos) pero el notebook 01 lee `tesina_equinos/videos` (146). Ya costó una corrida.
 - **No hay modo de re-derivar sin recomputar por el orquestador.** Hay que correr el notebook 02
   suelto.
 - **`00_pipeline.ipynb` no se sincroniza** y hay que subirlo a mano, lo que además apaga el
   permiso del secret `GITHUB_TOKEN` para ese notebook.
 - **Etiquetado:** `501_8v1_LY1ucwR9.avi` estaba como archivo idéntico en Interesado y Disgustado;
-  se resolvió como Disgustado. La validación sólo detecta homónimos, así que copias con nombres
-  distintos en dos clases pasarían sin aviso. Conviene revisar el criterio con que se armaron las
+  se resolvió como Disgustado. La validación de homónimos ahora cubre también el mismo archivo
+  suelto en la clase y dentro de una de sus subcarpetas, pero copias con nombres **distintos** en
+  dos clases siguen pasando sin aviso. Conviene revisar el criterio con que se armaron las
   carpetas.
 
 ## Stack técnico
@@ -429,7 +440,8 @@ resolverlas antes de entrenar:
 - **Idioma:** todo el código, comentarios, nombres de variables, documentación y entregables en
   **español** (el notebook ya lo hace: `df_videos`, `extraer_frames_uniformes`, `resultados_dir`).
 - **Nombres de clases:** capitalizados, tal como aparecen las carpetas en Drive — `Sereno`,
-  `Interesado`, `Disgustado`.
+  `Interesado`, `Disgustado`. La etiqueta de un video NO se deduce de su carpeta contenedora: sale
+  del catálogo declarado en `equinos/catalogo.py`. En los CSV la etiqueta es la columna `clase`.
 - **Notebooks:** numerados y con prefijo de orden (`01_preparar_dataset_equinos.ipynb`), divididos
   en "Bloques" con "Pasos" numerados en celdas markdown.
 - **Rutas Colab:** `/content/dataset_equinos_videos`, `/content/clips_equinos`,
