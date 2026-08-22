@@ -153,6 +153,20 @@ van directo a Drive; los frames se generan en `/content` y se persisten en un ú
 fue la causa directa de que el notebook 02 no encontrara los clips del 01: en una sesión nueva no
 apuntaban a nada. Relativas, el mismo CSV sirve en Colab, en local y en otra cuenta de Drive.
 
+**Esa decisión es lo que hace portable el pipeline entre entornos.** Copiar `tesina_equinos/` de
+Drive a la raíz local alcanza para seguir una corrida donde iba, sin reinferir nada: cada CSV
+resuelve sus rutas contra la raíz vigente, sea cual sea. En local la raíz se fija con
+`TESINA_EQUINOS_RAIZ` y los videos crudos con `TESINA_EQUINOS_VIDEOS`; conviene que la raíz esté
+en disco interno, porque los frames alineados son miles de archivos chicos y el disco externo es
+exFAT por USB.
+
+**El notebook nunca declara en qué entorno está.** Lo detecta `equinos.rutas`, y
+`equinos.entorno.verificar()` comprueba en el arranque de cada etapa que las dependencias sean las
+que el pipeline necesita —fuera de Colab no instala nada, porque ahí el intérprete no es
+descartable—. El orquestador elige además el kernel con el que papermill ejecuta las etapas
+(`python3` en Colab, `tesina-equinos` en local) y falla de entrada si no está registrado: ejecutar
+con el intérprete equivocado es un fallo silencioso, no un error.
+
 ## Pipeline implementado
 
 Se ejecuta desde `00_pipeline.ipynb`, que encadena las etapas y saltea las ya completas.
@@ -287,24 +301,37 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-Estado al cierre del 19/08/2026. Todo pusheado en `main`, árbol limpio, último commit del código
-`8b9152e`.
+Estado al 21/08/2026, rama `ejecucion-local-con-gpu`.
+
+**El cómputo se mudó a la máquina local.** El acceso a GPU de Colab quedó cortado por límites de
+la suscripción, y la GPU local —que se daba por inservible— funciona: lo que fallaba era el `torch`
+instalado (`+cu130` contra un driver CUDA 12.2), no la placa. Colab se conserva como ruta válida.
+El procedimiento de instalación está en el README; el entorno, en `requirements-local.txt`.
 
 ### La primera acción, concreta
 
-**Re-derivar los recortes con el encuadre nuevo.** El código está implementado y verificado
-localmente; falta correrlo. No requiere reinferir.
+**Traer los artefactos de Drive y re-derivar los recortes con el encuadre nuevo**, ahora en local.
+El código está implementado y verificado; falta correrlo. No requiere reinferir.
 
-1. En `00_pipeline.ipynb`: `SINCRONIZAR_CODIGO = True` y ejecutar **sólo la celda de arranque**.
-   Verificar que imprima `8b9152e`. **No ejecutar la celda de ejecución encadenada.**
-2. Abrir desde Drive `tesina_equinos/codigo/02_roi_y_normalizacion.ipynb` y **confirmar que
-   `LIMPIAR_ETAPA = False`** antes de correr nada: en `True` borra el checkpoint y cuesta 2 h.
-3. Ejecutar todas sus celdas. El bucle debe informar `Clips pendientes: 0 de 210` — ésa es la
-   señal de que la pose persistida está evitando la reinferencia. Unos 30-45 min.
-4. Medir: `reporte.calidad_recortes()`, `reporte.cobertura()`.
+1. Copiar `MyDrive/tesina_equinos/` (carpetas `clips`, `resultados`, `cache`, `checkpoints`) a la
+   raíz local que apunte `TESINA_EQUINOS_RAIZ`.
+2. `etapas.diagnostico()` **antes que nada**: una copia a medias deja el checkpoint sin sus cachés,
+   y una etapa incompleta puede darse por completa sin avisar.
+3. Abrir `02_roi_y_normalizacion.ipynb` con el kernel *Tesina equinos (GPU local)* y **confirmar
+   que `LIMPIAR_ETAPA = False`**: en `True` borra el checkpoint y obliga a reinferir (~4 h acá,
+   porque DeepLabCut infiere el clip entero y no sólo los 16 frames muestreados).
+4. Ejecutar todas sus celdas. El bucle debe informar `Clips pendientes: 0 de 210` — ésa es la señal
+   de que la pose persistida está evitando la reinferencia. Unos 30-45 min.
+5. Medir: `reporte.calidad_recortes()`, `reporte.cobertura()`. **Los números no deben moverse por
+   la mudanza**: si cambian, cambió algo más que el entorno.
 
 Por el orquestador no se puede: vería la etapa completa y la saltearía, y la única forma de que no
 la saltee es forzarla, lo que borra el checkpoint.
+
+**Pendiente de la sesión anterior, que sigue vigente:** el change `catalogo-de-videos-por-clase`
+está implementado y sin correr. Con el catálogo declarado el dataset pasa de 146 videos a **133**:
+los 13 que se van son la carpeta de descarga `Sereno-20260819T000125Z-1-001/Sereno`, que entraba
+como `Sereno` sin aviso. Verificado sobre el espejo local el 21/08/2026.
 
 ### Dónde quedó el dataset
 
@@ -374,7 +401,10 @@ los 876 de partida, y el balance entre Sereno e Interesado queda 45/45.
 
 ## Stack técnico
 
-- **Entorno:** Google Colab (GPU) + Python 3
+- **Entornos de ejecución (dos, equivalentes):** Google Colab con GPU, y máquina local
+  con GPU (Ubuntu 22.04, driver NVIDIA 535, RTX 3070 Laptop 8 GB). Python 3.10 en ambos.
+  Las versiones locales están pinneadas en `requirements-local.txt`; en Colab se instalan
+  por sesión desde la celda de arranque, tomando ese archivo como referencia.
 - **Orquestación:** `papermill` (un kernel por etapa, copia ejecutada de cada notebook)
 - **Infraestructura propia:** paquete `equinos` (rutas persistentes, checkpointing, caché, estado)
 - **Datos / video:** `opencv-python`, `pandas`, `numpy`, `tqdm`

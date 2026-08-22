@@ -92,6 +92,46 @@ en orden, saltea las que ya están completas y guarda una copia ejecutada de cad
 **Después, cada vez:** abrir `00_pipeline.ipynb` y ejecutarlo de arriba a abajo. El Paso 2 muestra
 en qué estado está cada etapa sin ejecutar nada.
 
+### En una máquina local con GPU
+
+El pipeline corre igual fuera de Colab, y los notebooks no necesitan cambios: detectan el entorno
+solos. Verificado el 21/08/2026 sobre Ubuntu 22.04, driver NVIDIA 535 y una RTX 3070 Laptop de
+8 GB, que le alcanza de sobra —la inferencia usa 1,64 GB de VRAM.
+
+**Preparación, una sola vez:**
+
+```bash
+uv venv --python 3.10 ~/.venvs/tesina-equinos
+VIRTUAL_ENV=~/.venvs/tesina-equinos uv pip install -r requirements-local.txt \
+    --extra-index-url https://download.pytorch.org/whl/cu121
+~/.venvs/tesina-equinos/bin/python -m ipykernel install --user \
+    --name tesina-equinos --display-name "Tesina equinos (GPU local)"
+```
+
+El `+cu121` no es cosmético: una rueda de torch compilada para una CUDA más nueva que la del
+driver deja la GPU invisible y el pipeline cae a CPU **sin fallar**. `nvidia-smi` informa la CUDA
+del driver; tiene que ser igual o mayor que la de la rueda.
+
+**Variables de entorno** (en el shell desde el que se lanza Jupyter):
+
+| variable | para qué | valor sugerido |
+|---|---|---|
+| `TESINA_EQUINOS_RAIZ` | dónde se escriben los artefactos | una carpeta en disco interno |
+| `TESINA_EQUINOS_VIDEOS` | dónde están los videos crudos | `<repo>/videos` |
+
+La raíz conviene tenerla en disco interno y no en el externo: los frames alineados son miles de
+archivos chicos, que es el peor patrón de acceso para un exFAT por USB. Sin esas variables el
+pipeline igual arranca, pero escribe en `<repo>/datos_equinos`.
+
+**Artefactos ya calculados.** Los CSV guardan rutas **relativas a la raíz**, así que copiar
+`MyDrive/tesina_equinos/` (carpetas `clips`, `resultados`, `cache` y `checkpoints`) dentro de la
+raíz local basta para seguir donde iba, sin reinferir. Después de copiar, correr
+`etapas.diagnostico()` antes que cualquier otra cosa: una copia a medias deja el checkpoint sin
+sus cachés y una etapa incompleta puede darse por completa.
+
+**Después, cada vez:** abrir `00_pipeline.ipynb` con el kernel *Tesina equinos (GPU local)*. El
+arranque informa el entorno, la raíz, el kernel y la GPU antes de ejecutar nada.
+
 ### Por qué hay un orquestador
 
 Cada notebook de Colab arranca con un `/content` vacío, así que el `02` no encontraba los clips ni
@@ -156,6 +196,9 @@ uso— todavía no están implementados.
 ```
 python3 tests/test_geometria.py
 python3 tests/test_persistencia.py
+python3 tests/test_catalogo.py
+python3 tests/test_pose.py
+python3 tests/test_entorno.py
 ```
 
 `test_geometria.py` verifica las funciones geométricas del notebook 02 —suavizado, relleno,
@@ -165,6 +208,11 @@ del propio notebook**, así que no hay dos copias que puedan divergir.
 `test_persistencia.py` cubre el paquete `equinos` con 46 casos: resolución de rutas entre sesiones,
 reanudación tras un corte, invalidación del checkpoint ante cambio de configuración, integridad de
 la caché y estado de las etapas.
+
+`test_entorno.py` verifica el chequeo de dependencias, sobre todo que las versiones se comparen
+como números y no como texto: `torch` reporta `2.5.1+cu121` y, comparado como cadena, `"1.9"` es
+mayor que `"1.26"` —un entorno roto pasaría por bueno. Corre en cualquier intérprete, incluso en
+uno que no cumpla los requisitos.
 
 Ninguna de las dos requiere GPU, internet ni pesos preentrenados. Es deliberado: son justamente los
 puntos donde el error no rompe nada y se manifiesta como un número creíble y equivocado.
@@ -196,6 +244,11 @@ proviene de un solo caballo, lo que la vuelve no evaluable bajo partición por c
 
 ## Stack
 
-Google Colab · Python 3 · OpenCV · pandas · numpy · matplotlib · scikit-learn · PyTorch ·
-papermill · DeepLabCut · ultralytics
+Python 3.10 · OpenCV · pandas · numpy · matplotlib · scikit-learn · PyTorch · papermill ·
+DeepLabCut · ultralytics
 Previsto: TensorFlow.
+
+Dos entornos de ejecución equivalentes: **Google Colab** (instala por sesión desde la celda de
+arranque) y **local con GPU** (entorno pinneado en `requirements-local.txt`). Las versiones son un
+conjunto que se verifica junto, porque DeepLabCut fija `numpy<2` y arrastra a todo lo compilado
+contra numpy.
