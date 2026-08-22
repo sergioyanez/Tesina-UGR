@@ -134,7 +134,8 @@ Colab.
 
 ```
 MyDrive/tesina_equinos/            <- RAIZ (equinos.rutas.NOMBRE_PROYECTO)
-├── videos/<clase>/*.mp4           datos crudos, se leen montados
+├── videos/<clase>/*.mp4           material viejo, YA NO se usa: los videos crudos se leen
+│                                 del acceso directo a la carpeta compartida `Videos de prueba`
 ├── clips/<clase>/*.mp4            92 clips, ~2.7 GB
 ├── resultados/*.csv               inventarios, datasets y reporte de cobertura
 ├── cache/<etapa>.zip              frames empaquetados + manifiesto .json

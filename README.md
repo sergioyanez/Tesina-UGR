@@ -124,8 +124,10 @@ archivos chicos, que es el peor patrón de acceso para un exFAT por USB. Sin esa
 pipeline igual arranca, pero escribe en `<repo>/datos_equinos`.
 
 **Artefactos ya calculados.** Los CSV guardan rutas **relativas a la raíz**, así que copiar
-`MyDrive/tesina_equinos/` (carpetas `clips`, `resultados`, `cache` y `checkpoints`) dentro de la
-raíz local basta para seguir donde iba, sin reinferir. Después de copiar, correr
+`MyDrive/tesina_equinos/` dentro de la raíz local basta para seguir donde iba, sin reinferir. Hacen
+falta `clips/` (el paso de alineación lee los píxeles del clip, no de la caché de frames),
+`resultados/` y `checkpoints/`; `cache/frames_equinos.zip` recién para entrenar. **`videos/` no**:
+es material viejo, los videos crudos salen de la carpeta compartida `Videos de prueba`. Después de copiar, correr
 `etapas.diagnostico()` antes que cualquier otra cosa: una copia a medias deja el checkpoint sin
 sus cachés y una etapa incompleta puede darse por completa.
 
