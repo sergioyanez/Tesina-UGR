@@ -1,0 +1,44 @@
+# Tareas — ejecución local con GPU
+
+## 1. Entorno local
+
+- [x] 1.1 Crear el entorno aislado con Python 3.10 fuera del repo y del disco exFAT
+- [x] 1.2 Instalar `torch 2.5.1+cu121` y verificar `torch.cuda.is_available()` contra el driver 535
+- [x] 1.3 Instalar DeepLabCut 3.0.1 y el resto del stack, verificando que conviven en un mismo
+      intérprete
+- [x] 1.4 Prueba de humo sobre un clip real: detector, pose, bodyparts faciales, VRAM y tiempos
+- [ ] 1.5 Declarar el conjunto verificado en `requirements-local.txt`
+- [ ] 1.6 Registrar el kernel `tesina-equinos` para papermill y Jupyter
+
+## 2. Notebooks
+
+- [ ] 2.1 `01_preparar_dataset_equinos.ipynb`: condicionar el Paso 1 a `EN_COLAB`; fuera de Colab
+      verificar versiones en vez de instalar
+- [ ] 2.2 `02_roi_y_normalizacion.ipynb`: idem en su Paso 1, conservando el aviso de GPU ausente
+- [ ] 2.3 `00_pipeline.ipynb`: condicionar la instalación del Paso 0 y elegir el kernel según el
+      entorno, verificando que existe antes de lanzar la primera etapa
+- [ ] 2.4 Verificar que las tres celdas de arranque siguen funcionando en Colab sin cambios de
+      comportamiento
+
+## 3. Configuración y datos
+
+- [ ] 3.1 Documentar `TESINA_EQUINOS_RAIZ` y `TESINA_EQUINOS_VIDEOS` para la ejecución local
+- [ ] 3.2 Copiar `tesina_equinos/` de Drive a la raíz local (clips, resultados, cache, checkpoints)
+- [ ] 3.3 Correr `etapas.diagnostico()` sobre la raíz local y comprobar que reconoce las etapas
+      completas, sin reprocesar nada
+
+## 4. Verificación
+
+- [ ] 4.1 Comprobar que un CSV producido en Colab resuelve sus rutas en local (`rutas.resolver`)
+- [ ] 4.2 Re-derivar los recortes con el encuadre nuevo en local (notebook 02, `LIMPIAR_ETAPA =
+      False`) y confirmar `Clips pendientes: 0 de 210`
+- [ ] 4.3 Medir `reporte.calidad_recortes()` y `reporte.cobertura()` y comparar con los números de
+      Colab: la migración no debe mover ninguno
+- [ ] 4.4 `openspec validate ejecucion-local-con-gpu --strict`
+
+## 5. Documentación
+
+- [ ] 5.1 `README.md`: sección de ejecución local (entorno, variables, kernel, artefactos)
+- [ ] 5.2 `openspec/project.md`: registrar los dos entornos y actualizar el punto de partida
+- [ ] 5.3 Dejar asentado el resultado negativo útil: la GPU no era inservible, el `torch` era el
+      equivocado
