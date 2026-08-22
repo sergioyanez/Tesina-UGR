@@ -142,8 +142,18 @@ es material viejo, los videos crudos salen de la carpeta compartida `Videos de p
 `etapas.diagnostico()` antes que cualquier otra cosa: una copia a medias deja el checkpoint sin
 sus cachés y una etapa incompleta puede darse por completa.
 
-**Después, cada vez:** abrir `00_pipeline.ipynb` con el kernel *Tesina equinos (GPU local)*. El
-arranque informa el entorno, la raíz, el kernel y la GPU antes de ejecutar nada.
+**Después, cada vez:** usar `./correr_local.sh`, que fija las variables antes de arrancar nada.
+
+| comando | qué hace |
+|---|---|
+| `./correr_local.sh` | abre Jupyter Lab (elegir el kernel *Tesina equinos (GPU local)*) |
+| `./correr_local.sh estado` | en qué estado está cada etapa, sin ejecutar nada |
+| `./correr_local.sh reportes` | cobertura y calidad de recortes de la última corrida |
+| `./correr_local.sh entorno` | versiones instaladas y GPU visible |
+| `./correr_local.sh etapa02` | re-ejecuta el notebook 02 con papermill, sin limpiar la etapa |
+
+Existe porque olvidarse las variables **no falla**: el pipeline cae a una raíz vacía y al espejo
+viejo de videos, corre entero y produce números de otro dataset.
 
 ### Por qué hay un orquestador
 
