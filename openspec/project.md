@@ -353,11 +353,12 @@ una raíz vacía y al espejo viejo de videos, correría entero y devolvería nú
 
 ### La primera acción de la próxima sesión
 
-**No hay ninguna urgente.** Lo que estaba pendiente se corrió y se verificó. Lo que sigue es una
-decisión, no una tarea, y conviene tomarla con la cabeza fresca:
+**Sumar los videos nuevos y volver a medir la cobertura.** Decidido por Sergio el 22/08/2026: el
+objetivo es ver si con más material se supera el **70 %** de cobertura de alineación
+(`COBERTURA_MINIMA_ACEPTABLE`), que hoy está en 68,0 %.
 
-**¿Se incorpora el material nuevo?** La carpeta compartida `Videos de prueba` tiene **234 videos**
-catalogados, contra los 146 con los que se construyeron los artefactos actuales:
+La carpeta compartida `Videos de prueba` tiene **234 videos** catalogados, contra los 146 con los
+que se construyeron los artefactos actuales:
 
 | clase | artefactos actuales | disponible |
 |---|---:|---:|
@@ -371,9 +372,22 @@ Que los artefactos actuales salgan de 146 videos lo delata la columna `ruta` de
 no de la carpeta compartida. Es la prueba de que el change `catalogo-de-videos-por-clase` está
 implementado pero **nunca se corrió**.
 
-A favor: `Disgustado` —la clase que limita todo— más que se duplica, y eso levanta la restricción
-que motivaba el plan B de 2 clases. En contra: exige re-correr las dos etapas **con reinferencia de
-DeepLabCut**, que en esta máquina son varias horas (~340 clips estimados a ~1 min por clip).
+`Disgustado` —la clase que limita todo— más que se duplica, y eso levanta por sí solo la
+restricción que motivaba el plan B de 2 clases. El costo es re-correr las dos etapas **con
+reinferencia de DeepLabCut**, que en esta máquina son varias horas (~340 clips estimados a ~1 min
+por clip).
+
+**Qué esperar de la cobertura, dicho antes de medir.** Más videos no suben la cobertura por ser más:
+la cobertura es un cociente y el material nuevo entra tanto en el numerador como en el denominador.
+Sube sólo si el material nuevo se alinea **mejor** que el actual; si se alinea igual, se queda en
+68 %, y si se alinea peor, baja. Que hoy los peores ejemplares sean unos pocos (`920` con 6,9 %,
+`153` con 25,0 %, `912` con 27,1 %) es un argumento a favor —su peso relativo se diluye—, pero es
+una expectativa, no una predicción.
+
+Por eso, al medir, **hay que informar la cobertura de los videos nuevos por separado**, no sólo la
+global. La global responde "¿llegamos al 70 %?"; la del subconjunto nuevo responde "¿por qué?", que
+es lo que hay que poder defender ante un tribunal. `reporte.cobertura()` ya desglosa por clase y
+por ejemplar, así que alcanza con cruzar contra `inventario_videos.csv` cuáles son los nuevos.
 
 Si se decide que sí, el procedimiento tiene una trampa conocida: el orquestador ve las dos etapas
 completas y **las saltea en silencio**, informando números viejos. Hay que poner
@@ -383,8 +397,9 @@ completas y **las saltea en silencio**, informando números viejos. Hay que pone
 ### Deudas que quedan abiertas
 
 - **Cobertura en 68,0 %, bajo el umbral de 70 %.** No la movió el encuadre y no la iba a mover: el
-  encuadre arregla cómo se recorta, no cuántos keypoints se detectan. La pregunta del objetivo 2
-  sigue igual que el 19/08.
+  encuadre arregla cómo se recorta, no cuántos keypoints se detectan. **El plan para atacarla es
+  sumar los videos nuevos** (ver la primera acción); si con 234 videos sigue por debajo del 70 %,
+  la vía que queda es ajustar umbrales o pasar a anotación manual de las ROI.
 - **La rama no está pusheada.** Mientras siga así, Colab no puede correr este código: su
   sincronización clona `main` desde GitHub.
 - **El change `ejecucion-local-con-gpu` tiene una tarea sin cerrar**, la 2.4: verificar que las
