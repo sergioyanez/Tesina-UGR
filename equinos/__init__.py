@@ -13,11 +13,12 @@ Módulos:
     catalogo    qué videos de Drive pertenecen a cada clase, incluidas sus subcarpetas
     checkpoint  estado reanudable por etapa, invalidado ante cambio de configuración
     cache       empaquetado de artefactos numerosos, que Drive montado maneja mal
+    entorno     verificación de las dependencias y de la GPU antes de arrancar una etapa
     etapas      registro del pipeline y diagnóstico de su estado
     pose        selección de keypoints faciales sobre la pose completa y su barrido
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import cache, catalogo, checkpoint, etapas, pose, reporte, rutas
+from equinos import cache, catalogo, checkpoint, entorno, etapas, pose, reporte, rutas
 
-__all__ = ["rutas", "catalogo", "checkpoint", "cache", "etapas", "pose", "reporte"]
+__all__ = ["rutas", "catalogo", "checkpoint", "cache", "entorno", "etapas", "pose", "reporte"]

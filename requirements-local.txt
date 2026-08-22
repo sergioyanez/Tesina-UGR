@@ -1,0 +1,51 @@
+# Entorno de ejecución local del pipeline — verificado el 21/08/2026 sobre Ubuntu 22.04,
+# Python 3.10.12, driver NVIDIA 535.274.02 (CUDA 12.2), RTX 3070 Laptop 8 GB.
+#
+# Estas versiones son un CONJUNTO, no una lista: DeepLabCut fija numpy<2 y el resto del stack
+# científico se compila contra una versión concreta de numpy. Cambiar una sola línea puede
+# romper el conjunto entero, y el síntoma llega tarde ("numpy.dtype size changed" a mitad de una
+# etapa de horas). Si hay que subir algo, se vuelve a verificar el conjunto completo.
+#
+# INSTALACIÓN (fuera del repositorio y fuera del disco exFAT, que no admite los enlaces
+# simbólicos de un venv):
+#
+#   uv venv --python 3.10 ~/.venvs/tesina-equinos
+#   VIRTUAL_ENV=~/.venvs/tesina-equinos uv pip install -r requirements-local.txt \
+#       --extra-index-url https://download.pytorch.org/whl/cu121
+#   ~/.venvs/tesina-equinos/bin/python -m ipykernel install --user \
+#       --name tesina-equinos --display-name "Tesina equinos (GPU local)"
+#
+# El +cu121 NO es cosmético. El torch del sistema es 2.12.0+cu130, compilado para CUDA 13, y
+# contra el driver 535 falla con "The NVIDIA driver on your system is too old": la GPU queda
+# invisible y el pipeline cae a CPU sin avisar. Las ruedas cu12x funcionan con cualquier driver
+# de la serie 12 por compatibilidad de versión menor.
+#
+# En Colab NO se usa este archivo: la máquina es efímera y las dependencias se instalan por
+# sesión desde la celda de arranque del notebook. Las versiones de acá son la referencia de qué
+# debería haber allá.
+
+# --- Cómputo en GPU ---
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+
+# --- Stack científico (atado por numpy<2 de DeepLabCut) ---
+numpy==1.26.4
+scipy==1.13.1          # última serie que convive con numpy 1.x
+pandas==2.3.3
+matplotlib==3.8.4      # DeepLabCut pide <3.9
+scikit-learn==1.7.2
+tables==3.10.1         # pandas[hdf5], que DeepLabCut requiere
+
+# --- Visión y pose ---
+opencv-python==4.11.0.86
+ultralytics==8.4.100   # detector YOLO11x
+deeplabcut==3.0.1      # backend PyTorch; NO requiere TensorFlow
+dlclibrary==0.0.12
+albumentations==1.4.3
+timm==1.0.28
+huggingface-hub==1.28.0
+
+# --- Ejecución de notebooks ---
+papermill==2.7.0
+ipykernel==7.3.0
+tqdm==4.70.0
