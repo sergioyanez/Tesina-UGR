@@ -117,11 +117,22 @@ del driver; tiene que ser igual o mayor que la de la rueda.
 | variable | para qué | valor sugerido |
 |---|---|---|
 | `TESINA_EQUINOS_RAIZ` | dónde se escriben los artefactos | una carpeta en disco interno |
-| `TESINA_EQUINOS_VIDEOS` | dónde están los videos crudos | `<repo>/videos` |
+| `TESINA_EQUINOS_VIDEOS` | dónde están los videos crudos | una copia de `Videos de prueba` |
 
 La raíz conviene tenerla en disco interno y no en el externo: los frames alineados son miles de
 archivos chicos, que es el peor patrón de acceso para un exFAT por USB. Sin esas variables el
 pipeline igual arranca, pero escribe en `<repo>/datos_equinos`.
+
+**`<repo>/videos/` NO sirve como fuente de videos.** Es un espejo viejo y divergente: comparado
+archivo por archivo contra `inventario_videos.csv` (22/08/2026), comparten 135 nombres, pero a él
+le faltan 11 que están en Drive y tiene 12 que el inventario nunca vio. Sirvió para verificar
+geometría sin GPU y para eso alcanza; regenerar clips desde ahí construiría un dataset distinto
+del que produjo la pose, y nada fallaría al hacerlo. La fuente es la carpeta compartida `Videos de
+prueba` (5,3 GiB), que en local hay que copiar aparte:
+
+```bash
+rclone copy "tesina:Videos de prueba" ~/videos_de_prueba --transfers 8 -P
+```
 
 **Artefactos ya calculados.** Los CSV guardan rutas **relativas a la raíz**, así que copiar
 `MyDrive/tesina_equinos/` dentro de la raíz local basta para seguir donde iba, sin reinferir. Hacen

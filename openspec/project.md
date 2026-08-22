@@ -88,7 +88,9 @@ manual de las ROI de los ejemplares peores. Ver `openspec/changes/roi-normalizac
 clase**. Vive en "Compartidos conmigo", así que Colab sólo la ve si tiene un ACCESO DIRECTO en Mi
 unidad (Drive → clic derecho → Organizar → Agregar acceso directo); eso no copia ni mueve nada.
 `catalogo.raiz_videos()` la localiza y `00_pipeline.ipynb` se la pasa a la etapa 01 como parámetro.
-Existe además una copia local en `videos/<clase>/` (1.8 GB), usada para verificar el pipeline
+Existe además una copia local en `videos/<clase>/` (1.8 GB), **desactualizada y divergente**
+—comparte 135 nombres con el inventario, le faltan 11 y le sobran 12 (22/08/2026)—, usada
+sólo para verificar el pipeline
 fuera de Colab. **No versionar esa carpeta.**
 
 **La carpeta de una clase NO es toda la clase.** Parte del material etiquetado vive en subcarpetas
