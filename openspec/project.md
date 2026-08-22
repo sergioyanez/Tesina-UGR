@@ -304,37 +304,91 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-Estado al 21/08/2026, rama `ejecucion-local-con-gpu`.
+Estado al cierre del **22/08/2026**. Rama `ejecucion-local-con-gpu`, **sin pushear** por decisión
+de Sergio: vive sólo en la máquina local, con el árbol limpio y 9 commits.
 
-**El cómputo se mudó a la máquina local.** El acceso a GPU de Colab quedó cortado por límites de
-la suscripción, y la GPU local —que se daba por inservible— funciona: lo que fallaba era el `torch`
-instalado (`+cu130` contra un driver CUDA 12.2), no la placa. Colab se conserva como ruta válida.
-El procedimiento de instalación está en el README; el entorno, en `requirements-local.txt`.
+### Qué pasó hoy, en una frase
 
-### La primera acción, concreta
+El pipeline **dejó de depender de Colab**: corre entero en la máquina local con GPU, y la mudanza
+quedó verificada porque no movió ningún número.
 
-**Traer los artefactos de Drive y re-derivar los recortes con el encuadre nuevo**, ahora en local.
-El código está implementado y verificado; falta correrlo. No requiere reinferir.
+### Dónde está cada cosa ahora
 
-1. Copiar `MyDrive/tesina_equinos/` (carpetas `clips`, `resultados`, `cache`, `checkpoints`) a la
-   raíz local que apunte `TESINA_EQUINOS_RAIZ`.
-2. `etapas.diagnostico()` **antes que nada**: una copia a medias deja el checkpoint sin sus cachés,
-   y una etapa incompleta puede darse por completa sin avisar.
-3. Abrir `02_roi_y_normalizacion.ipynb` con el kernel *Tesina equinos (GPU local)* y **confirmar
-   que `LIMPIAR_ETAPA = False`**: en `True` borra el checkpoint y obliga a reinferir (~4 h acá,
-   porque DeepLabCut infiere el clip entero y no sólo los 16 frames muestreados).
-4. Ejecutar todas sus celdas. El bucle debe informar `Clips pendientes: 0 de 210` — ésa es la señal
-   de que la pose persistida está evitando la reinferencia. Unos 30-45 min.
-5. Medir: `reporte.calidad_recortes()`, `reporte.cobertura()`. **Los números no deben moverse por
-   la mudanza**: si cambian, cambió algo más que el entorno.
+| | ruta |
+|---|---|
+| Artefactos (clips, resultados, cachés, checkpoints) | `~/tesina_equinos` |
+| Videos crudos, copia de la carpeta compartida | `~/videos_de_prueba` |
+| Entorno de Python con GPU | `~/.venvs/tesina-equinos` |
+| Repositorio | el de siempre, en el disco externo |
 
-Por el orquestador no se puede: vería la etapa completa y la saltearía, y la única forma de que no
-la saltee es forzarla, lo que borra el checkpoint.
+Los artefactos se bajaron de Drive con `rclone` (6,2 GiB, sin `videos/`). Drive quedó **intacto**:
+el remoto se configuró de sólo lectura.
 
-**Pendiente de la sesión anterior, que sigue vigente:** el change `catalogo-de-videos-por-clase`
-está implementado y sin correr. Con el catálogo declarado el dataset pasa de 146 videos a **133**:
-los 13 que se van son la carpeta de descarga `Sereno-20260819T000125Z-1-001/Sereno`, que entraba
-como `Sereno` sin aviso. Verificado sobre el espejo local el 21/08/2026.
+### Cómo se opera, sin recordar nada de memoria
+
+Desde la carpeta del repositorio:
+
+| comando | qué hace |
+|---|---|
+| `./correr_local.sh estado` | en qué estado está cada etapa, sin ejecutar nada |
+| `./correr_local.sh reportes` | cobertura y calidad de recortes de la última corrida |
+| `./correr_local.sh entorno` | versiones instaladas y GPU visible |
+| `./correr_local.sh` | abre Jupyter Lab — elegir el kernel *Tesina equinos (GPU local)* |
+| `./correr_local.sh etapa02` | re-ejecuta el notebook 02 sin reinferir (~14 min) |
+
+El script existe porque olvidarse las variables de entorno **no da error**: el pipeline caería a
+una raíz vacía y al espejo viejo de videos, correría entero y devolvería números de otro dataset.
+
+### Lo que se cerró
+
+1. **Migración a local, verificada.** Misma corrida que en Colab: 210 clips, 3360 frames, 68,0 %
+   alineados. Idénticos. Tardó 14 min en vez de 30-45.
+2. **`encuadre-canonico-y-relleno`, verificado y cerrado.** Los recortes mayormente vacíos
+   (>50 % de relleno) pasaron de **97,5 % a 0,2 %**. Quedan 314 recortes sospechosos (13,7 %),
+   concentrados en pocos ejemplares: `919` (13/13), `57` (25/27), `168` (12/13).
+3. **Un video con etiqueta contradictoria, eliminado.** `501_8v1_LY1ucwR9.avi` estaba byte a byte
+   idéntico en `Disgustado/` y en `Interesado/`. Se borró de ambas carpetas **en la copia local**;
+   en Drive sigue estando, y conviene borrarlo también allá. En los artefactos actuales sigue
+   presente como `Disgustado` (1 clip, 16 frames): desaparece recién al re-correr la etapa 01.
+
+### La primera acción de la próxima sesión
+
+**No hay ninguna urgente.** Lo que estaba pendiente se corrió y se verificó. Lo que sigue es una
+decisión, no una tarea, y conviene tomarla con la cabeza fresca:
+
+**¿Se incorpora el material nuevo?** La carpeta compartida `Videos de prueba` tiene **234 videos**
+catalogados, contra los 146 con los que se construyeron los artefactos actuales:
+
+| clase | artefactos actuales | disponible |
+|---|---:|---:|
+| Disgustado | 31 | **70** |
+| Interesado | 57 | 71 |
+| Sereno | 58 | 93 |
+| **total** | **146** | **234** |
+
+Que los artefactos actuales salgan de 146 videos lo delata la columna `ruta` de
+`inventario_videos.csv`, que dice `videos/<clase>/…`: esa corrida leyó de `tesina_equinos/videos`,
+no de la carpeta compartida. Es la prueba de que el change `catalogo-de-videos-por-clase` está
+implementado pero **nunca se corrió**.
+
+A favor: `Disgustado` —la clase que limita todo— más que se duplica, y eso levanta la restricción
+que motivaba el plan B de 2 clases. En contra: exige re-correr las dos etapas **con reinferencia de
+DeepLabCut**, que en esta máquina son varias horas (~340 clips estimados a ~1 min por clip).
+
+Si se decide que sí, el procedimiento tiene una trampa conocida: el orquestador ve las dos etapas
+completas y **las saltea en silencio**, informando números viejos. Hay que poner
+`ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]` a mano en la celda 4 de
+`00_pipeline.ipynb`, y eso borra los checkpoints, o sea que es desde cero.
+
+### Deudas que quedan abiertas
+
+- **Cobertura en 68,0 %, bajo el umbral de 70 %.** No la movió el encuadre y no la iba a mover: el
+  encuadre arregla cómo se recorta, no cuántos keypoints se detectan. La pregunta del objetivo 2
+  sigue igual que el 19/08.
+- **La rama no está pusheada.** Mientras siga así, Colab no puede correr este código: su
+  sincronización clona `main` desde GitHub.
+- **El change `ejecucion-local-con-gpu` tiene una tarea sin cerrar**, la 2.4: verificar que las
+  celdas de arranque siguen funcionando en Colab. Sólo se puede comprobar ejecutando allá.
 
 ### Dónde quedó el dataset
 
