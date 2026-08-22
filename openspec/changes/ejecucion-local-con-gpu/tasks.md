@@ -24,18 +24,18 @@
 ## 3. Configuración y datos
 
 - [x] 3.1 Documentar `TESINA_EQUINOS_RAIZ` y `TESINA_EQUINOS_VIDEOS` para la ejecución local
-- [ ] 3.2 Copiar `tesina_equinos/` de Drive a la raíz local (clips, resultados, cache, checkpoints)
-- [ ] 3.3 Correr `etapas.diagnostico()` sobre la raíz local y comprobar que reconoce las etapas
+- [x] 3.2 Copiar `tesina_equinos/` de Drive a la raíz local (clips, resultados, cache, checkpoints)
+- [x] 3.3 Correr `etapas.diagnostico()` sobre la raíz local y comprobar que reconoce las etapas
       completas, sin reprocesar nada
 
 ## 4. Verificación
 
-- [ ] 4.1 Comprobar que un CSV producido en Colab resuelve sus rutas en local (`rutas.resolver`)
-- [ ] 4.2 Re-derivar los recortes con el encuadre nuevo en local (notebook 02, `LIMPIAR_ETAPA =
+- [x] 4.1 Comprobar que un CSV producido en Colab resuelve sus rutas en local (`rutas.resolver`)
+- [x] 4.2 Re-derivar los recortes con el encuadre nuevo en local (notebook 02, `LIMPIAR_ETAPA =
       False`) y confirmar `Clips pendientes: 0 de 210`
-- [ ] 4.3 Medir `reporte.calidad_recortes()` y `reporte.cobertura()` y comparar con los números de
+- [x] 4.3 Medir `reporte.calidad_recortes()` y `reporte.cobertura()` y comparar con los números de
       Colab: la migración no debe mover ninguno
-- [ ] 4.4 `openspec validate ejecucion-local-con-gpu --strict`
+- [x] 4.4 `openspec validate ejecucion-local-con-gpu --strict`
 
 ## 5. Documentación
 
@@ -43,3 +43,22 @@
 - [x] 5.2 `openspec/project.md`: registrar los dos entornos y actualizar el punto de partida
 - [x] 5.3 Dejar asentado el resultado negativo útil: la GPU no era inservible, el `torch` era el
       equivocado
+
+## 6. Resultados de la migración (22/08/2026)
+
+Copiados de Drive 6,2 GiB (clips, resultados, cache, checkpoints), sin `videos/`. La corrida del
+notebook 02 con papermill y el kernel local tardó **14 min**, no los 30-45 estimados.
+
+| medición | Colab | local | |
+|---|---:|---:|---|
+| Clips procesados | 210 | 210 | = |
+| Frames generados | 3360 (100 %) | 3360 (100 %) | = |
+| Alineados por keypoints | 68,0 % | **68,0 %** | = |
+| Recortes mayormente vacíos (>50 % relleno) | 97,5 % | **0,2 %** | encuadre corregido |
+
+Los números que debían quedarse quietos se quedaron quietos, y el que debía moverse se movió: la
+migración no alteró resultados y el change `encuadre-canonico-y-relleno` queda **verificado**.
+
+**Hallazgo no buscado:** el espejo local `<repo>/videos` no es `Videos de prueba`. Comparten 135
+nombres de archivo, al espejo le faltan 11 y le sobran 12. Regenerar clips desde ahí habría
+producido un dataset distinto del que generó la pose, sin fallar. Documentado en el README.
