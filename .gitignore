@@ -65,3 +65,10 @@ desktop.ini
 # exFAT / Windows en discos externos
 System Volume Information/
 $RECYCLE.BIN/
+
+# ============================================================
+# Configuración local de editores e IDE
+# ============================================================
+# Es configuración de una máquina y de un editor, no del proyecto.
+.idea/
+.vscode/
