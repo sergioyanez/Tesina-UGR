@@ -373,8 +373,21 @@ El global cae porque la mezcla se corrió hacia la clase que peor alinea: `Disgu
 9,6 % al 18,1 % de los frames. Comparar el global antes y después compara dos datasets distintos.
 
 Para el confounder, la métrica que se movió de verdad es **cuántos ejemplares quedan con material
-alineado**: `Disgustado` pasó de 11 a **32** de sus 42 caballos, y de 4 a **12** con al menos un
-clip completo alineado.
+alineado**: `Disgustado` pasó de 11 a **32** de sus 42 caballos.
+
+**Y falta una métrica más, que es la que decide si se puede entrenar: clips con los 16 frames
+alineados.** El modelo consume clips, no frames sueltos, y un clip con 11 frames alineados y 5
+recortes de caja mete el confondir de recorte adentro de una sola muestra. Contado así el dataset
+es mucho más chico de lo que sugiere el 69,9 %:
+
+| | clips íntegros | caballos | `Disgustado` |
+|---|---:|---:|---|
+| hoy | **80** de 342 | 49 | **5 clips, 4 caballos** |
+| rellenando huecos interiores de keypoints | 180 | 84 | 24 clips, 19 caballos |
+| rellenando además los extremos | 330 | 113 | 61 clips, 32 caballos |
+
+Con 4 ejemplares en `Disgustado`, `GroupKFold` por caballo deja folds sin la clase: **hoy el
+dataset no se puede entrenar de forma honesta sobre el subconjunto limpio.**
 
 ### Lo que se cerró el 25/08
 
@@ -389,17 +402,25 @@ clip completo alineado.
 
 ### La primera acción de la próxima sesión
 
-**A decidir por Sergio.** La propuesta, en orden:
+**Implementar `interpolacion-temporal-de-keypoints`, empezando por su validación.** El change está
+planificado y validado (26/08/2026), con 17 tareas y ninguna hecha.
 
-1. **Reemplazar el criterio de cobertura.** `COBERTURA_MINIMA_ACEPTABLE` sobre el global premia
-   dejar afuera a la clase difícil, que es lo contrario de lo que el trabajo necesita.
-   `reporte.cobertura()` ya desglosa por clase y por ejemplar; falta que el criterio de aceptación
-   sea ése y no el promedio.
-2. **Atacar la alineación de `Disgustado`**, que quedó en 62,1 % con 20 de sus 32 ejemplares
-   aportando menos de un clip completo alineado. Ya no es un problema de material descartado sino
-   de detección: la vía barata sigue siendo barrer `CONF_MINIMA_KEYPOINT` con
-   `reporte.confianzas()`, que lee `keypoints_faciales.csv` y no requiere reinferir.
-3. **Recién después, el objetivo 3.**
+1. **Correr primero la tarea 1, que es autónoma y barata**: el experimento de dejar uno afuera
+   sobre los 3824 frames detectados, con el error medido en píxeles del recorte de 224 y
+   estratificado por largo de hueco. De ahí sale el tope de relleno, y de ahí sale si conviene
+   seguir. Nada de esto reinfiere DeepLabCut.
+2. **Implementar el relleno y re-derivar los recortes** (~14 min), y volver a contar clips íntegros.
+   Lo esperado es 80 → 180, y `Disgustado` de 4 a 19 ejemplares.
+3. **Barrer `CONF_MINIMA_KEYPOINT`** con `reporte.confianzas()`, que también lee el CSV y no
+   reinfiere: puede rescatar frames antes de tener que estimarlos.
+4. **Reemplazar el criterio de aceptación**: `COBERTURA_MINIMA_ACEPTABLE` sobre el global premia
+   dejar afuera a la clase difícil. El criterio útil es cobertura por clase más clips íntegros por
+   ejemplar.
+5. **Más caballos de `Disgustado`**, en paralelo, porque depende de terceros y tiene el plazo más
+   largo. Son caballos nuevos lo que hace falta, no más videos de los 32 que ya están.
+6. **Recién después, el objetivo 3.** La aumentación de datos pertenece a esa etapa: es un
+   regularizador de entrenamiento, no una mejora del dataset, y no crea ejemplares nuevos, que es
+   lo único que rompe el confounder.
 
 ### Deudas que quedan abiertas
 
