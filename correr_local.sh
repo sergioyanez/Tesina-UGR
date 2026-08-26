@@ -2,15 +2,23 @@
 # Lanza el pipeline en la máquina local con las rutas correctas ya fijadas.
 #
 # Existe por un motivo concreto: si Jupyter arranca SIN estas variables, el pipeline no falla.
-# `rutas` cae a `<repo>/datos_equinos` —vacía— y `catalogo` cae al espejo viejo de `<repo>/videos`,
-# que no es el material bueno. Todo corre, no se queja, y produce números de otro dataset. Fijarlas
-# a mano en cada sesión es exactamente la clase de paso que se olvida una vez y cuesta una tarde.
+# `catalogo` caía al espejo de videos de la raíz de proyecto, que el 24/08/2026 era una copia a
+# medio hacer —223 de 234 videos— y produjo una corrida entera de números de otro dataset.
+#
+# Desde el 25/08/2026 hay dos defensas más, y ésta ya no es la única:
+#   - el espejo `datos_equinos/videos` se retiró, así que una corrida sin TESINA_EQUINOS_VIDEOS
+#     ya no encuentra clases y muere con el mensaje de `catalogo.raiz_videos`, en vez de seguir;
+#   - el kernel «Tesina equinos (GPU local)» lleva las dos variables en su `kernel.json`, así que
+#     un notebook abierto desde cualquier Jupyter arranca con las rutas correctas igual.
+# El disco externo es exFAT y no admite enlaces simbólicos: por eso el espejo no se pudo
+# reemplazar por un symlink a la fuente, que sería lo más simple.
 #
 # Uso:
 #   ./correr_local.sh              abre Jupyter Lab (elegir el kernel "Tesina equinos (GPU local)")
 #   ./correr_local.sh estado       en qué estado está cada etapa, sin ejecutar nada
 #   ./correr_local.sh reportes     cobertura y calidad de los recortes de la última corrida
 #   ./correr_local.sh entorno      versiones instaladas y GPU visible
+#   ./correr_local.sh etapa01      re-ejecuta el notebook 01 con papermill (LIMPIAR_ETAPA = False)
 #   ./correr_local.sh etapa02      re-ejecuta el notebook 02 con papermill (LIMPIAR_ETAPA = False)
 #
 # Las rutas se pueden sobrescribir desde afuera:
@@ -22,7 +30,10 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV="${TESINA_EQUINOS_VENV:-$HOME/.venvs/tesina-equinos}"
 PY="$VENV/bin/python"
 
-export TESINA_EQUINOS_RAIZ="${TESINA_EQUINOS_RAIZ:-$HOME/tesina_equinos}"
+# La raíz oficial es la del repositorio en el disco externo: es donde viven los artefactos
+# buenos (223 videos, 4016 frames) y donde hay lugar de sobra. `$HOME/tesina_equinos` quedó
+# con los artefactos anteriores (146 videos, 3360 frames) y no se usa más.
+export TESINA_EQUINOS_RAIZ="${TESINA_EQUINOS_RAIZ:-$REPO/datos_equinos}"
 export TESINA_EQUINOS_VIDEOS="${TESINA_EQUINOS_VIDEOS:-$HOME/videos_de_prueba}"
 
 if [ ! -x "$PY" ]; then
@@ -47,6 +58,19 @@ case "${1:-jupyter}" in
     entorno)
         "$PY" -c "from equinos import entorno; entorno.informe()"
         ;;
+    etapa01)
+        # El orquestador saltea la etapa 01 en cuanto sus artefactos existen: `etapas.estado()` no
+        # compara contra el catálogo, así que material nuevo entra sólo corriendo el notebook
+        # directamente. Con LIMPIAR_ETAPA=False el checkpoint hace que procese únicamente los
+        # videos que todavía no están, en vez de las horas que cuesta empezar de cero.
+        MARCA="$(date +%Y%m%d_%H%M%S)"
+        SALIDA="$TESINA_EQUINOS_RAIZ/ejecuciones/preparar_dataset_${MARCA}.ipynb"
+        mkdir -p "$TESINA_EQUINOS_RAIZ/ejecuciones"
+        echo "Ejecutando 01_preparar_dataset_equinos.ipynb -> $SALIDA"
+        "$VENV/bin/papermill" 01_preparar_dataset_equinos.ipynb "$SALIDA" \
+            -p EJECUCION_AUTOMATICA True -p LIMPIAR_ETAPA False \
+            -k tesina-equinos --cwd . --log-output
+        ;;
     etapa02)
         # Sin LIMPIAR_ETAPA: en True borra el checkpoint y obliga a reinferir DeepLabCut, que acá
         # son horas. La corrida deja su copia ejecutada en ejecuciones/, con toda la salida.
@@ -66,7 +90,7 @@ case "${1:-jupyter}" in
         ;;
     *)
         echo "Opción desconocida: $1"
-        echo "Usá: estado | reportes | entorno | etapa02 | jupyter"
+        echo "Usá: estado | reportes | entorno | etapa01 | etapa02 | jupyter"
         exit 2
         ;;
 esac
