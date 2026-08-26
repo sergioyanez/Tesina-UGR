@@ -41,8 +41,8 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 
 | Objetivo específico | Estado |
 |---|---|
-| 1. Base de datos de videos cortos (5–7 s) | 🟢 Cumplido — 34 videos → 92 clips segmentados |
-| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 92/92 clips, pero **alineación 59,5 %, bajo el umbral de 70 %** |
+| 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **234 videos → 342 clips → 5472 frames** (25/08/2026) |
+| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 342/342 clips; **alineación 69,9 % global**, y ese global dejó de ser el criterio útil (ver "El número que hay que citar") |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
@@ -78,9 +78,10 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
   reanudación, invalidación del checkpoint ante cambio de configuración, integridad de la caché y
   estado de las etapas. También sin GPU ni internet.
 
-**Qué falta para cerrar el objetivo 2:** decidir qué hacer con la cobertura de 59,5 %, que quedó
-bajo el umbral de 70 % — barrer `CONF_MINIMA_KEYPOINT` (no requiere reinferir) o pasar a anotación
-manual de las ROI de los ejemplares peores. Ver `openspec/changes/roi-normalizacion-pose/`.
+**Qué falta para cerrar el objetivo 2:** reemplazar el criterio de aceptación —hoy la cobertura
+global, que se mueve con la composición del dataset— por cobertura por clase, y atacar la
+alineación de `Disgustado` (62,1 %). La vía barata sigue siendo barrer `CONF_MINIMA_KEYPOINT` con
+`reporte.confianzas()`, que no requiere reinferir. Ver "Punto de partida de la próxima sesión".
 
 ## Dataset
 
@@ -88,10 +89,10 @@ manual de las ROI de los ejemplares peores. Ver `openspec/changes/roi-normalizac
 clase**. Vive en "Compartidos conmigo", así que Colab sólo la ve si tiene un ACCESO DIRECTO en Mi
 unidad (Drive → clic derecho → Organizar → Agregar acceso directo); eso no copia ni mueve nada.
 `catalogo.raiz_videos()` la localiza y `00_pipeline.ipynb` se la pasa a la etapa 01 como parámetro.
-Existe además una copia local en `videos/<clase>/` (1.8 GB), **desactualizada y divergente**
-—comparte 135 nombres con el inventario, le faltan 11 y le sobran 12 (22/08/2026)—, usada
-sólo para verificar el pipeline
-fuera de Colab. **No versionar esa carpeta.**
+Fuera de Colab la fuente es `~/videos_de_prueba`, la copia local de esa carpeta compartida, y se
+declara con `TESINA_EQUINOS_VIDEOS`. **Es la única fuente admitida.** El espejo que existía bajo la
+raíz de artefactos se retiró el 25/08/2026: estaba a medio copiar, el pipeline lo eligió sin avisar
+y produjo una corrida entera de números de otro dataset. **No versionar los videos.**
 
 **La carpeta de una clase NO es toda la clase.** Parte del material etiquetado vive en subcarpetas
 de trabajo, y **cuáles suman no es igual en todas las clases**: `Disgustado` suma
@@ -101,29 +102,34 @@ el único lugar donde se decide qué entra al dataset. Lo no declarado queda afu
 con nombre y conteo — `Separar cabeza?`, bajo `Sereno`, es el caso vigente. Sobre el espejo local
 esa declaración lleva el catálogo de 122 a 133 videos, y `Disgustado` de 31 a 41.
 
-**Composición actual (34 videos) — el dataset se ampliará en los próximos días:**
+**Composición actual (25/08/2026):**
 
-| Clase | Videos | Clips (5–7 s) | **Caballos distintos** |
-|---|---:|---:|---:|
-| Sereno | 23 | 59 | 15 |
-| Interesado | 8 | 23 | 8 |
-| Disgustado | 3 | 10 | **1** (`037`) |
-| **Total** | **34** | **92** | **22** |
+| Clase | Videos | Clips | Frames | **Caballos en el dataset** | Caballos en el catálogo |
+|---|---:|---:|---:|---:|---:|
+| Sereno | 93 | 160 | 2560 | 54 | 54 |
+| Interesado | 71 | 120 | 1920 | 60 | 60 |
+| Disgustado | 70 | 62 | 992 | **32** | 42 |
+| **Total** | **234** | **342** | **5472** | **113** | 117 |
+
+Las columnas de caballos no suman: 11 ejemplares aparecen en más de una clase, así que el total son
+**caballos distintos** (113 en el dataset, 117 en el catálogo) y no la suma de la columna.
+
+`Disgustado` rinde menos clips que videos porque su video mediano dura 2,9 s: son tomas cortas que
+entran enteras como un único clip. Los 10 ejemplares de la clase que aún no llegan al dataset están
+todos por debajo del piso de 2 s — su video más largo mide 1,93 s.
 
 **La columna que manda es la de caballos, no la de videos ni la de clips.** Dos consecuencias:
 
-- **Disgustado no es evaluable hoy.** Con `GroupKFold` por caballo, `037` cae entero en train o
-  entero en test; en cualquiera de los dos casos una de las particiones queda sin la clase. El
-  problema de 3 clases no es entrenable de forma honesta con estos datos.
-- **La identidad del caballo predice la etiqueta.** Sólo 2 de 22 ejemplares (`054`, `055`)
-  aparecen en más de una clase. El modelo puede acertar reconociendo al caballo.
+- **`Disgustado` pasó a ser evaluable.** Con 32 ejemplares, `GroupKFold` por caballo ya no deja
+  una partición sin la clase. Al 17/08/2026 la clase venía de **un solo caballo** (`037`) y eso
+  motivaba un plan B de 2 clases; **ese plan B queda sin motivo**. Lo que mantenía la restricción
+  no era el material sino el piso de duración de los clips, que dejaba entrar 11 de 42 ejemplares.
+- **La identidad del caballo todavía puede predecir la etiqueta.** Sólo 11 de los 146 ejemplares
+  aparecen en más de una clase, así que la partición por `id_caballo` sigue siendo obligatoria.
 
-**Plan B acordado (a decidir más adelante):** si no se consiguen videos de Disgustado en varios
-ejemplares, reducir a 2 clases — Sereno vs Interesado, 15 y 8 caballos.
-
-**Características técnicas.** Resolución uniforme 1080×1920 (**vertical**, filmado con celular);
-fps ~30 (algunos casos a 29.97 / 30.03 / 59.94); duración entre **8 y 37 segundos**
-(mediana ≈ 17 s). Convención de nombre de archivo: `<id_ejemplar>_<descriptor>.mp4`
+**Características técnicas.** Resolución mayormente 1080×1920 (**vertical**, filmado con celular);
+fps ~30 (algunos casos a 29.97 / 30.03 / 59.94). Las duraciones son muy dispares entre clases:
+`Interesado` y `Sereno` promedian 11 s, `Disgustado` **4,5 s** con mediana de 2,9 s. Convención de nombre de archivo: `<id_ejemplar>_<descriptor>.mp4`
 (p. ej. `037_box-7-1_28oDPfEr.mp4`, `155_20260707_092149.mp4`) — el prefijo numérico identifica al
 **caballo**, y varios videos comparten ejemplar.
 
@@ -135,10 +141,11 @@ código de notebook corre en la máquina de desarrollo (sin GPU, para verificar 
 Colab.
 
 ```
-MyDrive/tesina_equinos/            <- RAIZ (equinos.rutas.NOMBRE_PROYECTO)
-├── videos/<clase>/*.mp4           material viejo, YA NO se usa: los videos crudos se leen
-│                                 del acceso directo a la carpeta compartida `Videos de prueba`
-├── clips/<clase>/*.mp4            92 clips, ~2.7 GB
+MyDrive/tesina_equinos/            <- RAIZ en Colab (equinos.rutas.NOMBRE_PROYECTO)
+<repo>/datos_equinos/              <- RAIZ en local, oficial desde el 25/08/2026
+├── videos/                        NO existe y no debe volver a existir: una copia del material
+│                                 bajo la raíz se convierte en fuente candidata sin avisar
+├── clips/<clase>/*.mp4            342 clips, ~6 GB
 ├── resultados/*.csv               inventarios, datasets y reporte de cobertura
 ├── cache/<etapa>.zip              frames empaquetados + manifiesto .json
 ├── checkpoints/<etapa>.json       estado de reanudación + CSV parcial
@@ -159,9 +166,12 @@ apuntaban a nada. Relativas, el mismo CSV sirve en Colab, en local y en otra cue
 **Esa decisión es lo que hace portable el pipeline entre entornos.** Copiar `tesina_equinos/` de
 Drive a la raíz local alcanza para seguir una corrida donde iba, sin reinferir nada: cada CSV
 resuelve sus rutas contra la raíz vigente, sea cual sea. En local la raíz se fija con
-`TESINA_EQUINOS_RAIZ` y los videos crudos con `TESINA_EQUINOS_VIDEOS`; conviene que la raíz esté
-en disco interno, porque los frames alineados son miles de archivos chicos y el disco externo es
-exFAT por USB.
+`TESINA_EQUINOS_RAIZ` y los videos crudos con `TESINA_EQUINOS_VIDEOS`, y las dos variables viven
+además en el `kernel.json` del kernel `tesina-equinos`, para que un Jupyter abierto por fuera del
+lanzador no arranque sin ellas. La raíz oficial está en el disco externo, que es exFAT: la objeción
+de velocidad —los frames alineados son miles de archivos chicos— quedó anotada pero no se
+manifestó, y exFAT tampoco admite enlaces simbólicos, lo que descartó apuntar la carpeta de videos
+a la fuente.
 
 **El notebook nunca declara en qué entorno está.** Lo detecta `equinos.rutas`, y
 `equinos.entorno.verificar()` comprueba en el arranque de cada etapa que las dependencias sean las
@@ -255,6 +265,10 @@ después—, así que barrer umbrales no obliga a reinferir la hora de cómputo.
 
 ## Cobertura medida del preprocesamiento facial
 
+> **Los números de esta sección son los de la primera corrida completa (17/08/2026, 92 clips en
+> Colab) y se conservan porque explican el diagnóstico.** Para el estado vigente —342 clips,
+> 5472 frames, cobertura por clase— ver "El número que hay que citar", más abajo.
+
 Primera corrida completa: **17/08/2026**, los 92 clips en Colab con GPU.
 
 Los 1472 frames se generaron (100 %), pero eso no es la métrica que importa: el notebook siempre
@@ -304,25 +318,26 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-Estado al cierre del **22/08/2026**. Rama `ejecucion-local-con-gpu`, **sin pushear** por decisión
-de Sergio: vive sólo en la máquina local, con el árbol limpio y 9 commits.
+Estado al cierre del **25/08/2026**. Rama `ejecucion-local-gpu`, **sin pushear** por decisión de
+Sergio: vive sólo en la máquina local.
 
-### Qué pasó hoy, en una frase
+### Qué pasó, en una frase
 
-El pipeline **dejó de depender de Colab**: corre entero en la máquina local con GPU, y la mudanza
-quedó verificada porque no movió ningún número.
+Entró al dataset todo el material catalogado —234 videos, contra 146— y se sacó el piso de duración
+que dejaba afuera a tres de cada cuatro ejemplares de `Disgustado`.
 
 ### Dónde está cada cosa ahora
 
 | | ruta |
 |---|---|
-| Artefactos (clips, resultados, cachés, checkpoints) | `~/tesina_equinos` |
-| Videos crudos, copia de la carpeta compartida | `~/videos_de_prueba` |
+| Artefactos (clips, resultados, cachés, checkpoints) | `<repo>/datos_equinos` — **raíz oficial desde el 25/08** |
+| Videos crudos, fuente única | `~/videos_de_prueba` (234 videos) |
 | Entorno de Python con GPU | `~/.venvs/tesina-equinos` |
-| Repositorio | el de siempre, en el disco externo |
+| Artefactos de la corrida de 146 videos, como respaldo | `~/tesina_equinos` |
 
-Los artefactos se bajaron de Drive con `rclone` (6,2 GiB, sin `videos/`). Drive quedó **intacto**:
-el remoto se configuró de sólo lectura.
+`datos_equinos/videos` **ya no existe**: era un espejo a medio copiar y el pipeline lo eligió sin
+avisar. Sin él, una corrida sin `TESINA_EQUINOS_VIDEOS` corta con el mensaje de
+`catalogo.raiz_videos` en vez de medir sobre material equivocado.
 
 ### Cómo se opera, sin recordar nada de memoria
 
@@ -333,143 +348,134 @@ Desde la carpeta del repositorio:
 | `./correr_local.sh estado` | en qué estado está cada etapa, sin ejecutar nada |
 | `./correr_local.sh reportes` | cobertura y calidad de recortes de la última corrida |
 | `./correr_local.sh entorno` | versiones instaladas y GPU visible |
+| `./correr_local.sh etapa01` | re-ejecuta el notebook 01 sin borrar el checkpoint |
+| `./correr_local.sh etapa02` | re-ejecuta el notebook 02 sin reinferir lo ya hecho |
 | `./correr_local.sh` | abre Jupyter Lab — elegir el kernel *Tesina equinos (GPU local)* |
-| `./correr_local.sh etapa02` | re-ejecuta el notebook 02 sin reinferir (~14 min) |
 
-El script existe porque olvidarse las variables de entorno **no da error**: el pipeline caería a
-una raíz vacía y al espejo viejo de videos, correría entero y devolvería números de otro dataset.
+El kernel `tesina-equinos` lleva `TESINA_EQUINOS_RAIZ` y `TESINA_EQUINOS_VIDEOS` en su
+`kernel.json`, así que un notebook abierto desde cualquier Jupyter arranca con las rutas correctas.
+**Un kernel que ya estaba abierto sigue con las variables viejas: hay que reiniciarlo.**
 
-### Lo que se cerró
+### El número que hay que citar
 
-1. **Migración a local, verificada.** Misma corrida que en Colab: 210 clips, 3360 frames, 68,0 %
-   alineados. Idénticos. Tardó 14 min en vez de 30-45.
-2. **`encuadre-canonico-y-relleno`, verificado y cerrado.** Los recortes mayormente vacíos
-   (>50 % de relleno) pasaron de **97,5 % a 0,2 %**. Quedan 314 recortes sospechosos (13,7 %),
-   concentrados en pocos ejemplares: `919` (13/13), `57` (25/27), `168` (12/13).
-3. **Un video con etiqueta contradictoria, eliminado.** `501_8v1_LY1ucwR9.avi` estaba byte a byte
-   idéntico en `Disgustado/` y en `Interesado/`. Se borró de ambas carpetas **en la copia local**;
-   en Drive sigue estando, y conviene borrarlo también allá. En los artefactos actuales sigue
-   presente como `Disgustado` (1 clip, 16 frames): desaparece recién al re-correr la etapa 01.
+La cobertura global **no** es comparable entre corridas: se mueve con la composición del dataset.
+Sobre 342 clips y 5472 frames da **69,9 %**, y ese número bajó respecto del 70,2 % anterior sin que
+ninguna clase empeorara.
+
+| subconjunto | frames | alineados |
+|---|---:|---:|
+| `Disgustado` | 992 | **62,1 %** (antes 57,6 %) |
+| `Interesado` | 1920 | 80,3 % (antes 80,2 %) |
+| `Sereno` | 2560 | 65,1 % (antes 65,4 %) |
+| **global** | **5472** | **69,9 %** |
+
+El global cae porque la mezcla se corrió hacia la clase que peor alinea: `Disgustado` pasó del
+9,6 % al 18,1 % de los frames. Comparar el global antes y después compara dos datasets distintos.
+
+Para el confounder, la métrica que se movió de verdad es **cuántos ejemplares quedan con material
+alineado**: `Disgustado` pasó de 11 a **32** de sus 42 caballos, y de 4 a **12** con al menos un
+clip completo alineado.
+
+### Lo que se cerró el 25/08
+
+1. **`fuente-unica-de-videos`.** La corrida del 24/08 midió sobre 223 de los 234 videos y publicó
+   72,0 % de cobertura, por encima del umbral. Era falso: faltaban 12 videos de `Sereno` que
+   alinean al 55,8 %, y sobre el material completo el valor es 70,2 %. Quedó una sola fuente
+   declarada, el espejo retirado, las rutas en el kernel y el `501_8v1_LY1ucwR9.avi` —etiqueta
+   contradictoria— fuera de todos los artefactos.
+2. **`piso-de-video-corto`.** `PISO_VIDEO_CORTO = 2.0`: un video más corto que un clip entra
+   entero. Los videos que llegan al piso de 5 s conservan exactamente sus clips —verificado clip
+   por clip—, así que el diseño de 6 s del plan sigue rigiendo donde puede cumplirse.
 
 ### La primera acción de la próxima sesión
 
-**Sumar los videos nuevos y volver a medir la cobertura.** Decidido por Sergio el 22/08/2026: el
-objetivo es ver si con más material se supera el **70 %** de cobertura de alineación
-(`COBERTURA_MINIMA_ACEPTABLE`), que hoy está en 68,0 %.
+**A decidir por Sergio.** La propuesta, en orden:
 
-La carpeta compartida `Videos de prueba` tiene **234 videos** catalogados, contra los 146 con los
-que se construyeron los artefactos actuales:
-
-| clase | artefactos actuales | disponible |
-|---|---:|---:|
-| Disgustado | 31 | **70** |
-| Interesado | 57 | 71 |
-| Sereno | 58 | 93 |
-| **total** | **146** | **234** |
-
-Que los artefactos actuales salgan de 146 videos lo delata la columna `ruta` de
-`inventario_videos.csv`, que dice `videos/<clase>/…`: esa corrida leyó de `tesina_equinos/videos`,
-no de la carpeta compartida. Es la prueba de que el change `catalogo-de-videos-por-clase` está
-implementado pero **nunca se corrió**.
-
-`Disgustado` —la clase que limita todo— más que se duplica, y eso levanta por sí solo la
-restricción que motivaba el plan B de 2 clases. El costo es re-correr las dos etapas **con
-reinferencia de DeepLabCut**, que en esta máquina son varias horas (~340 clips estimados a ~1 min
-por clip).
-
-**Qué esperar de la cobertura, dicho antes de medir.** Más videos no suben la cobertura por ser más:
-la cobertura es un cociente y el material nuevo entra tanto en el numerador como en el denominador.
-Sube sólo si el material nuevo se alinea **mejor** que el actual; si se alinea igual, se queda en
-68 %, y si se alinea peor, baja. Que hoy los peores ejemplares sean unos pocos (`920` con 6,9 %,
-`153` con 25,0 %, `912` con 27,1 %) es un argumento a favor —su peso relativo se diluye—, pero es
-una expectativa, no una predicción.
-
-Por eso, al medir, **hay que informar la cobertura de los videos nuevos por separado**, no sólo la
-global. La global responde "¿llegamos al 70 %?"; la del subconjunto nuevo responde "¿por qué?", que
-es lo que hay que poder defender ante un tribunal. `reporte.cobertura()` ya desglosa por clase y
-por ejemplar, así que alcanza con cruzar contra `inventario_videos.csv` cuáles son los nuevos.
-
-Si se decide que sí, el procedimiento tiene una trampa conocida: el orquestador ve las dos etapas
-completas y **las saltea en silencio**, informando números viejos. Hay que poner
-`ETAPAS_A_FORZAR = ["preparar_dataset", "roi_normalizacion"]` a mano en la celda 4 de
-`00_pipeline.ipynb`, y eso borra los checkpoints, o sea que es desde cero.
+1. **Reemplazar el criterio de cobertura.** `COBERTURA_MINIMA_ACEPTABLE` sobre el global premia
+   dejar afuera a la clase difícil, que es lo contrario de lo que el trabajo necesita.
+   `reporte.cobertura()` ya desglosa por clase y por ejemplar; falta que el criterio de aceptación
+   sea ése y no el promedio.
+2. **Atacar la alineación de `Disgustado`**, que quedó en 62,1 % con 20 de sus 32 ejemplares
+   aportando menos de un clip completo alineado. Ya no es un problema de material descartado sino
+   de detección: la vía barata sigue siendo barrer `CONF_MINIMA_KEYPOINT` con
+   `reporte.confianzas()`, que lee `keypoints_faciales.csv` y no requiere reinferir.
+3. **Recién después, el objetivo 3.**
 
 ### Deudas que quedan abiertas
 
-- **Cobertura en 68,0 %, bajo el umbral de 70 %.** No la movió el encuadre y no la iba a mover: el
-  encuadre arregla cómo se recorta, no cuántos keypoints se detectan. **El plan para atacarla es
-  sumar los videos nuevos** (ver la primera acción); si con 234 videos sigue por debajo del 70 %,
-  la vía que queda es ajustar umbrales o pasar a anotación manual de las ROI.
 - **La rama no está pusheada.** Mientras siga así, Colab no puede correr este código: su
   sincronización clona `main` desde GitHub.
-- **El change `ejecucion-local-con-gpu` tiene una tarea sin cerrar**, la 2.4: verificar que las
-  celdas de arranque siguen funcionando en Colab. Sólo se puede comprobar ejecutando allá.
+- **La purga de una unidad retirada del catálogo es manual.** El checkpoint nunca poda las unidades
+  que salieron del universo: el `501` sobrevivió a una re-corrida entera y hubo que sacarlo a mano
+  de los dos CSV parciales. Candidato a change propio.
+- **`etapas.estado()` no compara los artefactos contra el catálogo.** Informa «completa» mirando
+  sólo que existan y tengan filas, así que con material nuevo el orquestador saltea la etapa en
+  silencio. Por eso existen los subcomandos `etapa01` y `etapa02`.
+- **El change `ejecucion-local-con-gpu` tiene la tarea 2.4 sin cerrar**: verificar que las celdas de
+  arranque siguen funcionando en Colab. Sólo se puede comprobar ejecutando allá.
 
 ### Dónde quedó el dataset
 
-| | inicio | ahora |
-|---|---|---|
-| Videos | 34 | **146** |
-| Clips | 92 | **210** |
-| Frames esperados | 1472 | **3360** |
-| Frames generados | 100 % | **100 %** |
-| Alineados / esperados | 59,5 % | **68,0 %** |
+| | inicio | 22/08 | ahora |
+|---|---|---|---|
+| Videos | 34 | 146 | **234** |
+| Clips | 92 | 210 | **342** |
+| Frames | 1472 | 3360 | **5472** |
+| Alineados | 59,5 % | 68,0 % | **69,9 %** |
+| Frames de `Disgustado` | 160 (11 %) | 368 (11 %) | **992 (18,1 %)** |
+| Ejemplares de `Disgustado` | **1** | 5 | **32** de 42 |
 
-Frames por clase: Sereno 1680 (50 %), Interesado 1312 (39 %), Disgustado 368 (11 %). Entre los
-2286 alineados el reparto es Sereno ~1038, Interesado ~1035, Disgustado ~212.
-
-**Disgustado ya no proviene de un solo caballo:** aparecen `037`, `153`, `022`, `054` y `909`. Eso
-levanta la restricción que motivaba el plan B de 2 clases y habilita evaluar las tres bajo
-partición por ejemplar.
+**`Disgustado` dejó de ser la clase que no se puede evaluar.** Con 32 ejemplares admite partición
+por caballo sin que la clase desaparezca de una de las particiones, y el motivo que sostenía el
+plan B de 2 clases queda enterrado con datos: no era que el material viniera de un solo caballo,
+era que el piso de duración dejaba entrar uno solo.
 
 ### Tres causas encontradas y resueltas, en orden de tamaño
 
 1. **Orientación de video** (720 frames en juego). 42 de los 146 videos guardan la rotación como
    metadato y OpenCV entregaba el frame acostado; el detector no reconocía un caballo girado 90
    grados. Perdían el 55,6 % de sus frames contra 0,0 % de los derechos. Corregido con
-   `CAP_PROP_ORIENTATION_AUTO`; verificado: 0,0 % de pérdida y paridad entre ambos grupos.
+   `CAP_PROP_ORIENTATION_AUTO`; verificado.
 2. **Encuadre canónico imposible** (2228 recortes afectados). El recorte abarcaba 2,5 veces la
    distancia ojo-hocico, que es el 26 % de la diagonal: pedía 1454 px de lado en cuadros de 1080
    de ancho. Sólo el 2,5 % salía sin relleno. Corregido a separación 0,60 más `BORDER_REPLICATE`;
-   **falta verificar**.
+   verificado el 22/08 — los recortes mayormente vacíos pasaron de 97,5 % a 0,2 %.
 3. **Bodypart del hocico** (24 frames). Refutado: `upper_jaw` da 54,4 % contra 62,4 % de `nose`.
    Queda `nose` fijo. Resultado negativo, documentado y cerrado.
 
+A esas tres se suma una cuarta, de otra naturaleza y más grande que las dos últimas: **el piso de
+duración de los clips**, que no descartaba tomas malas sino ejemplares enteros de la clase
+minoritaria.
+
 ### Lo que hay que recordar sobre el método
 
-Las tres causas se manifestaban tarde y apuntando al lugar equivocado. Lo que destapó la más
-grande fue **medir la pérdida contra los frames esperados en vez de contra los generados**:
-`cobertura()` informaba 68,1 % cuando la cifra honesta era 51,9 %. Y la segunda apareció al
-preguntarse si un recorte geométricamente exacto era además utilizable — el Paso 16 da error
-1e-13 aunque el hocico esté sobre una oreja, porque mide la transformada contra los mismos puntos
-con que se construyó.
+Las causas se manifestaban tarde y apuntando al lugar equivocado. Lo que destapó la más grande fue
+**medir la pérdida contra los frames esperados en vez de contra los generados**: `cobertura()`
+informaba 68,1 % cuando la cifra honesta era 51,9 %. La segunda apareció al preguntarse si un
+recorte geométricamente exacto era además utilizable — el Paso 16 da error 1e-13 aunque el hocico
+esté sobre una oreja, porque mide la transformada contra los mismos puntos con que se construyó.
 
-Conviene desconfiar de toda métrica cuyo denominador no se haya elegido a propósito.
+El 25/08 el mismo error apareció por tercera vez y con otra cara: una cobertura de 72,0 % que
+superaba el umbral **porque le faltaban los videos que peor alinean**, y una de 69,9 % que baja
+mientras todas las clases mejoran o quedan igual. En los dos casos el problema no es el numerador
+sino el universo sobre el que se calcula.
 
-### Cuando se cierre el objetivo 2
-
-El umbral del 70 % se fijó con 34 videos y 92 clips sobre la mesa, como proxy de "¿es utilizable
-el pipeline automático?". Con 146 videos, 2286 frames alineados y Disgustado multi-caballo, vale
-preguntarse si esa pregunta no está contestada por otra vía aunque el número quede en 68,0 %.
-**Es una decisión de Sergio, no una conclusión.**
-
-Los 2286 frames alineados forman por sí solos un dataset sin el confounder de mezclar recortes
-alineados con recortes de caja — que era el problema a resolver antes de entrenar. Son 2,6 veces
-los 876 de partida, y el balance entre Sereno e Interesado queda 45/45.
+Conviene desconfiar de toda métrica cuyo denominador no se haya elegido a propósito, y de toda
+comparación entre dos números calculados sobre datasets distintos.
 
 ### Deudas conocidas, sin change abierto
 
-- **El pipeline no detecta que el dataset de entrada cambió.** `etapas.estado()` mira artefactos y
-  cachés, no los datos. Incorporar el conteo de videos al `hash_config` alcanzaría.
-- **No hay modo de re-derivar sin recomputar por el orquestador.** Hay que correr el notebook 02
-  suelto.
+- **La cobertura global sigue siendo el criterio de aceptación** (`COBERTURA_MINIMA_ACEPTABLE`),
+  aunque se demostró que se mueve con la composición del dataset. Reemplazarlo por cobertura por
+  clase es la primera acción propuesta.
 - **`00_pipeline.ipynb` no se sincroniza** y hay que subirlo a mano, lo que además apaga el
   permiso del secret `GITHUB_TOKEN` para ese notebook.
-- **Etiquetado:** `501_8v1_LY1ucwR9.avi` estaba como archivo idéntico en Interesado y Disgustado;
-  se resolvió como Disgustado. La validación de homónimos ahora cubre también el mismo archivo
-  suelto en la clase y dentro de una de sus subcarpetas, pero copias con nombres **distintos** en
-  dos clases siguen pasando sin aviso. Conviene revisar el criterio con que se armaron las
-  carpetas.
+- **Etiquetado:** copias del mismo video con nombres **distintos** en dos clases siguen pasando sin
+  aviso; `catalogo.verificar()` sólo detecta homónimos. Conviene revisar el criterio con que se
+  armaron las carpetas.
+- **Clips de largo variable (2 a 7 s).** Los 16 frames de un clip abarcan distinto tiempo según el
+  clip. Queda registrado en `duracion_seg` de `inventario_clips.csv` y admite una ablación, pero
+  hay que informarlo.
 
 ## Stack técnico
 
@@ -500,14 +506,15 @@ los 876 de partida, y el balance entre Sereno e Interesado queda 45/45.
 Estas son las tensiones reales entre el estado del dataset y lo que el plan exige. Conviene
 resolverlas antes de entrenar:
 
-1. **Volumen muy bajo.** 34 videos → 92 clips. La segmentación mejora la situación pero sigue
-   siendo insuficiente para entrenar desde cero cualquier arquitectura espacio-temporal → obliga a
-   *transfer learning* y aumentación agresiva.
-2. **Desbalance severo.** El recorte no lo corrige: 59 / 23 / 10 clips (≈64% / 25% / 11%), casi la
-   misma proporción que en origen. Un clasificador trivial que siempre prediga "Sereno" alcanza
-   64% de accuracy: **la accuracy global no es métrica válida**; usar F1 macro, balanced accuracy y
-   matriz de confusión. La clase Disgustado proviene de **un solo caballo** (`037`), por lo que el
-   modelo puede aprender el ejemplar en lugar de la expresión.
+1. **Volumen bajo.** 234 videos → 342 clips → 5472 frames (25/08/2026). Es 3,7 veces el dataset
+   de partida, pero sigue siendo insuficiente para entrenar desde cero cualquier arquitectura
+   espacio-temporal → obliga a *transfer learning* y aumentación agresiva.
+2. **Desbalance, atenuado y todavía presente.** 160 / 120 / 62 clips (47 % / 35 % / 18 %) contra
+   el 64 / 25 / 11 % de julio. Un clasificador trivial que siempre prediga "Sereno" alcanza
+   47 % de accuracy: **la accuracy global sigue sin ser métrica válida**; usar F1 macro, balanced
+   accuracy y matriz de confusión. `Disgustado` ya no proviene de un solo caballo —son 32
+   ejemplares—, pero la identidad del caballo sigue pudiendo predecir la clase, así que la
+   partición por `id_caballo` es obligatoria.
 3. ~~Duración fuera de especificación~~ — **resuelto** en el Bloque 2 (ventanas de 5–7 s).
 4. **Normalización de pose no implementada.** Inspección visual de los frames (13/08/2026): el
    encuadre es cerrado y la cabeza ocupa buena parte del cuadro, así que **el recorte de ROI no es

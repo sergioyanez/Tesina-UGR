@@ -40,18 +40,22 @@ El plan de trabajo original está en [`plan_de_trabajo.pdf`](plan_de_trabajo.pdf
 │   ├── project.md                      Contexto completo del proyecto
 │   ├── config.yaml                     Reglas para generación de artefactos
 │   └── changes/                        Cambios planificados (propuesta, spec, diseño, tareas)
-├── plan_de_trabajo.pdf                 Plan de trabajo presentado
-└── videos/                             Dataset — NO versionado (ver abajo)
+└── plan_de_trabajo.pdf                 Plan de trabajo presentado
 ```
+
+El dataset **no vive en el repositorio ni bajo la raíz de artefactos** (ver abajo).
 
 ## Los datos no están en el repositorio
 
-La carpeta `videos/` pesa ~1.9 GB y tres archivos superan los 100 MB, el límite duro de GitHub.
-El dataset vive en **Google Drive**, y los notebooks lo leen desde ahí montando la unidad: no se
-descarga nada en cada sesión.
+El dataset pesa 5,3 GiB y varios archivos superan los 100 MB, el límite duro de GitHub. Vive en
+**Google Drive**, y en Colab los notebooks lo leen desde ahí montando la unidad: no se descarga
+nada en cada sesión.
 
-Para trabajar en local, copiar la carpeta de Drive a `videos/` respetando su estructura, y
-apuntar el pipeline ahí con `export TESINA_EQUINOS_VIDEOS=/ruta/a/videos`.
+Para trabajar en local, copiar la carpeta compartida a un directorio **fuera del repositorio** y
+declararlo con `export TESINA_EQUINOS_VIDEOS=/ruta/a/videos_de_prueba`. **Fuera del repositorio, y
+en particular fuera de la raíz de artefactos:** una copia del material bajo la raíz se convierte en
+fuente candidata y el pipeline puede elegirla sin avisar. Pasó el 24/08/2026 y costó una corrida
+entera de números de otro dataset.
 
 **La carpeta de una clase no es toda la clase.** Parte del material etiquetado vive en subcarpetas
 de trabajo, y cuáles suman **no es igual en todas**:
@@ -116,19 +120,16 @@ del driver; tiene que ser igual o mayor que la de la rueda.
 
 | variable | para qué | valor sugerido |
 |---|---|---|
-| `TESINA_EQUINOS_RAIZ` | dónde se escriben los artefactos | una carpeta en disco interno |
-| `TESINA_EQUINOS_VIDEOS` | dónde están los videos crudos | una copia de `Videos de prueba` |
+| `TESINA_EQUINOS_RAIZ` | dónde se escriben los artefactos | `<repo>/datos_equinos` |
+| `TESINA_EQUINOS_VIDEOS` | dónde están los videos crudos | `~/videos_de_prueba` |
 
-La raíz conviene tenerla en disco interno y no en el externo: los frames alineados son miles de
-archivos chicos, que es el peor patrón de acceso para un exFAT por USB. Sin esas variables el
-pipeline igual arranca, pero escribe en `<repo>/datos_equinos`.
+Las dos están además en el `kernel.json` del kernel `tesina-equinos`, para que un Jupyter abierto
+por fuera de `correr_local.sh` no arranque sin ellas. Si falta `TESINA_EQUINOS_VIDEOS` el pipeline
+**corta**, informando qué rutas revisó: no hay ninguna copia del material bajo la raíz que pueda
+sustituir a la fuente, y no debe volver a haberla.
 
-**`<repo>/videos/` NO sirve como fuente de videos.** Es un espejo viejo y divergente: comparado
-archivo por archivo contra `inventario_videos.csv` (22/08/2026), comparten 135 nombres, pero a él
-le faltan 11 que están en Drive y tiene 12 que el inventario nunca vio. Sirvió para verificar
-geometría sin GPU y para eso alcanza; regenerar clips desde ahí construiría un dataset distinto
-del que produjo la pose, y nada fallaría al hacerlo. La fuente es la carpeta compartida `Videos de
-prueba` (5,3 GiB), que en local hay que copiar aparte:
+La fuente es la carpeta compartida `Videos de prueba` (5,3 GiB, 234 videos), que en local hay que
+copiar aparte:
 
 ```bash
 rclone copy "tesina:Videos de prueba" ~/videos_de_prueba --transfers 8 -P
