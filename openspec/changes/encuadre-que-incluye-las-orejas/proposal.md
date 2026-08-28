@@ -25,11 +25,13 @@ que usa la etapa 02, sobre los 5.586 frames con par ojo-hocico detectado:
 |---|---:|
 | `left_earbase` / `right_earbase` | 19,8 % / 20,0 % |
 | `left_earend` / `right_earend` | **2,8 % / 3,3 %** |
-| **Todos los keypoints de oreja** | **11,9 %** |
+| **Todos los keypoints de oreja** | **11,7 %** |
+| **Vector base→punta legible** (la métrica que decide) | **4,3 %** |
 
 **El 88 % de los keypoints de oreja cae fuera del recorte, y las puntas quedan fuera en el 97 % de
-los casos.** El modelo del objetivo 3 nunca vería el rasgo que la etología equina señala como el
-más informativo para la clase de interés clínico.
+los casos.** Como la orientación de la oreja se lee del vector base→punta, el rasgo queda legible
+en apenas el 4,3 % de los frames: el modelo del objetivo 3 nunca vería lo que la etología equina
+señala como el indicador más informativo para la clase de interés clínico.
 
 La causa es geométrica y está cuantificada. En unidades de la distancia ojo-hocico `d`:
 
@@ -56,9 +58,10 @@ Barato, porque el diseño de la etapa 02 ya separó la parte cara de la analíti
   de `keypoints_manuales.csv` siguen siendo válidas tal cual. Las orejas entran por **campo de
   visión**, no por anclaje: no se agrega dependencia de un keypoint nuevo, que además sólo tiene
   ~60 % de disponibilidad por oreja.
-- **La escala del recorte casi no se mueve** (`d` mapea a 134 px hoy y a ~137 px en el encuadre
-  candidato), así que los topes de la interpolación, medidos en píxeles dentro del recorte, se
-  revalidan sin esperar que cambien.
+- **La escala se mueve a favor** (`d` mapea a 134 px hoy y a 149 px en el encuadre adoptado, que
+  recorta campo lateral). Los topes de la interpolación están medidos en píxeles dentro del
+  recorte, pero su criterio es una comparación contra una línea de base medida del mismo modo, así
+  que es invariante a la escala: se revalida para confirmarlo.
 
 Lo que se re-ejecuta es el warp y la escritura de los 5.888 JPEG, más el recálculo de cobertura y
 composición. Minutos.
@@ -71,10 +74,12 @@ composición. Minutos.
 - **El encuadre se declara como campo de visión en unidades de `d`** —aire sobre el ojo, aire bajo
   el hocico, semiancho lateral— en vez de como dos fracciones sobre un lado fijo. Es la
   parametrización que hace visible la asimetría del problema.
-- **La inclusión de orejas pasa a ser criterio de aceptación de la etapa**, medible sobre los
-  keypoints ya persistidos, junto a la cobertura de alineación.
-- **El encuadre concreto se elige con un barrido**, no de antemano. El criterio de aceptación se
-  declara antes de medir y se ancla en el encuadre actual como línea de base.
+- **El vector de oreja legible pasa a ser criterio de aceptación de la etapa**, medible sobre los
+  keypoints ya persistidos, junto a la cobertura de alineación. La unidad es el vector base→punta y
+  no el conteo suelto de keypoints, porque lo que informa es la orientación de la oreja.
+- **El encuadre concreto se elige con un barrido**, no de antemano. El criterio se declara antes de
+  medir y se ancla en el encuadre actual como línea de base. **Adoptado: 1,00 `d` de aire sobre el
+  ojo, 0,30 bajo el hocico, ±0,75 lateral; destino 224×343.**
 - **Cada frame registra la fracción de su recorte que salió de relleno** (`relleno_fraccion`), del
   mismo modo que ya registra `origen_alineacion`, para poder ablacionar su efecto.
 
@@ -113,7 +118,7 @@ rectángulo canónico se salga más seguido del cuadro de origen, y `BORDER_REPL
 píxeles. Ese relleno correlaciona con la distancia de filmación, que correlaciona con el ejemplar,
 que predice la clase: es exactamente el atajo que el encuadre canónico existe para evitar.
 
-Es una compensación real y hay que medirla, no suponerla. El encuadre actual ya parte de un 22,2 %
+Es una compensación real y hay que medirla, no suponerla. El encuadre actual ya parte de un 14,1 %
 de relleno mediano, así que **la línea de base contra la que anclar el criterio no es cero**, y hay
 al menos un encuadre candidato que mejora las orejas sin empeorar el relleno. Cuál se adopta lo
 decide el barrido.
@@ -124,9 +129,9 @@ se informe:
 1. **La inclusión de orejas se mide sólo donde la oreja se detectó** (78,5 % de los frames con par
    ojo-hocico). Si la oreja está fuera del cuadro tiende a no detectarse, así que el denominador
    excluye justo los peores casos y **todos los encuadres salen favorecidos por igual**.
-2. **El relleno se estima con la caja alineada a ejes del rectángulo rotado**, que lo
-   **sobreestima** en todos los encuadres por igual. Sirve para comparar; los niveles absolutos
-   son pesimistas.
+2. **El relleno se estima muestreando el recorte con una rejilla**, midiendo el rectángulo y no su
+   caja envolvente. Sólo queda la discretización de la rejilla, que afecta a todos los encuadres
+   por igual.
 
 ## Impacto
 

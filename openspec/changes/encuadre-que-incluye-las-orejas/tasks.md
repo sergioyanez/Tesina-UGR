@@ -2,19 +2,21 @@
 
 ## 1. Barrido y elección del encuadre (sin escribir imágenes)
 
-- [ ] 1.1 Llevar `medicion_encuadre.py` a `equinos/encuadre.py` como función reutilizable:
+- [x] 1.1 Llevar `medicion_encuadre.py` a `equinos/encuadre.py` como función reutilizable:
       proyecta los keypoints de oreja de `pose_completa.csv` por la transformada de similitud de un
       campo de visión dado y devuelve inclusión de orejas y distribución de relleno.
-- [ ] 1.2 Escribir las pruebas de `equinos/encuadre.py` en `tests/test_encuadre.py`: proyección de
+- [x] 1.2 Escribir las pruebas de `equinos/encuadre.py` en `tests/test_encuadre.py`: proyección de
       un punto conocido, campo de visión que contiene y que no contiene un keypoint, y fracción de
       relleno de un rectángulo enteramente dentro y enteramente fuera del cuadro.
-- [ ] 1.3 Correr el barrido sobre los candidatos C y A del design, más el encuadre vigente como
-      línea de base, y dejar la tabla en `medicion.md`.
-- [ ] 1.4 Inspeccionar visualmente ~20 recortes de `Disgustado` bajo C y bajo A, generados en
+- [x] 1.3 Correr el barrido sobre los candidatos del design más el encuadre vigente como línea de
+      base, y dejar la tabla en `medicion.md`. Se agregaron D, E, F y G al ver que C no alcanzaba
+      en la métrica del vector de oreja.
+- [x] 1.4 Inspeccionar visualmente ~20 recortes de `Disgustado` bajo C y bajo A, generados en
       memoria sin sobrescribir el dataset, y registrar la observación en `medicion.md`.
-- [ ] 1.5 **Decidir el encuadre** contra el criterio declarado en la spec y dejar escrito cuál se
-      adopta y por qué. Si ningún candidato lo cumple, informarlo y re-declarar el criterio dejando
-      constancia de qué daba antes.
+- [x] 1.5 **Decidir el encuadre** contra el criterio declarado en la spec y dejar escrito cuál se
+      adopta y por qué. **Adoptado D (1,00 / 0,30 / ±0,75, destino 224×343)**: vector de oreja
+      4,3 % → 77,2 % empatando exacto el relleno mediano de la línea de base. El criterio se
+      re-ancló en el vector base→punta y su historia quedó registrada en la spec.
 
 ## 2. Parametrización del notebook 02
 
@@ -73,7 +75,7 @@
 - [ ] 6.2 Actualizar `README.md` con la forma del recorte y la columna nueva del dataset.
 - [ ] 6.3 Actualizar el `design.md` de `clasificacion-orientada-a-video`, que asume entradas de
       224×224, a la forma resultante.
-- [ ] 6.4 Dejar en `medicion.md` la evidencia completa —tabla del barrido, sesgos, inspección
+- [x] 6.4 Dejar en `medicion.md` la evidencia completa —tabla del barrido, sesgos, inspección
       visual y decisión— como respaldo citable en la memoria de la tesina.
 - [ ] 6.5 Registrar en `openspec/project.md` el crédito de la observación a Héctor R. Liceaga y la
       medición que la confirmó, incluido que la corrección propuesta en la rama `hector`

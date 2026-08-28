@@ -10,8 +10,9 @@ en cuadros de 1.080 px de ancho, y el 97,5 % de los recortes salía con relleno.
 
 Ese arreglo optimizó lo que se estaba midiendo —cuánto del recorte era cara y no borde inventado— y
 nadie midió lo que no se estaba mirando: **qué parte de la cara entra**. Medido ahora sobre los
-5.586 frames con par ojo-hocico detectado, entra el 11,9 % de los keypoints de oreja y el 3 % de
-las puntas.
+5.586 frames con par ojo-hocico detectado, entra el 11,7 % de los keypoints de oreja y el 3 % de
+las puntas — y el vector base→punta, que es lo que permite leer la orientación de la oreja, es
+legible en el **4,3 %**.
 
 La restricción del dataset ordena la lectura de todo lo que sigue: **141 clips íntegros de 73
 ejemplares distintos**, con `Disgustado` en 21 clips de 15 caballos. Con 73 ejemplares, cualquier
@@ -66,8 +67,8 @@ Falta casi el cuádruple de aire vertical; lateralmente sobra. La parametrizaci�
 deja expresar eso.
 
 **Alternativa descartada — mover `FRAC_OJO` de 0,20 a 0,25**, que es la corrección propuesta en la
-rama `hector`. Medida: lleva la inclusión de orejas de 11,9 % a 27,3 % y sube el relleno mediano de
-22,2 % a 26,0 %. Es la dirección correcta con la palanca equivocada: paga relleno para ganar poco,
+rama `hector`. Medida: lleva el vector de oreja legible de 4,3 % a 13,7 % y sube el relleno mediano
+de 14,1 % a 18,8 %. Es la dirección correcta con la palanca equivocada: paga relleno para ganar poco,
 porque el 45 % del campo que agrega se va a los costados, donde ya sobraba.
 
 ### Decisión 2 — El anclaje sigue siendo ojo-hocico; las orejas entran por campo de visión
@@ -110,34 +111,44 @@ descartó el 19/08/2026. Reintroducirlo sería deshacer un arreglo con evidencia
 ramas. Duplica el cómputo y los parámetros entrenables de la cabeza, contra 141 muestras. La
 restricción del dataset la descarta sola.
 
-### Decisión 4 — El encuadre concreto lo elige un barrido, no esta decisión
+### Decisión 4 — El encuadre lo eligió el barrido, y la métrica que lo decidió no era la esperada
 
-Se declaran los candidatos y el criterio; el valor se fija con la medición. Medido sobre la corrida
-vigente, sin escribir una sola imagen:
+Se declararon los candidatos y el criterio, y el valor se fijó con la medición. **Encuadre
+adoptado: D — 1,00 `d` de aire sobre el ojo, 0,30 bajo el hocico, ±0,75 lateral, destino 224×343.**
 
-| Encuadre | Destino | `d` → px | Orejas dentro | Relleno mediano | >25 % relleno |
-|---|---:|---:|---:|---:|---:|
-| **Vigente** — 224×224, `0,20/0,80` | 224×224 | 134 | 11,9 % | 22,2 % | 42,5 % |
-| Rama `hector` — 224×224, `0,25/0,80` | 224×224 | 123 | 27,3 % | 26,0 % | 52,9 % |
-| **C** — 0,80 `d` arriba, 0,30 abajo, ±0,75 lateral | 224×314 | 149 | **64,6 %** | **21,2 %** | **39,9 %** |
-| **A** — 1,00 `d` arriba, 0,40 abajo, ±0,85 lateral | 224×316 | 132 | **82,0 %** | 28,3 % | 57,0 % |
+La evidencia completa está en `medicion.md`; lo esencial:
 
-Las dimensiones del destino no se eligen: se derivan del aspecto que pide cada campo de visión, con
-el ancho fijo en 224. Reproducible con `medicion_encuadre.py`, que acompaña a este change.
+| Encuadre | Destino | `d`→px | **Vector oreja** | kp sueltos | Relleno p50 | >25 % |
+|---|---:|---:|---:|---:|---:|---:|
+| Vigente 0,33/0,33/0,83 | 224×224 | 134 | 4,3 % | 11,7 % | 14,1 % | 21,8 % |
+| `hector` 0,45/0,36/0,91 | 224×224 | 123 | 13,7 % | 27,1 % | 18,8 % | 30,2 % |
+| C 0,80/0,30/0,75 | 224×314 | 150 | 50,6 % | 64,4 % | 12,5 % | 16,9 % |
+| **D 1,00/0,30/0,75** | **224×343** | **149** | **77,2 %** | 78,2 % | **14,1 %** | 22,5 % |
+| A 1,00/0,40/0,85 | 224×316 | 132 | 78,3 % | 81,9 % | 18,8 % | 32,8 % |
 
-**C cumple las dos condiciones del criterio declarado** —supera el 50 % de inclusión de orejas y no
-empeora el relleno; de hecho lo mejora—. **A** llega al 82 % pagando seis puntos de relleno, y por
-eso no se adopta de entrada: la decisión de aceptar esa compensación necesita ver los recortes, no
-sólo la tabla.
+**Lo que el barrido cambió respecto de lo previsto.** El diseño entraba apostando a C, que era el
+único candidato que mejoraba las orejas sin empeorar el relleno. El barrido mostró que C mete el
+89 % de las **bases** de oreja y sólo el 38 % de las **puntas**, y que sin punta no se lee la
+orientación —que es el rasgo informativo—. Medido en vectores de oreja legibles, C rinde 50,6 % y
+no 64,4 %. Eso obligó a re-anclar el criterio en el vector y a buscar un candidato mejor.
 
-El barrido se completa con **inspección visual de una muestra de recortes de `Disgustado`**, que es
-la clase donde el rasgo importa y la que tiene menos ejemplares. Es también el único control contra
-el sesgo de denominador de la métrica.
+D es ese candidato, y la razón por la que existe es la asimetría de la Decisión 1: **conserva el
+campo lateral angosto de C y gasta todo el presupuesto en vertical**. Iguala a A en orejas (77,2 %
+contra 78,3 %) pagando el relleno de la línea de base en vez de 4,7 puntos más, y encima con menos
+fondo que el encuadre vigente.
 
-**Alternativa descartada — fijar C ahora y ahorrarse el barrido.** Tentador porque C ya cumple. Se
-descarta porque los cuatro números de la tabla comparten dos sesgos conocidos (ver Riesgos) y
-ninguno se corrige con más aritmética sobre los mismos keypoints. Una muestra mirada a ojo cuesta
-minutos y es la única evidencia independiente disponible.
+**Alternativa descartada — A (±0,85 lateral).** Da 1,1 puntos más de oreja y cuesta 4,7 puntos de
+relleno mediano, incumpliendo el criterio declarado. En la hoja de contacto ese campo lateral extra
+se ve directamente como cielo, poste y techo: más confounder de escena, que es lo que el recorte a
+ROI existe para mitigar.
+
+**Alternativas descartadas — E, F y G (1,20–1,40 `d` de aire arriba).** Llegan al 85–89 % de vector
+de oreja y las tres superan la línea de base de relleno. F queda anotado como candidato de una
+segunda vuelta: es el que menos la supera (15,6 %) y si la ablación por `relleno_fraccion` muestra
+que el relleno no aporta señal espuria, es el próximo escalón.
+
+**Alternativa descartada — fijar un encuadre sin barrer.** Habría fijado C, que era la apuesta
+razonable a priori y rinde la mitad que D en la métrica que importa.
 
 ### Decisión 5 — El relleno se registra por frame en lugar de intentar eliminarlo
 
@@ -165,7 +176,7 @@ frame original. Como el par de anclaje no cambia, **las 14 anotaciones siguen si
 tocarlas**. Es la consecuencia práctica más importante de la Decisión 2.
 
 Los topes del relleno temporal están medidos en píxeles dentro del recorte, y la escala del recorte
-**sí** se mueve: `d` ocupa 134 px hoy, 149 px en C y 132 px en A. Pero el criterio vigente no es un
+**sí** se mueve: `d` ocupa 134 px hoy y 149 px en el encuadre adoptado. Pero el criterio vigente no es un
 número de píxeles sino una **comparación contra una línea de base medida del mismo modo** —el
 desplazamiento entre dos detecciones propias consecutivas—, y ambos lados escalan igual. El
 criterio es por lo tanto invariante al cambio de escala, y la revalidación de la tarea 5.3 se corre
@@ -185,10 +196,10 @@ como ya se hizo el 28/08/2026.
   `relleno_fraccion` por frame + criterio de aceptación que no admite empeorar la línea de base +
   ablación posterior.
 - **Más campo de visión puede ser menos resolución sobre la cara.** → *Mitigación:* medido, no
-  supuesto. El destino crece en píxeles a la par del campo, y como C además **recorta** campo
-  lateral —±0,75 `d` contra ±0,83 `d` del vigente—, la cara queda un 11 % más grande que hoy (`d`:
-  134 → 149 px). A queda prácticamente igual (132 px). Ninguno de los dos pierde resolución facial;
-  lo que C sacrifica es campo a los costados, donde la medición dice que sobraba.
+  supuesto. El destino crece en píxeles a la par del campo, y como el encuadre adoptado además
+  **recorta** campo lateral —±0,75 `d` contra ±0,83 `d` del vigente—, la cara queda un 11 % más
+  grande que hoy (`d`: 134 → 149 px). No se pierde resolución facial; lo que se sacrifica es campo
+  a los costados, donde la medición dice que sobraba.
 - **El change `clasificacion-orientada-a-video` asume entradas de 224×224.** → *Mitigación:* está en
   planificación y sin implementar; se actualiza su design antes de aplicarlo. Los backbones
   preentrenados aceptan entrada no cuadrada por *pooling* adaptativo, así que el impacto es de
@@ -216,11 +227,23 @@ tocan en ningún paso, así que el rollback nunca cuesta reinferencia.
 
 ## Open Questions
 
-- **¿C o A?** Lo resuelve el paso 1. C cumple el criterio; A lo cumple en orejas y no en relleno.
-- **¿Las bases de oreja alcanzan, o hacen falta las puntas?** La orientación de la oreja se lee del
-  vector base→punta. Si con C entran las bases pero no las puntas en una fracción alta, puede ser
-  suficiente para el modelo o puede no serlo, y esto no se contesta con la geometría: se contesta
-  mirando los recortes, y en última instancia con el clasificador.
-- **¿Conviene informar la inclusión de orejas desglosada por clase?** Probablemente sí —importa más
-  en `Disgustado`—, pero el desglose por clase sobre un denominador ya sesgado puede confundir más
-  de lo que aclara. Se decide al implementar el reporte.
+Las tres que abrió este diseño quedaron contestadas por el barrido del 28/08/2026. Se dejan con su
+respuesta porque el recorrido es parte de lo que hay que poder contar.
+
+- **¿C o A?** → **Ninguno de los dos: D.** El barrido incorporó candidatos intermedios al ver que
+  la métrica correcta era el vector de oreja, y D iguala a A en orejas pagando el relleno de la
+  línea de base. Ver Decisión 4.
+- **¿Las bases de oreja alcanzan, o hacen falta las puntas?** → **Hacen falta las puntas, y es
+  la pregunta que cambió la decisión.** C mete el 89 % de las bases y el 38 % de las puntas; medido
+  en vectores legibles rinde 50,6 % en vez de 64,4 %. El criterio de la spec se re-ancló en el
+  vector base→punta.
+- **¿Conviene informar la inclusión de orejas desglosada por clase?** → Se resuelve al implementar
+  el reporte (tarea 5.1). El desglose por keypoint ya resultó más informativo que el desglose por
+  clase para tomar esta decisión, y sobre un denominador ya sesgado el corte por clase puede
+  confundir más de lo que aclara.
+
+Queda una pregunta nueva, para después de entrenar:
+
+- **¿El relleno aporta señal espuria?** Si la ablación por `relleno_fraccion` dice que no, **F**
+  (1,20/0,25/±0,70: 85,2 % de vector de oreja con 15,6 % de relleno) es el próximo escalón de
+  encuadre, y este change deja el barrido listo para volver a correrlo.

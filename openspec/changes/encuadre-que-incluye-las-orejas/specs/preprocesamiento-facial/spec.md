@@ -47,46 +47,78 @@ por campo de visión, no por anclaje.
 
 ### Requirement: Inclusión de orejas como criterio de aceptación del encuadre
 
-La etapa DEBE (MUST) medir e informar qué proporción de los keypoints de oreja cae dentro del
-recorte, y esa proporción DEBE ser un criterio de aceptación del encuadre, al mismo nivel que la
-cobertura de alineación. Una cobertura de alineación alta con las orejas fuera del cuadro NO DEBE
-(MUST NOT) considerarse un preprocesamiento aceptable.
+La etapa DEBE (MUST) medir e informar qué proporción de las orejas cae dentro del recorte, y esa
+proporción DEBE ser un criterio de aceptación del encuadre, al mismo nivel que la cobertura de
+alineación. Una cobertura de alineación alta con las orejas fuera del cuadro NO DEBE (MUST NOT)
+considerarse un preprocesamiento aceptable.
 
 La medición DEBE hacerse sobre los keypoints de oreja ya persistidos en la pose completa,
 proyectándolos por la misma transformada de similitud que produce el recorte. NO DEBE requerir
 volver a inferir la pose: eso es lo que permite comparar varios encuadres antes de escribir una
 sola imagen.
 
+La unidad de medida DEBE ser el **vector de oreja** —la base y la punta de una misma oreja, las
+dos dentro del recorte—, y NO DEBE (MUST NOT) ser el conteo suelto de keypoints de oreja. Lo que
+informa el estado del animal es la **orientación** de la oreja, y eso se lee del vector
+base→punta: una base sin su punta no dice hacia dónde apunta. El conteo suelto sobrestima de forma
+sistemática, y no por poco — ver el registro del criterio, más abajo.
+
 **Criterio declarado, antes de medir.** Un encuadre candidato es aceptable si cumple las dos
 condiciones:
 
-1. **Contiene las orejas de al menos la mitad de los frames.** Anclado en la distribución medida:
-   la punta de oreja está a 0,81 `d` por encima del ojo en la mediana, de modo que un campo que
-   contenga la mediana contiene la mitad de los casos. Operativamente, inclusión de keypoints de
-   oreja ≥ 50 %.
-2. **No empeora el relleno respecto del encuadre vigente.** La línea de base **no es cero**: el
-   encuadre actual ya produce 22,2 % de relleno mediano. El candidato no debe superarlo.
+1. **El vector de oreja es legible en al menos la mitad de los frames** que tienen alguna oreja
+   completa detectada. Anclado en la distribución medida: la punta de oreja está a 0,81 `d` por
+   encima del ojo en la mediana, de modo que un campo que contenga la mediana contiene la mitad de
+   los casos.
+2. **No empeora el relleno mediano respecto del encuadre vigente.** La línea de base **no es
+   cero**: el encuadre actual ya produce 14,1 % de relleno mediano. El candidato no debe superarlo.
 
 Ambas condiciones se anclan en cantidades medidas sobre la corrida vigente y no en números
 redondos. El resultado DEBE informarse aunque ningún candidato las cumpla, y si el criterio se
 re-declara, DEBE quedar escrito que se cambió, por qué, y qué daba antes.
 
+> **Registro de este criterio, que hay que poder contar.** Se declaró el 28/08/2026, antes de
+> barrer, con dos diferencias respecto de la versión de arriba, y las dos se corrigieron con lo
+> medido y no con lo conveniente:
+>
+> - **La unidad era el conteo suelto de keypoints de oreja.** Al barrer se vio que sobrestima: el
+>   candidato C daba 64,4 % de keypoints dentro pero sólo 50,6 % de vectores legibles, porque
+>   metía las bases (89 %) y se comía las puntas (38 %). Como la orientación de la oreja es el
+>   rasgo informativo, la métrica correcta es el vector, y el criterio se re-ancló en él.
+> - **La línea de base de relleno decía 22,2 %.** Ese número salía de aproximar el recorte por la
+>   caja envolvente del rectángulo rotado, que lo sobrestima. Adoptando el muestreo por rejilla que
+>   ya usaba `reporte.calidad_recortes` —que mide el rectángulo y no su envolvente— la línea de
+>   base real es **14,1 %**. No se aflojó el criterio: se midieron mejor los dos lados de la
+>   comparación, y el candidato adoptado empata la línea de base en vez de superarla.
+>
+> Ninguna de las dos correcciones cambió la decisión: el encuadre adoptado cumple el criterio
+> viejo y el nuevo. Queda registrado igual, porque cambiar un criterio después de ver los números
+> sólo es legítimo si queda escrito que se cambió, por qué, y qué daba antes.
+
 Al informar la inclusión de orejas DEBE hacerse constar su **sesgo de denominador**: sólo se mide
 sobre frames donde la oreja fue detectada con confianza suficiente, y una oreja fuera del cuadro
 tiende a no detectarse, así que la métrica favorece a todos los encuadres por igual y sobrestima a
-todos.
+todos. Por eso la decisión del encuadre NO DEBE (MUST NOT) tomarse sólo con la tabla: DEBE
+acompañarse de inspección visual de una muestra de recortes de la clase minoritaria, que es
+evidencia independiente de ese sesgo.
 
 #### Scenario: Barrido de encuadres sin reprocesar imágenes
 
 - **WHEN** se comparan varios campos de visión candidatos
-- **THEN** el sistema informa para cada uno la inclusión de keypoints de oreja y la distribución
-  del relleno
+- **THEN** el sistema informa para cada uno el vector de oreja legible y la distribución del
+  relleno
 - **AND** no vuelve a inferir la pose ni escribe imágenes para producir esa comparación
+
+#### Scenario: Encuadre que mete las bases de oreja pero no las puntas
+
+- **WHEN** un candidato deja dentro del recorte la base de una oreja pero no su punta
+- **THEN** ese frame NO cuenta como oreja legible, aunque el conteo suelto de keypoints suba
+- **AND** el informe distingue ambas métricas, para que la diferencia entre ellas quede a la vista
 
 #### Scenario: Encuadre que mejora las orejas empeorando el relleno
 
-- **WHEN** un candidato supera el 50 % de inclusión de orejas pero su relleno mediano excede el de
-  la línea de base
+- **WHEN** un candidato supera el 50 % de vector de oreja legible pero su relleno mediano excede el
+  de la línea de base
 - **THEN** el sistema informa que no cumple el criterio declarado
 - **AND** informa igualmente ambas métricas, para que la compensación quede a la vista
 
@@ -159,8 +191,8 @@ El sistema DEBE (MUST) reportar qué proporción de frames obtuvo detección del
 válidos, desglosado por clase y por caballo. Este reporte es el criterio que decide si el pipeline
 automático es utilizable o si hay que recurrir a anotación manual.
 
-El reporte DEBE incluir además la **inclusión de keypoints de oreja** y la **distribución del
-relleno del recorte**. La cobertura de alineación sola NO DEBE (MUST NOT) presentarse como criterio
+El reporte DEBE incluir además el **vector de oreja legible** y la **distribución del relleno del
+recorte**. La cobertura de alineación sola NO DEBE (MUST NOT) presentarse como criterio
 suficiente de que el preprocesamiento es utilizable: mide cuántos frames se pudieron alinear, no
 qué parte de la cara quedó dentro del recorte, y un encuadre puede tener cobertura alta dejando
 fuera el rasgo más informativo de la clase de interés.
@@ -170,7 +202,7 @@ fuera el rasgo más informativo de la clase de interés.
 - **WHEN** finaliza el procesamiento
 - **THEN** el sistema informa el porcentaje de frames con detección y con keypoints, global y
   desglosado por clase y por caballo
-- **AND** informa la inclusión de keypoints de oreja y la distribución del relleno
+- **AND** informa el vector de oreja legible y la distribución del relleno
 
 #### Scenario: Cobertura insuficiente en una clase o caballo
 
@@ -180,8 +212,8 @@ fuera el rasgo más informativo de la clase de interés.
 
 #### Scenario: Cobertura alta con las orejas fuera del recorte
 
-- **WHEN** la cobertura de alineación supera su umbral pero la inclusión de orejas queda por debajo
-  del criterio declarado
+- **WHEN** la cobertura de alineación supera su umbral pero el vector de oreja legible queda por
+  debajo del criterio declarado
 - **THEN** el sistema señala que el preprocesamiento no cumple el criterio de encuadre
 - **AND** no se considera cerrada la etapa por la sola cobertura de alineación
 

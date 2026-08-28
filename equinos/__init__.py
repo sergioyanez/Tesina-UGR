@@ -16,9 +16,11 @@ Módulos:
     entorno     verificación de las dependencias y de la GPU antes de arrancar una etapa
     etapas      registro del pipeline y diagnóstico de su estado
     pose        selección de keypoints faciales sobre la pose completa y su barrido
+    encuadre    campo de visión del recorte facial y barrido de encuadres candidatos
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import cache, catalogo, checkpoint, entorno, etapas, pose, reporte, rutas
+from equinos import cache, catalogo, checkpoint, encuadre, entorno, etapas, pose, reporte, rutas
 
-__all__ = ["rutas", "catalogo", "checkpoint", "cache", "entorno", "etapas", "pose", "reporte"]
+__all__ = ["rutas", "catalogo", "checkpoint", "cache", "encuadre", "entorno", "etapas",
+           "pose", "reporte"]
