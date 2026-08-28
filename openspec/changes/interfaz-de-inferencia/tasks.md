@@ -58,9 +58,12 @@ como terminan siendo una nota al pie.
       al entrenarse, así que lo acierta por memorización; el del fold nunca lo vio. Son modelos
       distintos y difieren con razón. Lo que valida la cadena es la igualdad de características de
       la 4.1, no una coincidencia de predicciones.
-- [ ] 4.3 Medir la **tasa de negativa** sobre una muestra de videos crudos que no hayan entrado al
-      dataset, e informarla. Si es muy alta, es un hallazgo sobre el preprocesamiento y va escrito
-      como tal.
+- [x] 4.3 Medir la **tasa de negativa** sobre videos crudos e informarla. **Respondió en 5 de 12
+      (42 %)**, muestra estratificada por clase. Coincide con lo que el diseño anticipó a partir
+      del 38 % de clips íntegros. Motivos: alineación insuficiente 2, video largo 2, sin detección
+      2, video corto 1. `tasa_de_negativa.py`, con el sesgo declarado en su encabezado: los videos
+      contribuyeron al entrenamiento, lo que no afecta la tasa pero sí haría optimista cualquier
+      medición de acierto — por eso no se informa ninguna.
 
 ## 5. La interfaz
 
@@ -83,20 +86,25 @@ como terminan siendo una nota al pie.
 
 ## 6. Revisión de honestidad
 
-- [ ] 6.1 **Mirar la pantalla de resultado y preguntarse si alguien que no leyó la tesina
-      entendería que el modelo acierta un tercio de los `Disgustado`.** Si no, rehacerla. Es el
-      riesgo principal declarado del change y merece una revisión propia.
+- [x] 6.1 **Mirar la pantalla** y preguntarse si alguien que no leyó la tesina entendería el
+      acierto real. Hecho sobre la aplicación corriendo, con las tres pantallas: inicial, negativa
+      y resultado. **Pasa**: la etiqueta y la precisión salen en columnas del mismo tamaño, y cada
+      barra del voto lleva la precisión de su clase —«Disgustado — 0 % (acierta 33 % cuando lo
+      dice)»—. **Destapó un defecto real**: la barra de progreso no se veía, así que durante 35 s
+      el usuario sólo tenía un spinner. `st.progress` no renderiza mientras DeepLabCut bloquea el
+      hilo; se reemplazó por `st.status` y se verificó en vivo que ahora sí muestra la etapa.
 - [ ] 6.2 Pasar la interfaz a una persona ajena al trabajo con un video, sin explicarle nada, y
-      registrar qué entendió del resultado.
+      registrar qué entendió del resultado. **Requiere a una persona: la hace Sergio.**
 - [ ] 6.3 Corregir con lo que salga de 6.2, o dejar escrito por qué no se corrigió.
 
 ## 7. Documentación y cierre
 
-- [ ] 7.1 `README.md`: cómo se levanta la interfaz, qué necesita y qué no hace.
-- [ ] 7.2 `openspec/project.md`: estado del objetivo 4, con la tasa de negativa medida.
-- [ ] 7.3 Dejar registrado el límite del entregable: es una demostración del pipeline, no una
+- [x] 7.1 `README.md`: cómo se levanta la interfaz, qué necesita y qué no hace.
+- [x] 7.2 `openspec/project.md`: estado del objetivo 4, con la tasa de negativa medida (42 % de
+      respuesta).
+- [x] 7.3 Dejar registrado el límite del entregable: es una demostración del pipeline, no una
       herramienta validada, y el motivo está medido —no alcanza el criterio y acierta un tercio de
       la clase de interés clínico—.
-- [ ] 7.4 `openspec validate interfaz-de-inferencia` sin errores.
+- [x] 7.4 `openspec validate interfaz-de-inferencia` sin errores.
 - [ ] 7.5 Commits separados por unidad lógica: modelo de producción; confiabilidad; inferencia;
       verificación; interfaz; documentación.

@@ -79,19 +79,20 @@ if archivo is not None:
             tmp.write(archivo.getbuffer())
             ruta = tmp.name
 
-        barra = st.progress(0.0, text="Preparando…")
-        pasos = list(ETAPAS)
+        # `st.status` y no `st.progress`: con una barra suelta, la primera versión de esta
+        # pantalla no mostraba NADA durante los 35 s —sólo el spinner del reproductor— porque las
+        # llamadas a DeepLabCut bloquean el hilo del script. Verificado mirando la pantalla, que
+        # es para lo que existe la revisión de honestidad del change.
+        with st.status("Analizando la toma…", expanded=True) as estado:
+            def avisar(etapa, detalle=""):
+                estado.write(f"**{ETAPAS.get(etapa, etapa)}**" + (f" — {detalle}" if detalle else ""))
+                estado.update(label=ETAPAS.get(etapa, etapa))
 
-        def avisar(etapa, detalle=""):
-            if etapa in pasos:
-                barra.progress((pasos.index(etapa) + 1) / len(pasos),
-                               text=ETAPAS.get(etapa, etapa))
-
-        try:
-            resultado = inferencia.clasificar_video(ruta, progreso=avisar)
-        finally:
-            Path(ruta).unlink(missing_ok=True)
-        barra.empty()
+            try:
+                resultado = inferencia.clasificar_video(ruta, progreso=avisar)
+            finally:
+                Path(ruta).unlink(missing_ok=True)
+            estado.update(label="Análisis terminado", state="complete", expanded=False)
 
         # --- Negativa: un resultado de primera clase (tarea 5.4) ------------------------------
         if not resultado.hay_prediccion:

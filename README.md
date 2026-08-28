@@ -152,6 +152,7 @@ sus cachés y una etapa incompleta puede darse por completa.
 | `./correr_local.sh reportes` | cobertura y calidad de recortes de la última corrida |
 | `./correr_local.sh entorno` | versiones instaladas y GPU visible |
 | `./correr_local.sh etapa02` | re-ejecuta el notebook 02 con papermill, sin limpiar la etapa |
+| `./correr_local.sh interfaz` | levanta la interfaz de inferencia (Streamlit) |
 
 Existe porque olvidarse las variables **no falla**: el pipeline cae a una raíz vacía y al espejo
 viejo de videos, corre entero y produce números de otro dataset.
@@ -226,6 +227,47 @@ Colab. **La corrida completa lleva alrededor de una hora** para los 92 clips.
 El **Paso 14 decide si el pipeline sirve**: si la cobertura de keypoints no supera el umbral, hay
 que ajustar umbrales o pasar a anotar manualmente las 92 ROI. La alternativa manual está prevista
 en el diseño, no es un plan de emergencia.
+
+## La interfaz de inferencia
+
+```
+./correr_local.sh interfaz
+```
+
+Recibe una toma corta de la cara de un caballo y devuelve la expresión predicha —`Sereno`,
+`Interesado` o `Disgustado`— **junto con la confiabilidad medida de esa predicción**. La lógica
+vive en `equinos/inferencia.py`; `app_inferencia.py` es sólo la presentación.
+
+**Qué necesita:** la máquina con GPU, el entorno de `requirements-local.txt`, y el modelo de
+producción en `modelos/objetivo3/`. Arrastra la cadena entera —YOLO11x y DeepLabCut— así que tarda
+**alrededor de 35 s por video**: 15 s de detección y 20 s de pose. La clasificación en sí es
+instantánea.
+
+**Qué NO hace, y conviene decirlo antes de que alguien lo suponga:**
+
+- **No es una herramienta de diagnóstico veterinario.** Es la demostración de un pipeline.
+- **No siempre responde.** Necesita 16 fotogramas donde se vean el ojo y el hocico; si no los
+  consigue, se niega y explica por qué. Negarse es un resultado normal y frecuente, no un error:
+  sobre el propio conjunto de datos sólo el 38 % de las tomas llegó a ser utilizable.
+- **No acepta videos largos.** Máximo 15 s, idealmente una toma de 5 a 7 s. Los 16 fotogramas se
+  muestrean repartidos por todo el video, así que sobre uno de dos minutos serían momentos sueltos
+  separados por ocho segundos y no una secuencia de expresión.
+- **No reentrena, no procesa lotes y no guarda nada** del video que se le sube.
+
+**El límite del entregable, medido y no supuesto.** El modelo **no alcanzó el criterio que se
+declaró antes de entrenarlo** para considerarlo útil: F1 macro 0,626 contra 0,691 exigido. Y su
+acierto depende mucho de la clase — cuando dice `Disgustado`, que es la de interés clínico, acierta
+**una de cada tres veces**:
+
+| el modelo dice | acierta |
+|---|---:|
+| `Disgustado` | 7 de 21 — **33 %** |
+| `Interesado` | 49 de 62 — 79 % |
+| `Sereno` | 44 de 58 — 76 % |
+
+Por eso la interfaz muestra ese número al lado de la etiqueta y con el mismo tamaño, en vez de
+dejarlo en un descargo al pie. Una pantalla que devuelve «Disgustado, 87 %» es indistinguible, para
+quien la mira, de una herramienta validada.
 
 ### Pendiente
 

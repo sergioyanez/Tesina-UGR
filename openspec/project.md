@@ -44,7 +44,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
 | 3. Clasificación orientada a video | 🟡 Modelo entrenado y evaluado; **la hipótesis no queda sostenida** y el criterio declarado no se cumple (0,626 contra 0,691). Falta el notebook de la etapa. Ver abajo |
-| 4. Aplicación / interfaz | 🟡 Planificado — change `interfaz-de-inferencia`, 4 artefactos y 26 tareas, ninguna hecha |
+| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit funcionando (`./correr_local.sh interfaz`). **Responde en el 42 % de los videos** y se niega con motivo en el resto. Falta la prueba con una persona ajena (tarea 6.2) |
 
 ### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
 
