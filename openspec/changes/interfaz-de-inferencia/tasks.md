@@ -106,5 +106,5 @@ como terminan siendo una nota al pie.
       herramienta validada, y el motivo está medido —no alcanza el criterio y acierta un tercio de
       la clase de interés clínico—.
 - [x] 7.4 `openspec validate interfaz-de-inferencia` sin errores.
-- [ ] 7.5 Commits separados por unidad lógica: modelo de producción; confiabilidad; inferencia;
-      verificación; interfaz; documentación.
+- [x] 7.5 Commits separados por unidad lógica. Cuatro: modelo de producción y confiabilidad;
+      inferencia e interfaz; tasa de negativa, revisión de honestidad y documentación.
