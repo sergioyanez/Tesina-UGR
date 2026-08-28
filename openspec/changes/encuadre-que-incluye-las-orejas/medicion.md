@@ -144,6 +144,54 @@ anotados: si al entrenar el objetivo 3 la ablación por `relleno_fraccion` muest
 aporta señal espuria, **F es el candidato natural para una segunda vuelta** —85,2 % de vector de
 oreja con 15,6 % de relleno, el mejor de los que incumplen y por poco.
 
+## 7. La corrida entregada (28/08/2026)
+
+Re-ejecutada sólo la parte de recorte de la etapa 02, sin reinferir: el checkpoint declara
+`CLAVES_KEYPOINTS = []`, así que cambiar el encuadre no lo invalida y los 368 clips siguieron
+marcados como completos.
+
+**La composición del dataset es idéntica**, que es lo que la tarea 4.3 exigía verificar:
+
+| | antes | después |
+|---|---:|---:|
+| filas / clips / caballos | 5888 / 368 / 124 | 5888 / 368 / 124 |
+| frames alineados | 4326 (73,5 %) | 4326 (73,5 %) |
+| origen (kp/caja/interp/manual) | 4046 / 1562 / 266 / 14 | 4046 / 1562 / 266 / 14 |
+| clips íntegros | 141 (21/56/64) | 141 (21/56/64) |
+| ejemplares con clip íntegro | 73 | 73 |
+
+Sólo cambiaron los píxeles: recorte 224×343, `d` = 149 px.
+
+**El barrido predijo la corrida real.** Relleno mediano predicho 14,06 %, medido 14,1 %. Vector de
+oreja predicho 77,2 %, medido 77,2 %. Es la validación de que comparar encuadres sobre los
+keypoints persistidos —sin escribir una sola imagen— dice lo que va a pasar.
+
+Inspección de los JPEG efectivamente entregados, cuatro frames repartidos de cada clip: en `205` y
+`208` se ven las dos orejas en los cuatro frames, y la cara se mantiene en la misma posición
+canónica a lo largo del clip. También se ve el costo: esos dos clips tienen relleno 0,39 y 0,41, y
+el cielo replicado se nota en las esquinas superiores.
+
+## 8. Hallazgo de la revalidación de la interpolación (tarea 5.3)
+
+`interpolacion.informe_validacion()` sobre la geometría nueva recomienda ahora
+**`MAX_HUECO_INTERPOLADO = 2`**, contra el 1 vigente:
+
+| | línea de base | largo 1 | largo 2 |
+|---|---:|---:|---:|
+| archivado (224×224, 3.900 frames detectados) | 16,28 px | 13,99 ✅ | 16,33 ❌ *(por 0,05 px)* |
+| ahora (224×343, 4.046 frames detectados) | 18,66 px | 15,75 ✅ | 18,36 ✅ *(por 0,30 px)* |
+
+**No se cambia el tope en este change**, por tres razones:
+
+1. **La comparación mezcla dos cambios.** La corrida archivada midió sobre 3.900 frames detectados
+   y ésta sobre 4.046: entre medio el dataset creció. No se puede atribuir el vuelco al encuadre.
+2. **El margen es de 0,30 px sobre una mediana**, después de haber fallado por 0,05. Un criterio
+   que se decide en el tercer decimal necesita más evidencia que una corrida.
+3. **Cambiar el tope cambia la composición del dataset** —más frames rescatados, más clips
+   íntegros—, y eso está explícitamente fuera del alcance de este change.
+
+Queda como change aparte, con la ventaja de que ahora la validación se corre en segundos.
+
 ## Crédito
 
 La observación de que el recorte podía estar dejando las orejas fuera es de **Héctor R. Liceaga**,

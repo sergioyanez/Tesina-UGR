@@ -34,6 +34,13 @@ def _es_si(valor) -> bool:
     return str(valor).strip().lower() in ("true", "1", "si", "sí")
 
 
+# Encuadre vigente del recorte, para poder informar cuántas orejas entran. Tiene que coincidir con
+# la celda de parámetros del notebook 02: si divergen, este reporte informa de un dataset que no es
+# el que está en disco.
+ENCUADRE_VIGENTE = (1.00, 0.30, 0.75)
+ANCHO_RECORTE = 224
+
+
 def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
     """Imprime el reporte de cobertura y devuelve sus números.
 
@@ -98,6 +105,39 @@ def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
         print(f"  {fila['id_caballo']:<7} {fila.get('clase', ''):<14} "
               f"{float(fila['tasa']):6.1%}   {fila['frames']:>4} frames{marca}")
 
+    # ------------------------------------------------------------------
+    # ENCUADRE: qué parte de la cara entra, y cuánto del recorte se inventa
+    # ------------------------------------------------------------------
+    # La cobertura de alineación dice cuántos frames se pudieron alinear. NO dice qué parte de la
+    # cara quedó dentro del recorte, y un encuadre puede tener cobertura alta dejando fuera el
+    # rasgo más informativo de la clase de interés. Hasta el 28/08/2026 pasaba exactamente eso:
+    # 73,5 % de cobertura con el vector de oreja legible en el 4,3 % de los frames.
+    rellenos = sorted(_a_float(f["relleno_fraccion"]) for f in frames
+                      if _es_si(f["alineado"]) and f.get("relleno_fraccion") not in (None, ""))
+    rellenos = [r for r in rellenos if r == r]
+    if rellenos:
+        def _p(q):
+            return rellenos[min(int(q * len(rellenos)), len(rellenos) - 1)]
+        print("\nRelleno del recorte (sólo frames alineados):")
+        print(f"  mediana {_p(0.50):.1%} | p90 {_p(0.90):.1%} | "
+              f"sin relleno {sum(1 for r in rellenos if r == 0) / len(rellenos):.1%}")
+        print("  Depende de la distancia de filmación, que depende del ejemplar, que predice la")
+        print("  clase. Se registra por frame para poder ablacionarlo, no para tranquilizar.")
+
+    orejas = None
+    try:
+        from equinos import encuadre
+        orejas = encuadre.evaluar(encuadre.CampoDeVision(*ENCUADRE_VIGENTE), ANCHO_RECORTE)
+        print("\nOrejas dentro del recorte:")
+        print(f"  vector base->punta legible {orejas['vector_legible']:.1%} "
+              f"(sobre {orejas['frames_con_vector']} frames con alguna oreja completa detectada)")
+        print(f"  keypoints de oreja sueltos {orejas['orejas_dentro']:.1%} — SOBRESTIMA: una base")
+        print("  sin su punta no dice hacia dónde apunta la oreja, que es lo que informa.")
+        print("  Sesgo: sólo se mide donde el modelo detectó la oreja, y una oreja fuera del")
+        print("  cuadro tiende a no detectarse. El nivel absoluto es optimista.")
+    except Exception as error:                      # noqa: BLE001
+        print(f"\n(no se pudo medir la inclusión de orejas: {error})")
+
     tasa_global = alineados / generados
     print("\n" + "-" * 58)
     if tasa_global >= umbral and not problematicos:
@@ -125,6 +165,10 @@ def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
         "por_origen": origenes,
         "tasa_solo_detectados": (solo_detectados / generados
                                  if solo_detectados is not None else None),
+        "relleno_mediana": (_p(0.50) if rellenos else None),
+        "relleno_p90": (_p(0.90) if rellenos else None),
+        "vector_oreja_legible": (orejas["vector_legible"] if orejas else None),
+        "orejas_keypoints_sueltos": (orejas["orejas_dentro"] if orejas else None),
     }
 
 
