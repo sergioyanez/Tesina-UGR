@@ -53,13 +53,19 @@ DROPOUT = 0.3
 # comparable y lo único que cambia entre variantes es cómo se agrega el tiempo.
 PROYECCION = 64
 
+# Largo de la sub-secuencia. De los 16 frames de un clip salen 16 - VENTANA + 1 ventanas
+# contiguas, así que el modelo temporal pasa de 106 muestras de entrenamiento a ~954, comparable
+# a las 1696 frames sueltos que ve la línea de base. Sin esto, comparar la cabeza de clip contra
+# esa línea de base mide el TAMAÑO del conjunto y no la información temporal.
+VENTANA = 8
 
-def _construir(nombre, dispositivo):
+
+def _construir(nombre, dispositivo, largo=16):
     import torch
     from torch import nn
 
     class Cabeza(nn.Module):
-        def __init__(self, modo):
+        def __init__(self, modo, largo=16):
             super().__init__()
             self.modo = modo
             self.proyeccion = nn.Linear(caracteristicas.DIMENSIONES, PROYECCION)
@@ -71,7 +77,7 @@ def _construir(nombre, dispositivo):
                 self.salida = nn.Linear(32, len(CLASES))
             elif modo == "atencion":
                 # Embedding de posición: sin él, la atención también sería invariante al orden.
-                self.posicion = nn.Parameter(torch.zeros(16, PROYECCION))
+                self.posicion = nn.Parameter(torch.zeros(largo, PROYECCION))
                 nn.init.normal_(self.posicion, std=0.02)
                 self.consulta = nn.Parameter(torch.zeros(PROYECCION))
                 nn.init.normal_(self.consulta, std=0.02)
@@ -92,7 +98,7 @@ def _construir(nombre, dispositivo):
                 h = (zp * pesos.unsqueeze(-1)).sum(dim=1)
             return self.salida(self.dropout(h))
 
-    return Cabeza(nombre).to(dispositivo)
+    return Cabeza(nombre, largo).to(dispositivo)
 
 
 def _metricas(reales, predichas):
@@ -121,7 +127,7 @@ def entrenar_y_evaluar(nombre, X_ent, y_ent, X_pru, y_pru, dispositivo, semilla=
     from torch import nn
 
     torch.manual_seed(semilla)
-    modelo = _construir(nombre, dispositivo)
+    modelo = _construir(nombre, dispositivo, X_ent.shape[1])
     entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
 
     conteo = Counter(int(v) for v in y_ent)
@@ -168,6 +174,26 @@ def preparar(clips, vectores, indice, dispositivo, aumentadas=None):
         y = np.array(etiquetas)
     return (torch.tensor(X, dtype=torch.float32, device=dispositivo),
             torch.tensor(y, dtype=torch.long, device=dispositivo))
+
+
+def ventanas(X, largo=VENTANA, permutar=False, generador=None):
+    """Parte cada secuencia de 16 en las ventanas contiguas de `largo`.
+
+    Con `permutar`, baraja los frames DENTRO de cada ventana. Es el control que aísla el orden:
+    misma arquitectura, mismas muestras, mismo presupuesto — lo único que se destruye es la
+    secuencia. Si el orden real no le gana al permutado, el orden no está aportando.
+    """
+    import torch
+
+    n, t, d = X.shape
+    trozos = [X[:, i:i + largo] for i in range(t - largo + 1)]
+    salida = torch.cat(trozos, dim=0)                       # (n * ventanas, largo, d)
+    if permutar:
+        # Una permutación distinta por ventana: destruye el orden sin tocar el contenido.
+        for i in range(salida.shape[0]):
+            orden_i = torch.randperm(largo, generator=generador).to(salida.device)
+            salida[i] = salida[i][orden_i]
+    return salida, len(trozos)
 
 
 def comparar(cabezas=("promedio", "gru", "atencion"), aumentar=False):
@@ -237,3 +263,82 @@ if __name__ == "__main__":
     print(f"Diferencia                     : {mejor_secuencial - invariante:+.3f}")
     print()
     print("Línea de base de un frame (0,626) y criterio declarado (0,691) en lineas_de_base.md.")
+
+
+def prueba_del_orden(cabeza="atencion", largo=VENTANA):
+    """El experimento que aísla el orden: sub-secuencias reales contra sub-secuencias barajadas.
+
+    Todo lo demás es idéntico —arquitectura, cantidad de muestras, pasos, semilla—, así que la
+    diferencia entre las dos columnas es atribuible ÚNICAMENTE a la información de orden.
+
+    En test se promedian las probabilidades de las ventanas de cada clip, igual que la línea de
+    base promedia el voto de sus frames.
+    """
+    import torch
+
+    rutas.inicializar(verbose=False)
+    clips = particion.cargar()
+    orden, vectores = caracteristicas.cargar()
+    indice = {c: i for i, c in enumerate(orden)}
+    dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    folds = max(c["fold"] for c in clips) + 1
+
+    print("=" * 74)
+    print(f"PRUEBA DEL ORDEN — cabeza '{cabeza}', ventanas de {largo} frames")
+    print("=" * 74)
+
+    resultados = {}
+    for permutar in (False, True):
+        filas = []
+        for f in range(folds):
+            ent = [c for c in clips if c["fold"] != f]
+            pru = [c for c in clips if c["fold"] == f]
+            X_e, y_e = preparar(ent, vectores, indice, dispositivo)
+            X_p, y_p = preparar(pru, vectores, indice, dispositivo)
+            g = torch.Generator().manual_seed(SEMILLA)
+            Xe_v, k = ventanas(X_e, largo, permutar, g)
+            Xp_v, _ = ventanas(X_p, largo, permutar, g)
+            ye_v = y_e.repeat(k)
+
+            torch.manual_seed(SEMILLA)
+            from torch import nn
+            modelo = _construir(cabeza, dispositivo, largo)
+            conteo = Counter(int(v) for v in ye_v)
+            pesos = torch.tensor(
+                [len(ye_v) / (len(CLASES) * max(conteo[i], 1)) for i in range(len(CLASES))],
+                dtype=torch.float32, device=dispositivo)
+            criterio = nn.CrossEntropyLoss(weight=pesos)
+            opt = torch.optim.AdamW(modelo.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+            gen = torch.Generator(device="cpu").manual_seed(SEMILLA)
+            modelo.train()
+            for _ in range(PASOS):
+                idx = torch.randint(0, len(ye_v), (LOTE,), generator=gen).to(dispositivo)
+                opt.zero_grad()
+                criterio(modelo(Xe_v[idx]), ye_v[idx]).backward()
+                opt.step()
+
+            # Promedio de probabilidades entre las ventanas de cada clip de test.
+            modelo.eval()
+            with torch.no_grad():
+                probas = torch.softmax(modelo(Xp_v), dim=1).view(k, len(pru), len(CLASES))
+                predichas = probas.mean(dim=0).argmax(dim=1).cpu().tolist()
+            filas.append(_metricas(y_p.cpu().tolist(), predichas))
+
+        f1 = [r["f1_macro"] for r in filas]
+        rd = [r["recall_disgustado"] for r in filas]
+        resultados["permutado" if permutar else "orden real"] = {
+            "f1": (statistics.fmean(f1), statistics.stdev(f1)),
+            "rd": (statistics.fmean(rd), statistics.stdev(rd)),
+            "muestras": len(ye_v),
+        }
+
+    print(f'{"régimen":<16}{"muestras ent.":>15}{"F1 macro":>18}{"recall Disgustado":>22}')
+    print("-" * 74)
+    for k_, v in resultados.items():
+        print(f'{k_:<16}{v["muestras"]:>15,}{v["f1"][0]:>11.3f} ± {v["f1"][1]:.3f}'
+              f'{v["rd"][0]:>15.3f} ± {v["rd"][1]:.3f}')
+    real = resultados["orden real"]["f1"]
+    perm = resultados["permutado"]["f1"]
+    print(f'\nDiferencia orden real - permutado: {real[0] - perm[0]:+.3f}  '
+          f'(desvío entre folds: {real[1]:.3f})')
+    return resultados

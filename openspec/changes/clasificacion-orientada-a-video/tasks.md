@@ -47,10 +47,13 @@ arquitectura, no después.
       **invariante al orden** y por lo tanto no es un modelo temporal; `gru` y `atencion` sí lo
       son. La prueba de la hipótesis es esa comparación, no sólo la de contra la línea de base.
 - [x] 3.3 Comparar a lo sumo tres variantes de cabeza sobre los mismos folds, y **dejar
-      registrado cuántas se probaron**. **Se probaron 6: tres cabezas × dos regímenes de
-      aumentación**, y se informan las seis en `cabezas_temporales.md`. Mejor cabeza `atencion`
+      registrado cuántas se probaron**. **Se probaron 10: tres cabezas × dos regímenes de
+      aumentación, más la prueba del orden sobre dos cabezas × real/permutado**, y se informan las seis en `cabezas_temporales.md`. Mejor cabeza `atencion`
       0,599 ± 0,118 — **por debajo de la línea de base de un frame (0,626) y del criterio
-      (0,691)**. La aumentación no mueve nada (−0,005 / −0,006 / +0,000).
+      (0,691)**. La aumentación no mueve nada (−0,005 / −0,006 / +0,000). **Prueba del orden con
+      muestras igualadas: permutar los frames no cambia una sola predicción de la
+      atención (+0,000) y la GRU rinde peor con el orden real (−0,034). La hipótesis
+      del trabajo no queda sostenida.**
 - [ ] 3.4 Entrenar la elegida con `random_state=42` y guardar los pesos por fold.
 
 ## 4. Evaluación

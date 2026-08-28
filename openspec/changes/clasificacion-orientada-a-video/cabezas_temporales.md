@@ -3,11 +3,12 @@
 Corrida el **28/08/2026** sobre la partición persistida y las características del backbone
 congelado. Reproducible con `cabezas_temporales.py`.
 
-## Configuraciones probadas: 6
+## Configuraciones probadas: 10
 
 El diseño pide comparar a lo sumo tres variantes de cabeza y **dejar registrado cuántas se
 probaron**, porque con 141 muestras probar veinte y quedarse con la mejor es elegir ruido. Se
-probaron **tres cabezas × dos regímenes de aumentación = 6**, y se informan las seis.
+probaron **10 en total**, y se informan las diez: tres cabezas × dos regímenes de aumentación
+(6), más la prueba del orden sobre dos cabezas × orden real/permutado (4).
 
 Todas comparten backbone, proyección 512→64, presupuesto de parámetros, y régimen de
 entrenamiento: 400 pasos de gradiente fijos, lote 64, AdamW `lr=1e-3`, `weight_decay=1e-2`,
@@ -78,20 +79,64 @@ exactitud 1,00 y pérdida 0,000 antes del paso 80, con 33–42 K parámetros con
 Es lo que motivó probar la aumentación, y es también por qué la aumentación no alcanzó: el
 problema no es falta de variedad fotométrica, es falta de ejemplares.
 
+## La prueba del orden — el experimento que aísla la hipótesis
+
+La comparación anterior tiene un confound: la línea de base entrena sobre 1 696 frames y las
+cabezas de clip sobre 106 clips. Para separar *el orden* del *tamaño del conjunto*, se parte cada
+clip en sus **9 ventanas contiguas de 8 frames** —954 muestras de entrenamiento, comparables a las
+de la línea de base— y se entrena dos veces con todo lo demás idéntico:
+
+- **orden real**: los frames de cada ventana en su secuencia;
+- **permutado**: los mismos frames de la misma ventana, barajados.
+
+Verificado que la permutación se aplica de verdad: cambia el orden, conserva el contenido y no
+toca el tensor original. En test se promedian las probabilidades de las 9 ventanas de cada clip.
+
+| Cabeza | Muestras ent. | Orden real | Permutado | Δ |
+|---|---:|---:|---:|---:|
+| `atencion` | 954 | **0,632 ± 0,155** | 0,632 ± 0,155 | **+0,000** |
+| `gru` | 954 | 0,585 ± 0,114 | 0,619 ± 0,151 | **−0,034** |
+
+**La atención da predicciones idénticas con los frames barajados.** No es un empate estadístico:
+es el mismo número hasta el tercer decimal, y también el mismo recall de `Disgustado`. El modelo
+**puede** usar el orden y **no lo usa**.
+
+El mecanismo, medido sobre el modelo entrenado:
+
+- el embedding de posición aprendido tiene norma 1,07 contra 10,74 de las características
+  proyectadas: la posición aporta el **3,5 %** de la representación;
+- los pesos de atención por posición van de 0,114 a 0,154, con desvío 0,018 sobre un uniforme de
+  0,125. **La atención aprendió a promediar.**
+
+Y la GRU, que es sensible al orden por construcción, rinde **peor** con el orden real que con los
+frames barajados. Con 954 muestras y un desvío entre folds de 0,11, esa diferencia es ruido — pero
+lo que no hay, en ninguna de las dos, es señal a favor del orden.
+
 ## Estado y qué haría falta
 
-**El resultado provisorio es negativo: la hipótesis del trabajo no queda sostenida por esta
-evidencia.** Se informa así, que es lo que el diseño exige.
+**La hipótesis del trabajo no queda sostenida por esta evidencia.** Se informa así, que es lo
+que el diseño exige, y se sostiene sobre tres pruebas independientes que dan lo mismo:
 
-Antes de darlo por cerrado quedan dos cosas por probar, y las dos son **reducción de capacidad**,
-no más arquitectura ni más aumentación:
+1. **A nivel de clip**, la cabeza invariante al orden (0,584) y las sensibles al orden (0,599 y
+   0,520) no se distinguen más allá del desvío entre folds.
+2. **Con muestras igualadas**, permutar los frames no cambia una sola predicción de la atención, y
+   la GRU rinde peor con el orden real.
+3. **El mejor modelo de clip** (0,632 ± 0,155) apenas supera a la línea de base que ignora el
+   orden por completo (0,626), y queda lejos del criterio declarado (0,691).
 
-1. **Cabezas mucho más chicas.** 33 K parámetros memorizan 106 clips. Una cabeza de ~1 K
-   —proyección a 8 o 16 dimensiones, o directamente lineal sobre el promedio— es lo que el tamaño
-   del dataset admite. La línea de base que gana es, justamente, la más simple de todas.
-2. **Entrenar la cabeza temporal a nivel de frame y agregar después**, para que vea las mismas
-   1 696 muestras que la línea de base. Así la comparación aislaría el orden y no el tamaño del
-   conjunto de entrenamiento.
+**Qué NO dice este resultado.** No dice que la información temporal sea inútil en el problema.
+Dice que **con 141 clips de 73 ejemplares no se pudo extraer señal temporal utilizable**, y que
+los modelos que podían usar el orden aprendieron a ignorarlo. La respuesta del diseño a esto
+estaba escrita de antemano y se confirma: lo que haría falta es **más ejemplares**, no más
+arquitectura ni más aumentación.
 
-Cada una suma configuraciones al conteo, y con 141 muestras eso tiene un costo. Se decide antes de
-correrlas y se registra el total.
+**Lo que sí quedó demostrado, y es un resultado positivo:** las imágenes tienen señal. De 0,188
+(clase mayoritaria) a 0,626–0,632 con partición honesta por ejemplar. El preprocesamiento facial
+del objetivo 2 —recorte, alineación por el eje ojo-hocico, encuadre que incluye las orejas—
+produce una entrada de la que un clasificador lineal sobre características congeladas extrae
+bastante más que las clases a priori.
+
+**Lo que falta para cerrar el objetivo 3:** entrenar el modelo elegido y reportar (3.4, 4.1–4.3),
+la ablación por `origen_alineacion` (4.4) y el análisis de errores por ejemplar (4.5). Queda una
+variante razonable sin probar —cabezas de ~1 K parámetros, dado que las de 33 K memorizan— y
+conviene decidir de antemano si se prueba, porque suma al conteo de configuraciones.
