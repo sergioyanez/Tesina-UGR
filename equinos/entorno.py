@@ -62,6 +62,10 @@ PILAS: dict[str, tuple[str, ...]] = {
         "numpy", "scipy", "pandas", "opencv-python", "matplotlib", "tqdm",
         "torch", "torchvision", "ultralytics", "deeplabcut",
     ),
+    # La etapa 03 consume los frames ya recortados y las características del backbone congelado:
+    # NO necesita detector ni modelo de pose. Es la única etapa que no arrastra la restricción de
+    # `numpy<2` que impone DeepLabCut, y exigirle esas dependencias obligaría a instalar de más.
+    "modelado": ("numpy", "pandas", "matplotlib", "scikit-learn", "torch", "torchvision"),
 }
 
 INSTRUCCION_LOCAL = (

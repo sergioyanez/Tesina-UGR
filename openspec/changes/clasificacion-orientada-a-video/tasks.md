@@ -83,7 +83,10 @@ arquitectura, no después.
 
 ## 5. Documentación
 
-- [ ] 5.1 Notebook `03_clasificacion.ipynb` con la estructura de Bloques y Pasos del proyecto.
+- [x] 5.1 Notebook `03_clasificacion.ipynb` con la estructura de Bloques y Pasos del proyecto.
+      31 celdas, 6 bloques, ejecutado entero con papermill sin errores en 4 s. Consume
+      `equinos.clasificacion`, que se creó para que el notebook **no dependa del directorio del
+      change**: al archivarse, un import desde `openspec/changes/...` se rompería.
 - [x] 5.2 Actualizar `openspec/project.md` con el estado del objetivo 3 y los resultados.
 - [x] 5.3 Dejar escrito el techo de exactitud conocido: los frames de frontera entre tomas
       contiguas de un mismo ejemplar con clases opuestas. **El análisis de errores lo confirma**:

@@ -26,7 +26,19 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+def _raiz_del_repo():
+    """Sube hasta encontrar el paquete `equinos`.
+
+    No se usa una profundidad fija porque este script se mueve: al archivar el change pasa de
+    `openspec/changes/<n>/` a `openspec/changes/archive/<fecha>-<n>/`, un nivel más abajo.
+    """
+    for candidata in Path(__file__).resolve().parents:
+        if (candidata / "equinos" / "__init__.py").exists():
+            return candidata
+    raise RuntimeError("No se encontró la raíz del repositorio desde " + __file__)
+
+
+sys.path.insert(0, str(_raiz_del_repo()))
 
 from equinos import encuadre, rutas  # noqa: E402
 from equinos.encuadre import CONF_MINIMA_KEYPOINT, CampoDeVision  # noqa: E402

@@ -19,11 +19,13 @@ Módulos:
     encuadre    campo de visión del recorte facial y barrido de encuadres candidatos
     particion   clips íntegros que entran al modelo y su partición por ejemplar
     caracteristicas  vectores por frame del backbone congelado, y su caché
+    clasificacion    métricas, líneas de base y modelo final del objetivo 3
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import (cache, caracteristicas, catalogo, checkpoint, encuadre, entorno,
-                     etapas, particion, pose, reporte, rutas)
+from equinos import (cache, caracteristicas, catalogo, checkpoint, clasificacion,
+                     encuadre, entorno, etapas, particion, pose, reporte, rutas)
 
 __all__ = ["rutas", "catalogo", "checkpoint", "cache", "encuadre", "entorno", "etapas",
-           "caracteristicas", "particion", "pose", "reporte"]
+           "caracteristicas", "clasificacion", "particion", "pose",
+           "reporte"]
