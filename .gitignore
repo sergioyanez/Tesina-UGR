@@ -26,7 +26,18 @@ frames_alineados/
 
 # Raíz de artefactos cuando el pipeline corre fuera de Colab (equinos.rutas).
 # En Colab la raíz vive en Google Drive y no toca el repo.
-datos_equinos/
+# Los artefactos del pipeline se regeneran corriendo las etapas: no se versionan.
+datos_equinos/*
+
+# Salvo las anotaciones manuales. Eso NO se regenera: son posiciones que una persona marcó a
+# mano, frame por frame, y perder el archivo significa volver a anotarlas. Es dato de entrada,
+# no resultado. Git no puede des-ignorar un archivo si su directorio padre está excluido, de ahí
+# que haya que abrir el camino carpeta por carpeta.
+!datos_equinos/resultados/
+datos_equinos/resultados/*
+!datos_equinos/resultados/keypoints_manuales.csv
+datos_equinos/resultados/*
+!datos_equinos/resultados/keypoints_manuales.csv
 *.pt
 *.pth
 *.h5

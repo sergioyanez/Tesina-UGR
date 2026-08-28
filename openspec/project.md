@@ -42,7 +42,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | Objetivo específico | Estado |
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
-| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 368/368 clips con relleno temporal; **73,2 % con estimadas, 68,7 % contando sólo detectadas**. El global dejó de ser el criterio útil (ver "El número que hay que citar") |
+| 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar") |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
@@ -380,27 +380,31 @@ alineados.** El modelo consume clips, no frames sueltos, y un clip con 11 frames
 recortes de caja mete el confondir de recorte adentro de una sola muestra. Se pide con
 `reporte.clips_integros()`.
 
-Estado al **28/08/2026**, con el relleno temporal (`MAX_HUECO_INTERPOLADO = 1`) y el piso de
-video corto en 1,0 s:
+Estado al **28/08/2026**, con el relleno temporal (`MAX_HUECO_INTERPOLADO = 1`), el piso de
+video corto en 1,0 s y 14 frames anotados a mano:
 
 | | clips íntegros | `Disgustado` clips/caballos |
 |---|---:|---|
 | sólo posiciones detectadas | **82** de 368 | **7 / 5** |
-| con las interpoladas (vigente) | **133** de 368 | **13 / 10** |
+| con estimadas y anotadas (vigente) | **141** de 368 | **21 / 15** |
 
-Con 10 ejemplares en `Disgustado`, `GroupKFold` por caballo sigue dejando folds sin la clase:
-**el dataset todavía no se puede entrenar de forma honesta.** Pero la distancia ya es corta y
-está medida:
+**Con 15 ejemplares en `Disgustado`, `GroupKFold` por caballo es viable.** Verificado con 3, 4 y
+5 particiones: ninguna clase queda vacía en ningún fold.
 
-| | ejemplares de `Disgustado` |
-|---|---:|
-| hoy | **10** de 47 |
-| rescatando los clips a los que falta **1** frame | **15** |
-| rescatando los que faltan ≤ 2 | **19** |
+Cómo se llegó, porque el orden importa y ninguna palanca sola alcanzaba:
 
-Son **14 clips a uno o dos frames de estar completos, 23 frames en total**. Anotarlos a mano
-—la vía que la spec ya contempla— lleva `Disgustado` a 19 ejemplares. Bajar
-`CONF_MINIMA_KEYPOINT` NO los rescata: ninguno tiene las dos confianzas por encima de 0,4.
+| | clips íntegros | `Disgustado` ejemplares |
+|---|---:|---:|
+| punto de partida | 81 | 5 |
+| + 15 videos nuevos filmados | 81 | 5 |
+| + relleno temporal de keypoints | 130 | 8 |
+| + `PISO_VIDEO_CORTO` a 1,0 s | 133 | 10 |
+| **+ 14 frames anotados a mano** | **141** | **15** |
+
+**Advertencia para el diseño experimental:** con 5 folds, dos de ellos tienen sólo 2 clips de
+`Disgustado` en test. La métrica de esa clase va a tener una varianza enorme. Conviene **3 o 4
+folds**, donde el mínimo por fold sube a 5 y 3 clips respectivamente, y reportar el desvío entre
+folds y no sólo la media.
 
 **La proyección con la que se planificó el change no se sostuvo, y conviene registrarlo.** El
 diseño esperaba 180 clips íntegros y 19 ejemplares de `Disgustado` rellenando huecos interiores.
@@ -444,13 +448,18 @@ El plan que resta:
    `MAX_EXTREMO_SOSTENIDO = 0`; sólo el largo 1 queda por debajo de la línea de base.
 2. ~~Implementar el relleno y re-derivar.~~ **Hecho.** 81 → 130 clips íntegros; `Disgustado` de 5
    a 8 ejemplares, no a los 19 esperados.
-3. ~~Bajar `PISO_VIDEO_CORTO` a 1,0 s.~~ **Hecho (28/08/2026).** Los 11 caballos de
+3. ~~Anotar a mano los frames que completan un clip.~~ **Hecho (28/08/2026).** De los 23
+   candidatos se anotaron 14 y se saltearon 9 —los que tenían confianza 0 en ambos keypoints:
+   la cara está fuera de cuadro o tapada, y no había nada que marcar—. `Disgustado` pasó de 10
+   a **15 ejemplares** y de 13 a **21 clips íntegros**. Se anota con `./correr_local.sh anotar`,
+   en el navegador, y quedan trazados con `origen_alineacion = "manual"`.
+4. ~~Bajar `PISO_VIDEO_CORTO` a 1,0 s.~~ **Hecho (28/08/2026).** Los 11 caballos de
    `Disgustado` que se perdían enteros por durar menos de 2 s: entraron 7, y sus clips alinean
    al **68,0 %**, mejor que el 63,1 % del resto de la clase — 16 frames sobre 1,5 s se mueven
    menos entre sí. La contrapartida es que esos clips cubren una ventana temporal más corta que
    los de 6 s, y eso hay que declararlo en el informe. Corrido con `-p PISO_VIDEO_CORTO 1.0`;
    **el default del notebook sigue en 2.0 y hay que cambiarlo si se adopta.**
-4. **Barrer `CONF_MINIMA_KEYPOINT`** con `reporte.confianzas()`, que también lee el CSV y no
+5. **Barrer `CONF_MINIMA_KEYPOINT`** con `reporte.confianzas()`, que también lee el CSV y no
    reinfiere: puede rescatar frames antes de tener que estimarlos.
 4. **Reemplazar el criterio de aceptación**: `COBERTURA_MINIMA_ACEPTABLE` sobre el global premia
    dejar afuera a la clase difícil. El criterio útil es cobertura por clase más clips íntegros por
