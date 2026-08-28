@@ -3,12 +3,13 @@
 Corrida el **28/08/2026** sobre la partición persistida y las características del backbone
 congelado. Reproducible con `cabezas_temporales.py`.
 
-## Configuraciones probadas: 10
+## Configuraciones probadas: 18
 
 El diseño pide comparar a lo sumo tres variantes de cabeza y **dejar registrado cuántas se
 probaron**, porque con 141 muestras probar veinte y quedarse con la mejor es elegir ruido. Se
-probaron **10 en total**, y se informan las diez: tres cabezas × dos regímenes de aumentación
-(6), más la prueba del orden sobre dos cabezas × orden real/permutado (4).
+probaron **18 en total**, y se informan las dieciocho: tres cabezas × dos regímenes de
+aumentación a nivel de clip (6), y la prueba del orden —tres cabezas × orden real/permutado— en
+dos regímenes de capacidad sobre ventanas (12).
 
 Todas comparten backbone, proyección 512→64, presupuesto de parámetros, y régimen de
 entrenamiento: 400 pasos de gradiente fijos, lote 64, AdamW `lr=1e-3`, `weight_decay=1e-2`,
@@ -112,6 +113,36 @@ Y la GRU, que es sensible al orden por construcción, rinde **peor** con el orde
 frames barajados. Con 954 muestras y un desvío entre folds de 0,11, esa diferencia es ruido — pero
 lo que no hay, en ninguna de las dos, es señal a favor del orden.
 
+## Reducción de capacidad
+
+Las cabezas de 33 K parámetros memorizan 106 clips antes del paso 80, así que se repitió todo con
+la proyección bajada de 64 a 8 dimensiones: **~4–8 K parámetros**, un orden de magnitud menos.
+
+| Cabeza | Entrenables | F1 macro (orden real) | Permutado | Δ orden |
+|---|---:|---:|---:|---:|
+| `promedio` 64 | 33 027 | 0,574 ± 0,099 | 0,574 | +0,000 |
+| `atencion` 64 | 33 603 | **0,632 ± 0,155** | 0,632 | +0,000 |
+| `gru` 64 | 42 339 | 0,585 ± 0,114 | 0,619 | −0,034 |
+| `promedio` 8 | 4 131 | 0,587 ± 0,078 | 0,587 | +0,000 |
+| `atencion` 8 | 4 203 | 0,580 ± 0,098 | 0,580 | +0,000 |
+| `gru` 8 | 8 235 | 0,605 ± 0,072 | 0,613 | −0,008 |
+
+**Bajar la capacidad no mejora la media**, y el efecto es mixto: `promedio` +0,013, `gru` +0,020,
+`atencion` −0,052. Lo que sí hace, de forma consistente, es **bajar la varianza entre folds** —de
+0,099–0,155 a 0,072–0,098—, que es el efecto de regularización esperado. Un modelo más estable
+pero no mejor.
+
+### Una validación del arnés que salió gratis
+
+`promedio` se incluyó en la prueba del orden aunque sea **demostrablemente** invariante: promediar
+no puede depender del orden. Que dé exactamente el mismo número en las dos columnas, en los dos
+regímenes de capacidad, confirma que el arnés de permutación funciona.
+
+Eso importa porque es lo que permite afirmar que el **+0,000 de la atención es un resultado y no
+un bug**: si la permutación no se estuviera aplicando, `promedio` también daría +0,000 —y lo hace—
+pero la verificación directa del tensor permutado (contenido conservado, orden cambiado) descarta
+esa explicación.
+
 ## Estado y qué haría falta
 
 **La hipótesis del trabajo no queda sostenida por esta evidencia.** Se informa así, que es lo
@@ -119,10 +150,17 @@ que el diseño exige, y se sostiene sobre tres pruebas independientes que dan lo
 
 1. **A nivel de clip**, la cabeza invariante al orden (0,584) y las sensibles al orden (0,599 y
    0,520) no se distinguen más allá del desvío entre folds.
-2. **Con muestras igualadas**, permutar los frames no cambia una sola predicción de la atención, y
-   la GRU rinde peor con el orden real.
-3. **El mejor modelo de clip** (0,632 ± 0,155) apenas supera a la línea de base que ignora el
-   orden por completo (0,626), y queda lejos del criterio declarado (0,691).
+2. **Con muestras igualadas**, permutar los frames no cambia una sola predicción de la atención en
+   ninguno de los dos regímenes de capacidad, y la GRU rinde peor con el orden real en los dos.
+3. **Bajar la capacidad un orden de magnitud no cambia la conclusión.** Baja la varianza, no sube
+   la media, y el orden sigue sin aportar.
+4. **Ningún modelo temporal le gana a la línea de base.** El mejor (0,632 ± 0,155) apenas supera a
+   la línea de base que ignora el orden por completo (0,626 ± 0,065), con un desvío entre folds
+   más del doble de grande — o sea que ni siquiera es distinguible de ella. Y queda lejos del
+   criterio declarado (0,691).
+
+**El mejor modelo sigue siendo la línea de base de un frame: 0,626 ± 0,065.** Es también el más
+simple y el más estable de todos los probados.
 
 **Qué NO dice este resultado.** No dice que la información temporal sea inútil en el problema.
 Dice que **con 141 clips de 73 ejemplares no se pudo extraer señal temporal utilizable**, y que
