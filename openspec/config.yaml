@@ -7,15 +7,24 @@ context: |
   El contexto completo (dataset, pipeline, riesgos, cronograma) está en `openspec/project.md`.
   LEERLO antes de generar cualquier artefacto.
 
-  Resumen operativo:
-  - Stack: Google Colab + Python 3, OpenCV, pandas, numpy, gdown, matplotlib, scikit-learn,
-    PyTorch (modelo). Previstos: TensorFlow, DeepLabCut.
-  - Datos: 34 videos en Google Drive, una carpeta por clase — Sereno (23), Interesado (8),
-    Disgustado (3). 1080x1920 vertical, ~30 fps, 8-37 s. Nunca versionar datos crudos.
-  - Artefacto actual: 01_preparar_dataset_equinos.ipynb — Bloque 1 (descarga e inventario),
-    Bloque 2 (segmentación en clips de 5-7 s: 34 videos -> 92 clips, 22 caballos),
-    Bloque 3 (16 frames uniformes por clip). Falta: ROI facial, modelo, interfaz.
-  - La unidad de análisis es el CLIP, no el video ni el frame suelto.
+  Resumen operativo, al 28/08/2026:
+  - Cómputo: máquina local con RTX 3070 (venv `~/.venvs/tesina-equinos`, Python 3.10) como
+    entorno principal; Colab con A100/T4 como respaldo verificado. DeepLabCut fija numpy<2.
+  - Datos: 249 videos en una carpeta compartida de Drive, espejados en `~/videos_de_prueba`,
+    una carpeta por clase — Sereno 93, Disgustado 85, Interesado 71. Nunca versionar datos
+    crudos; la excepción es `keypoints_manuales.csv`, que es entrada humana y no se regenera.
+  - Pipeline: 01 (inventario, clips de 5-7 s con piso de 1 s, 16 frames por clip) y 02 (YOLO11x
+    para el equino, DeepLabCut superanimal_quadruped para keypoints, ROI y alineación por
+    similitud ojo-hocico a 224x224). Ambos ejecutados: 368 clips, 5888 frames.
+  - La unidad de análisis es el CLIP ÍNTEGRO, o sea sus 16 frames alineados. Un clip con frames
+    mezclados —parte alineados por keypoints, parte recortes de caja— es una muestra
+    contaminada, porque a qué frame le toca cuál correlaciona con el ejemplar, que predice la
+    clase. Hay 141 clips íntegros: Disgustado 21, Interesado 56, Sereno 64.
+  - El cuello de botella es la cantidad de EJEMPLARES, no de clips. Hay 15 caballos con clip
+    íntegro en Disgustado, 35 en Interesado y 36 en Sereno. De ahí sale el tamaño de los folds.
+  - Cada frame registra `origen_alineacion`. En la corrida vigente son 4046 por keypoints, 1562
+    de caja, 266 interpoladas y 14 manuales. Detectado y estimado NO son la misma evidencia y
+    no deben sumarse sin decirlo.
   - Idioma: TODO en español (código, comentarios, variables, documentación).
   - Notebooks numerados (NN_nombre.ipynb), organizados en "Bloques" con "Pasos" numerados.
   - Reproducibilidad: random_state=42.
@@ -26,14 +35,34 @@ rules:
     - Indicar a qué objetivo específico del plan de trabajo (1 a 4) contribuye la propuesta.
   specs:
     - Escribir en español.
-    - Toda evaluación de modelos debe especificar F1 macro y balanced accuracy; la accuracy
-      global NO es métrica válida por el desbalance de clases (68/24/9).
-    - Todo split de datos debe particionar por video y por caballo (prefijo numérico del
-      nombre de archivo), nunca por frame — evita fuga de datos.
+    - >-
+      Toda evaluación de modelos debe especificar F1 macro y balanced accuracy; la accuracy
+      global NO es métrica válida. En clips íntegros las clases están desbalanceadas
+      (Disgustado 15 %, Interesado 40 %, Sereno 45 %), así que un clasificador que nunca
+      prediga Disgustado alcanza 85 % de accuracy sin haber aprendido nada.
+    - >-
+      Todo split de datos debe particionar por CABALLO (prefijo numérico del nombre de
+      archivo), nunca por clip ni por frame, para evitar fuga de datos. 26 ejemplares aparecen
+      en más de una clase, así que la partición es por ejemplar y no por par ejemplar-clase.
+    - >-
+      Usar 3 o 4 folds y no 5. Con 5 particiones hay folds con apenas 2 clips de Disgustado en
+      test, y una métrica calculada sobre dos muestras no dice nada. Reportar el desvío entre
+      folds además de la media.
+    - >-
+      Todo umbral o criterio de aceptación debe declararse ANTES de medir y anclarse en una
+      línea de base medible. Declararlo antes protege contra elegir el número que conviene;
+      anclarlo protege contra elegir uno imposible de cumplir. Hacen falta las dos cosas.
   design:
     - Escribir en español.
-    - "Justificar las decisiones de arquitectura contra la restricción real del dataset:
-      34 videos. Priorizar transfer learning y aumentación por sobre entrenar desde cero."
+    - >-
+      Justificar las decisiones de arquitectura contra la restricción real del dataset, que son
+      141 clips íntegros de 73 ejemplares distintos. Entrenar una red de video desde cero se
+      sobreajusta
+      antes de la primera época útil; priorizar transfer learning con backbone congelado.
+    - >-
+      La aumentación de datos es un regularizador de entrenamiento y NO una mejora del dataset.
+      No crea ejemplares nuevos, que es lo único que rompe el confounder de individuo.
+    - Documentar las alternativas descartadas y por qué, no sólo la decisión tomada.
   tasks:
     - Escribir en español.
     - Dividir las tareas en bloques ejecutables como celdas o secciones de notebook.
