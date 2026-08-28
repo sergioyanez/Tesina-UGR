@@ -1,6 +1,8 @@
 # Propuesta — el recorte canónico debe incluir las orejas
 
-## A qué objetivo contribuye
+## Why
+
+### A qué objetivo contribuye
 
 **Objetivo específico 2** del plan de trabajo: *desarrollar un pipeline de preprocesamiento —
 extracción de fotogramas clave y detección de la región de interés (ROI) facial*. Este change
@@ -10,7 +12,7 @@ criterio —la cobertura de alineación— que no mira qué parte de la cara que
 Bloquea el objetivo 3: entrenar con el encuadre actual y corregirlo después obliga a repetir el
 entrenamiento entero.
 
-## El problema, medido
+### El problema, medido
 
 La observación es de Héctor R. Liceaga (`analisis_y_tareas.md`, rama `hector`): en los equinos **la
 posición de las orejas —hacia atrás o aplanadas— es el indicador principal de disgusto y estrés**,
@@ -45,7 +47,7 @@ Semiancho lateral de las orejas:      p50 = 0,57 d    (el recorte muestra 0,83 d
 encima del ojo y lo que sobra es campo a los costados. Esa asimetría es la que hace que el
 problema no se pueda resolver moviendo `FRAC_OJO`.
 
-## Por qué ahora, y por qué es barato
+### Por qué ahora, y por qué es barato
 
 Ahora, porque **es el último momento en que sale barato**: el objetivo 3 todavía no entrenó. Después
 de entrenar, corregir el encuadre invalida la corrida completa.
@@ -66,7 +68,7 @@ Barato, porque el diseño de la etapa 02 ya separó la parte cara de la analíti
 Lo que se re-ejecuta es el warp y la escritura de los 5.888 JPEG, más el recálculo de cobertura y
 composición. Minutos.
 
-## Qué cambia
+## What Changes
 
 - **La ROI deja de ser cuadrada.** Pasa a ser un rectángulo vertical en el marco de la cabeza, con
   el eje ojo-hocico sobre la vertical. Es **BREAKING** respecto de la spec vigente, que exige
@@ -83,12 +85,12 @@ composición. Minutos.
 - **Cada frame registra la fracción de su recorte que salió de relleno** (`relleno_fraccion`), del
   mismo modo que ya registra `origen_alineacion`, para poder ablacionar su efecto.
 
-## Lo que NO cambia
+### Lo que NO cambia
 
 El par de anclaje (ojo-hocico), la transformada de similitud, la escala isótropa, el camino de
 degradación por caja, la etapa 01, la inferencia de pose y las anotaciones manuales.
 
-## Alcance
+### Alcance
 
 **Entra:** la parametrización del encuadre, el barrido y la elección con evidencia, la métrica de
 inclusión de orejas, la columna `relleno_fraccion`, la re-ejecución del warp, el recálculo de
@@ -98,20 +100,20 @@ cobertura y composición, la revalidación de los topes de interpolación y la a
 **No entra:** cambiar el par de anclaje; usar keypoints de oreja como puntos de alineación; el
 `imagededup` de la rama `hector`, que es un change aparte; y el objetivo 3, que arranca después.
 
-## Capacidades
+## Capabilities
 
-### Nuevas
+### New Capabilities
 
 Ninguna. El cambio es de requisitos dentro de una capacidad existente.
 
-### Modificadas
+### Modified Capabilities
 
 - `preprocesamiento-facial`: el requisito **«Región de interés cuadrada»** se reemplaza por uno de
   encuadre rectangular que incluye las orejas; el requisito de **reporte de cobertura** suma la
   inclusión de orejas como criterio de aceptación; y el de **trazabilidad** suma la fracción de
   relleno por frame.
 
-## Riesgo principal
+### Riesgo principal
 
 **El encuadre que incluye las orejas cuesta relleno.** Ampliar el campo de visión hace que el
 rectángulo canónico se salga más seguido del cuadro de origen, y `BORDER_REPLICATE` inventa
@@ -133,7 +135,7 @@ se informe:
    caja envolvente. Sólo queda la discretización de la rejilla, que afecta a todos los encuadres
    por igual.
 
-## Impacto
+## Impact
 
 - `02_roi_y_normalizacion.ipynb`: celda de parámetros, `destino_canonico()`, el paso de recorte y
   alineación, y los pasos de cobertura.

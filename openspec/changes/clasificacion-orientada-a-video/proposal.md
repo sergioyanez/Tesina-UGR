@@ -1,12 +1,14 @@
 # Propuesta — clasificación de la expresión a partir del clip
 
-## A qué objetivo contribuye
+## Why
+
+### A qué objetivo contribuye
 
 **Objetivo específico 3** del plan de trabajo: *aplicar técnicas de clasificación de Aprendizaje
 Automático orientadas a video para identificar estados emocionales*. Es el último objetivo
 técnico antes del 4 (aplicación o interfaz), y el que pone a prueba la hipótesis del trabajo.
 
-## Qué se construye
+### Qué se construye
 
 Un clasificador que, dado un clip —16 frames de 224×343 alineados por el eje ojo-hocico, con un
 campo de visión que incluye las orejas desde el change `encuadre-que-incluye-las-orejas`—,
@@ -17,7 +19,7 @@ El entregable no es sólo el modelo entrenado. Es el modelo **más** su evaluaci
 su comparación contra líneas de base, y la ablación que separa lo que aprendió de lo que
 podría estar memorizando.
 
-## Por qué ahora
+### Por qué ahora
 
 El objetivo 2 quedó cerrado el 28/08/2026 y, por primera vez, el dataset admite una partición
 honesta:
@@ -39,7 +41,7 @@ ningún fold. Hasta el 27/08 `Disgustado` tenía 5 ejemplares y eso era imposibl
 
 Con la entrega proyectada a septiembre de 2026, este es el trabajo que falta.
 
-## La restricción que manda sobre todo lo demás
+### La restricción que manda sobre todo lo demás
 
 **Son 141 muestras.** No 141 mil. Ese número, y no la elección de arquitectura, es lo que
 determina qué se puede hacer:
@@ -52,7 +54,7 @@ determina qué se puede hacer:
 - La aumentación ayuda como regularizador, pero **no crea ejemplares nuevos**, que es lo único
   que rompe el confounder de individuo. No se cuenta como solución al tamaño del dataset.
 
-## Qué hay que poder responder al final
+### Qué hay que poder responder al final
 
 Estas preguntas se van a hacer en la defensa, y el diseño existe para tener con qué contestarlas:
 
@@ -69,7 +71,9 @@ Estas preguntas se van a hacer en la defensa, y el diseño existe para tener con
 4. **¿Qué tan estable es el resultado?** Se responde reportando el desvío entre folds y no sólo
    la media. Con 15 ejemplares en la clase minoritaria, una media sola es engañosa.
 
-## Alcance
+## What Changes
+
+### Alcance
 
 **Entra:** preparación del tensor de entrada desde `dataset_frames_alineados.csv`, partición por
 ejemplar, líneas de base, arquitectura con backbone congelado, entrenamiento, evaluación
@@ -79,7 +83,7 @@ cruzada, ablación por origen, matriz de confusión y análisis de errores por c
 hiperparámetros, que con 141 muestras es sobreajuste al conjunto de validación; y conseguir más
 material, que sigue en curso en paralelo y no bloquea este change.
 
-## Riesgo principal
+### Riesgo principal
 
 Que el modelo no supere a las líneas de base. **Es un resultado posible y hay que poder
 publicarlo.** Con 141 clips y 73 ejemplares, un resultado negativo bien medido vale más que uno
@@ -87,3 +91,26 @@ positivo obtenido eligiendo el corte que convenía. Por eso el criterio de acept
 antes de entrenar y se informa aunque no se cumpla, igual que se hizo con el umbral del relleno
 temporal — donde el umbral declarado no se cumplió, se dijo, y eso destapó que el criterio
 estaba mal fundado y no el método.
+
+## Capabilities
+
+### New Capabilities
+
+- `clasificacion-de-expresiones`: el clasificador de la expresión a partir del clip, su partición
+  por ejemplar, sus líneas de base declaradas, sus métricas y la ablación por `origen_alineacion`.
+
+### Modified Capabilities
+
+Ninguna. El preprocesamiento no se toca desde este change: se consume tal como quedó al cerrar el
+objetivo 2.
+
+## Impact
+
+- Notebook nuevo de la etapa 03, que consume `resultados/dataset_frames_alineados.csv` y los frames
+  de `cache/frames_alineados.zip`.
+- **Entradas de 224×343**, no de 224×224: el change `encuadre-que-incluye-las-orejas` cambió la
+  forma del recorte el 28/08/2026 para que las orejas entren en el cuadro.
+- Columnas del dataset que este change usa como filtro y como eje de ablación:
+  `alineado`, `origen_alineacion` y `relleno_fraccion`.
+- Pesos preentrenados de ImageNet: hay que tenerlos en la caché local de torch antes de correr,
+  porque el entorno de trabajo no siempre tiene salida a internet.
