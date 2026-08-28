@@ -24,6 +24,7 @@
 #   ./correr_local.sh etapa01      re-ejecuta el notebook 01 con papermill (LIMPIAR_ETAPA = False,
 #                                  PISO_VIDEO_CORTO = 1.0 s; sobrescribible por entorno)
 #   ./correr_local.sh etapa02      re-ejecuta el notebook 02 con papermill (LIMPIAR_ETAPA = False)
+#   ./correr_local.sh interfaz     levanta la interfaz de inferencia (Streamlit)
 #
 # Las rutas y el piso se pueden sobrescribir desde afuera:
 #   TESINA_EQUINOS_RAIZ=/otra/raiz ./correr_local.sh estado
@@ -117,6 +118,12 @@ case "${1:-jupyter}" in
             -p EJECUCION_AUTOMATICA True -p LIMPIAR_ETAPA False \
             -k tesina-equinos --cwd . --log-output
         ;;
+    interfaz)
+        # La interfaz del objetivo 4. Corre en esta máquina porque arrastra la cadena entera de
+        # inferencia —YOLO y DeepLabCut— y sin GPU los 35 s por clip se vuelven varios minutos.
+        echo "Abriendo la interfaz. Ctrl+C para cerrarla."
+        exec "$VENV/bin/streamlit" run app_inferencia.py
+        ;;
     jupyter)
         # Jupyter sale del Python del sistema, no del venv: lo único que hace falta del entorno es
         # el kernel, que ya está registrado a nivel de usuario y por eso lo ve cualquier Jupyter.
@@ -125,7 +132,7 @@ case "${1:-jupyter}" in
         ;;
     *)
         echo "Opción desconocida: $1"
-        echo "Usá: estado | reportes | anotar | anotar-que | anotar-cargar | entorno | etapa01 | etapa02 | jupyter"
+        echo "Usá: estado | reportes | anotar | anotar-que | anotar-cargar | entorno | etapa01 | etapa02 | interfaz | jupyter"
         exit 2
         ;;
 esac

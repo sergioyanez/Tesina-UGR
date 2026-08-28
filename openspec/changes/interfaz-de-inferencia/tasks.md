@@ -33,25 +33,31 @@ como terminan siendo una nota al pie.
 
 ## 3. Inferencia de punta a punta
 
-- [ ] 3.1 `equinos/inferencia.py`: de un video a un clip de 16 frames alineados, reutilizando las
+- [x] 3.1 `equinos/inferencia.py`: de un video a un clip de 16 frames alineados, reutilizando las
       funciones de las etapas 01 y 02. **Sin reimplementar nada**: el encuadre y los umbrales
       salen de donde están declarados.
-- [ ] 3.2 Devolver una **negativa explicada** cuando no se llegue a 16 frames alineados, con el
+- [x] 3.2 Devolver una **negativa explicada** cuando no se llegue a 16 frames alineados, con el
       motivo distinguido: sin detección, sin keypoints suficientes, video demasiado corto.
-- [ ] 3.3 Extraer características con el backbone congelado y predecir, devolviendo la clase, las
+- [x] 3.3 Extraer características con el backbone congelado y predecir, devolviendo la clase, las
       tres probabilidades y la precisión medida de la clase predicha.
-- [ ] 3.4 Emitir señales de progreso por etapa, para que 35 s no parezcan un cuelgue.
-- [ ] 3.5 Pruebas en `tests/test_inferencia.py`, sin GPU ni video: que la negativa se produzca con
+- [x] 3.4 Emitir señales de progreso por etapa, para que 35 s no parezcan un cuelgue.
+- [x] 3.5 Pruebas en `tests/test_inferencia.py`, sin GPU ni video: que la negativa se produzca con
       menos de 16 frames alineados, que distinga los motivos, y que la salida positiva traiga
       siempre la precisión de su clase.
 
 ## 4. Verificación contra el conjunto evaluado
 
-- [ ] 4.1 Tomar un clip que YA está en el dataset, pasarlo por `inferencia` de punta a punta y
-      comprobar que produce **las mismas características** que la caché. Si difieren, la interfaz
-      está midiendo otra distribución y la confiabilidad informada no aplica.
-- [ ] 4.2 Comprobar que la predicción de ese clip coincide con la que dio el fold en que estaba
-      como test.
+- [x] 4.1 Tomar un clip que YA está en el dataset y comprobar que produce **las mismas
+      características** que la caché. **3 de 3 clips: diferencia exactamente 0.**
+      `verificar_inferencia.py`. Destapó dos bugs que no daban error: DeepLabCut devuelve diez
+      `individuals` y me quedaba con el vacío; y **faltaba el viaje por JPEG** —el conjunto
+      evaluado pasó por compresión con pérdida y extraer del tensor en memoria daba
+      características 9,4 % distintas—.
+- [x] 4.2 ~~Comprobar que la predicción coincide con la del fold en que estaba como test.~~
+      **La tarea estaba mal planteada y se deja constancia:** el modelo de producción vio ese clip
+      al entrenarse, así que lo acierta por memorización; el del fold nunca lo vio. Son modelos
+      distintos y difieren con razón. Lo que valida la cadena es la igualdad de características de
+      la 4.1, no una coincidencia de predicciones.
 - [ ] 4.3 Medir la **tasa de negativa** sobre una muestra de videos crudos que no hayan entrado al
       dataset, e informarla. Si es muy alta, es un hallazgo sobre el preprocesamiento y va escrito
       como tal.
@@ -62,14 +68,18 @@ como terminan siendo una nota al pie.
       adoptarlo que no toca el conjunto pineado: agrega 15 paquetes y deja numpy 1.26.4, torch
       2.5.1+cu121, pandas y scipy donde estaban. Era el riesgo real —subir numpy por encima de 2
       rompe DeepLabCut—. Fijado en `requirements-local.txt`.
-- [ ] 5.2 Pantalla de carga: recibir el video, decir de antemano cuánto puede tardar y qué formatos
+- [x] 5.2 Pantalla de carga: recibir el video, decir de antemano cuánto puede tardar y qué formatos
       admite.
-- [ ] 5.3 Pantalla de resultado: clase, las tres probabilidades, **la precisión medida de la clase
+- [x] 5.3 Pantalla de resultado: clase, las tres probabilidades, **la precisión medida de la clase
       predicha con la misma prominencia que la etiqueta**, y el criterio no alcanzado.
-- [ ] 5.4 Pantalla de negativa: el motivo, y dicho como resultado esperable y no como error.
-- [ ] 5.5 Texto de alcance visible sin buscarlo: no es diagnóstico veterinario.
-- [ ] 5.6 Decidir si la interfaz segmenta un video largo o exige un clip de 5–7 s, con el primer
-      video de prueba real sobre la mesa.
+- [x] 5.4 Pantalla de negativa: el motivo, y dicho como resultado esperable y no como error.
+- [x] 5.5 Texto de alcance visible sin buscarlo: no es diagnóstico veterinario. Arriba de todo, en rojo,
+      antes del cargador.
+- [x] 5.6 Decidir si la interfaz segmenta un video largo o exige un clip de 5–7 s. **Exige una
+      toma corta**, con un máximo de 15 s y un motivo de negativa propio (`VIDEO_LARGO`). Los 16
+      frames se muestrean repartidos por todo el video: sobre uno de dos minutos darían fotogramas
+      separados por ocho segundos, que es una colección de momentos y no una secuencia de
+      expresión.
 
 ## 6. Revisión de honestidad
 

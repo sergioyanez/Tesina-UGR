@@ -101,6 +101,67 @@ def _agrupar_por_frame(filas: list[dict]) -> dict[tuple[str, int], dict[str, tup
     return frames
 
 
+# --- de la salida cruda de DeepLabCut al formato largo --------------------------------------
+# El notebook 02 hace esto mismo en su Paso 12. Vive también acá porque la inferencia sobre un
+# video suelto lo necesita, y elegir el individuo ES una decisión: con varios animales detectados,
+# cuál se sigue cambia todos los keypoints y por lo tanto el recorte.
+
+
+def elegir_individuo(tabla) -> str:
+    """Con varios animales detectados, el de mayor confianza media.
+
+    `video_inference_superanimal` devuelve diez `individuals` aunque haya un solo animal: los que
+    no detectó vienen con confianza -1. Quedarse con el último, o mezclarlos, deja los keypoints
+    en NaN sin que nada falle — y aguas abajo eso se ve como «no se encontraron keypoints», que
+    culpa al video en vez de al código.
+    """
+    import numpy as np
+
+    individuos = list(dict.fromkeys(tabla.columns.get_level_values("individuals")))
+    if len(individuos) == 1:
+        return individuos[0]
+
+    mejor, mejor_conf = individuos[0], float("-inf")
+    for individuo in individuos:
+        columnas = [c for c in tabla.columns
+                    if c[1] == individuo and c[-1] == "likelihood"]
+        if not columnas:
+            continue
+        media = float(np.nanmean(tabla[columnas].to_numpy(dtype=float)))
+        if media > mejor_conf:
+            mejor, mejor_conf = individuo, media
+    return mejor
+
+
+def a_formato_largo(tabla, ordenes_e_indices, clip: str) -> list[dict]:
+    """Traduce el DataFrame de DeepLabCut a filas `(clip, orden, bodypart, x, y, confianza)`.
+
+    Emite TODOS los bodyparts, no sólo el par facial: es el mismo criterio del notebook 02, y es
+    lo que después permitió medir las orejas sin reinferir.
+    """
+    individuo = elegir_individuo(tabla)
+    n_filas = len(tabla)
+    bodyparts = list(dict.fromkeys(tabla.columns.get_level_values("bodyparts")))
+    scorer = tabla.columns.get_level_values("scorer")[0]
+
+    series = {}
+    for bodypart in bodyparts:
+        sub = tabla.xs((scorer, individuo, bodypart), axis=1,
+                       level=("scorer", "individuals", "bodyparts"))
+        series[bodypart] = (sub["x"].to_numpy(dtype=float),
+                            sub["y"].to_numpy(dtype=float),
+                            sub["likelihood"].to_numpy(dtype=float))
+
+    filas = []
+    for orden, indice in ordenes_e_indices:
+        # CAP_PROP_FRAME_COUNT puede sobreestimar; se acota al rango real de la tabla.
+        i = int(min(max(int(indice), 0), n_filas - 1))
+        for bodypart, (xs, ys, cs) in series.items():
+            filas.append({"clip": clip, "orden": int(orden), "bodypart": bodypart,
+                          "x": float(xs[i]), "y": float(ys[i]), "confianza": float(cs[i])})
+    return filas
+
+
 # --- selección del par de referencia -------------------------------------------------------
 
 

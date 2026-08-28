@@ -20,12 +20,14 @@ Módulos:
     particion   clips íntegros que entran al modelo y su partición por ejemplar
     caracteristicas  vectores por frame del backbone congelado, y su caché
     clasificacion    métricas, líneas de base y modelo final del objetivo 3
+    inferencia       de un video a una predicción, o a una negativa explicada
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
 from equinos import (cache, caracteristicas, catalogo, checkpoint, clasificacion,
-                     encuadre, entorno, etapas, particion, pose, reporte, rutas)
+                     encuadre, entorno, etapas, inferencia, particion, pose,
+                     reporte, rutas)
 
 __all__ = ["rutas", "catalogo", "checkpoint", "cache", "encuadre", "entorno", "etapas",
-           "caracteristicas", "clasificacion", "particion", "pose",
-           "reporte"]
+           "caracteristicas", "clasificacion", "inferencia",
+           "particion", "pose", "reporte"]

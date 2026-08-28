@@ -1,0 +1,159 @@
+"""Interfaz del objetivo 4 — Streamlit sobre `equinos.inferencia`.
+
+Se levanta con:
+
+    ./correr_local.sh interfaz
+
+**Es una envoltura delgada, a propósito.** Toda la lógica —el preprocesamiento, la negativa, el
+modelo y la confiabilidad— vive en `equinos/`. Acá sólo hay presentación, y por eso cambiar de
+framework no obliga a reimplementar nada.
+
+**Lo que esta pantalla tiene que lograr, y es el requisito principal del change:** que alguien que
+no leyó la tesina entienda que, cuando el modelo dice `Disgustado`, acierta una de cada tres veces.
+Una pantalla que devuelve «Disgustado, 87 %» es indistinguible de una herramienta validada, y ésta
+no lo es. Por eso la confiabilidad medida va arriba, en grande, y no en un descargo al pie.
+"""
+
+import tempfile
+from pathlib import Path
+
+import streamlit as st
+
+from equinos import clasificacion, inferencia, rutas
+
+FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
+
+ETAPAS = {
+    "leer": "Leyendo el video",
+    "detectar": "Buscando al equino (~15 s)",
+    "pose": "Estimando keypoints faciales (~20 s)",
+    "alinear": "Recortando y alineando la cara",
+    "caracteristicas": "Extrayendo características",
+    "predecir": "Clasificando",
+}
+
+st.set_page_config(page_title="Expresiones faciales en equinos", page_icon="🐴")
+
+
+@st.cache_resource
+def _precisiones():
+    rutas.inicializar(verbose=False)
+    return clasificacion.precision_por_clase()
+
+
+st.title("Detección de expresiones faciales en equinos")
+
+# --- Alcance, visible sin buscarlo (tarea 5.5) -------------------------------------------------
+st.error(
+    "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
+    "trabajo de tesina. El modelo **no alcanzó el criterio que se declaró para considerarlo "
+    "útil** (F1 macro 0,626 sobre 0,691 exigido), y su acierto depende mucho de la clase: "
+    "consultá el detalle que acompaña a cada resultado."
+)
+
+st.markdown(
+    "Subí una toma corta de la cara de un caballo y el sistema intentará clasificar su expresión "
+    "en **Sereno**, **Interesado** o **Disgustado**."
+)
+
+with st.expander("Antes de subir: qué esperar"):
+    st.markdown(
+        f"""
+- **Duración:** una toma de **5 a 7 segundos** (máximo {inferencia.DURACION_MAXIMA_SEG:.0f} s).
+  Es lo que el modelo vio al entrenarse; sobre un video largo mediría otra cosa.
+- **Formatos:** {", ".join(FORMATOS)}.
+- **Tarda alrededor de 35 segundos** con GPU: 15 de detección y 20 de estimación de pose. La
+  clasificación en sí es instantánea; lo lento es el preprocesamiento.
+- **Es probable que el sistema no pueda responder.** Necesita 16 fotogramas donde se vean el ojo
+  y el hocico con claridad. Sobre el propio conjunto de datos del trabajo, sólo el **38 %** de las
+  tomas lo consiguió. Que se niegue es un resultado normal, no un error del video.
+"""
+    )
+
+archivo = st.file_uploader("Video de la toma", type=FORMATOS)
+
+if archivo is not None:
+    st.video(archivo)
+    if st.button("Analizar", type="primary"):
+        with tempfile.NamedTemporaryFile(suffix=Path(archivo.name).suffix, delete=False) as tmp:
+            tmp.write(archivo.getbuffer())
+            ruta = tmp.name
+
+        barra = st.progress(0.0, text="Preparando…")
+        pasos = list(ETAPAS)
+
+        def avisar(etapa, detalle=""):
+            if etapa in pasos:
+                barra.progress((pasos.index(etapa) + 1) / len(pasos),
+                               text=ETAPAS.get(etapa, etapa))
+
+        try:
+            resultado = inferencia.clasificar_video(ruta, progreso=avisar)
+        finally:
+            Path(ruta).unlink(missing_ok=True)
+        barra.empty()
+
+        # --- Negativa: un resultado de primera clase (tarea 5.4) ------------------------------
+        if not resultado.hay_prediccion:
+            st.warning(f"### No se puede clasificar esta toma\n\n{resultado.detalle}")
+            st.markdown(
+                "**Esto es un resultado esperable, no una falla.** El modelo sólo acepta tomas "
+                "donde pueda alinear los 16 fotogramas por el eje ojo-hocico; si no puede, "
+                "prefiere no responder antes que dar una etiqueta cuya confiabilidad nadie midió."
+            )
+            if resultado.frames_alineados:
+                st.caption(f"Se alinearon {resultado.frames_alineados} de "
+                           f"{inferencia.FRAMES_POR_CLIP} fotogramas necesarios.")
+            st.stop()
+
+        # --- Resultado: la etiqueta y su confiabilidad, con el mismo peso (tarea 5.3) ---------
+        precisiones = _precisiones()
+        st.markdown("---")
+        izquierda, derecha = st.columns(2)
+        with izquierda:
+            st.caption("Expresión predicha")
+            st.markdown(f"# {resultado.clase}")
+        with derecha:
+            st.caption("Cuando el modelo dice esto, acierta")
+            st.markdown(f"# {resultado.precision:.0%}")
+            st.caption(f"{resultado.acertadas} de {resultado.veces_que_lo_dijo} veces, "
+                       "medido fuera de muestra")
+
+        if resultado.precision < 0.5:
+            st.error(
+                f"**Atención: el modelo acierta menos de la mitad de las veces que dice "
+                f"«{resultado.clase}».** Este resultado no debería usarse para tomar ninguna "
+                "decisión sobre el animal."
+            )
+
+        st.markdown("---")
+        st.markdown("#### Cómo quedó repartido el voto")
+        st.caption(
+            "Promedio sobre los 16 fotogramas. Un reparto parejo significa que el modelo dudó, "
+            "aunque igual haya tenido que elegir una etiqueta."
+        )
+        for clase, probabilidad in sorted(resultado.probabilidades.items(),
+                                          key=lambda kv: -kv[1]):
+            st.progress(probabilidad,
+                        text=f"{clase} — {probabilidad:.0%}  "
+                             f"(acierta {precisiones[clase]['precision']:.0%} cuando lo dice)")
+
+        st.markdown("---")
+        st.markdown("#### Qué significa este número")
+        st.info(resultado.texto_confiabilidad)
+        with st.expander("Cómo se midió"):
+            st.markdown(
+                """
+La confiabilidad sale de **validación cruzada agrupada por caballo**: ningún animal usado para
+entrenar aparece en la evaluación, así que el modelo no puede acertar reconociendo al ejemplar en
+lugar de su expresión.
+
+Sin esa precaución el mismo procedimiento llega a un F1 macro de 0,53 **sin mirar un solo píxel**,
+sólo por saber de qué caballo se trata: 63 de los 73 ejemplares del conjunto aparecen en una única
+clase.
+
+El trabajo también puso a prueba su propia hipótesis —que la evolución temporal es lo que permite
+clasificar la expresión— y **no quedó sostenida**: barajar el orden de los fotogramas no cambia
+las predicciones. El modelo que se usa acá mira cada fotograma por separado y vota.
+"""
+            )
