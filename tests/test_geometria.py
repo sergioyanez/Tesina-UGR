@@ -20,7 +20,7 @@ import numpy as np
 NOTEBOOK = Path(__file__).resolve().parent.parent / "02_roi_y_normalizacion.ipynb"
 
 FUNCIONES = ["suavizar_cajas", "rellenar_faltantes", "similitud_desde_dos_puntos",
-             "destino_canonico", "roi_desde_keypoints"]
+             "roi_desde_keypoints"]
 
 
 def cargar_geometria_del_notebook():
@@ -48,7 +48,6 @@ G = cargar_geometria_del_notebook()
 suavizar_cajas = G["suavizar_cajas"]
 rellenar_faltantes = G["rellenar_faltantes"]
 similitud_desde_dos_puntos = G["similitud_desde_dos_puntos"]
-destino_canonico = G["destino_canonico"]
 roi_desde_keypoints = G["roi_desde_keypoints"]
 
 fallos = []
@@ -98,8 +97,17 @@ print("\n=== alineación canónica (el uso real) ===")
 
 # Tres poses muy distintas de la misma cabeza. Tras alinear, el ojo y el hocico
 # deben caer SIEMPRE en el mismo lugar del recorte. Eso es la normalización.
-LADO = 224
-dest_ojo, dest_hocico = destino_canonico(LADO)
+#
+# El destino canónico ya no lo calcula el notebook sino `equinos.encuadre.destino`, porque lo
+# usan el notebook Y el barrido de encuadres, y dos copias que pueden divergir es lo que este
+# proyecto evita. Sus propias pruebas están en tests/test_encuadre.py.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from equinos import encuadre  # noqa: E402
+
+CAMPO = encuadre.CampoDeVision(1.00, 0.30, 0.75)   # el encuadre adoptado
+GEO = encuadre.destino(CAMPO, 224)
+ANCHO, ALTO = GEO["ancho"], GEO["alto"]
+dest_ojo, dest_hocico = GEO["dest_ojo"], GEO["dest_hocico"]
 
 poses = [
     ((100.0, 200.0), (140.0, 300.0)),    # perfil, cabeza chica
@@ -115,7 +123,34 @@ for ojo, hocico in poses:
 check("tres poses muy distintas caen en la misma posición canónica",
       maximo < 1e-6, f"error máximo {maximo:.2e}")
 check("el destino queda dentro del recorte",
-      all(0 < c < LADO for c in (*dest_ojo, *dest_hocico)))
+      0 < dest_ojo[0] < ANCHO and 0 < dest_hocico[0] < ANCHO
+      and 0 < dest_ojo[1] < ALTO and 0 < dest_hocico[1] < ALTO)
+
+# El recorte dejó de ser cuadrado, y la prueba que reemplaza a "es cuadrado" es la que de verdad
+# importaba: que la transformada NO deforme. Lo que impide la deformación es la isotropía de la
+# similitud, no la forma del destino — confundir ambas cosas es lo que ató históricamente el
+# encuadre a un cuadrado.
+check("el destino es más alto que ancho", ALTO > ANCHO, f"{ANCHO}x{ALTO}")
+
+peor_razon = 0.0
+for ojo, hocico in poses:
+    M = similitud_desde_dos_puntos(ojo, hocico, dest_ojo, dest_hocico)
+    # Dos segmentos cualesquiera del frame de origen, ninguno alineado con el eje ojo-hocico.
+    a, b, c = np.array([10.0, 20.0]), np.array([310.0, 45.0]), np.array([70.0, 500.0])
+    lleva = lambda p: M[:, :2] @ p + M[:, 2]
+    razon_origen = np.hypot(*(b - a)) / np.hypot(*(c - a))
+    razon_destino = np.hypot(*(lleva(b) - lleva(a))) / np.hypot(*(lleva(c) - lleva(a)))
+    peor_razon = max(peor_razon, abs(razon_origen - razon_destino))
+check("un destino rectangular no deforma: la razón entre distancias se conserva",
+      peor_razon < 1e-9, f"peor desvío {peor_razon:.2e}")
+
+# La escala aplicada tiene que ser idéntica en los dos ejes. Es la definición de isotropía, y es
+# lo único que separa "recorte rectangular" de "cara estirada".
+M = similitud_desde_dos_puntos(*poses[0], dest_ojo, dest_hocico)
+escala_x = np.hypot(M[0, 0], M[1, 0])
+escala_y = np.hypot(M[0, 1], M[1, 1])
+check("la escala es la misma en ambos ejes", abs(escala_x - escala_y) < 1e-9,
+      f"x {escala_x:.6f} vs y {escala_y:.6f}")
 
 print("\n=== suavizar_cajas ===")
 
@@ -151,7 +186,21 @@ check("sin huecos no rellena nada", rellenar_faltantes([(1.0, 1.0, 2.0, 2.0)])[1
 print("\n=== roi_desde_keypoints ===")
 
 roi = roi_desde_keypoints([(100, 100), (200, 140)], margen=0.0)
-check("la ROI es cuadrada", abs((roi[2] - roi[0]) - (roi[3] - roi[1])) < 1e-9)
+check("sin aspecto declarado la ROI sigue siendo cuadrada",
+      abs((roi[2] - roi[0]) - (roi[3] - roi[1])) < 1e-9)
+
+# El camino de degradación por caja tiene que producir la MISMA forma que el camino alineado. Si
+# saliera cuadrada y se reescalara al destino rectangular, esos frames quedarían estirados y el
+# dataset mezclaría dos geometrías: una diferencia sistemática entre frames que después se puede
+# aprender como atajo, porque a qué frame le toca cuál correlaciona con el ejemplar.
+roi_asp = roi_desde_keypoints([(100, 100), (200, 140)], margen=0.0, aspecto=CAMPO.aspecto)
+check("con aspecto declarado la ROI lo respeta",
+      abs((roi_asp[3] - roi_asp[1]) / (roi_asp[2] - roi_asp[0]) - CAMPO.aspecto) < 1e-9,
+      f"dio {(roi_asp[3] - roi_asp[1]) / (roi_asp[2] - roi_asp[0]):.4f}")
+check("la ROI con aspecto sigue cubriendo todos los keypoints",
+      roi_asp[0] <= 100 and roi_asp[1] <= 100 and roi_asp[2] >= 200 and roi_asp[3] >= 140)
+check("la ROI con aspecto tiene la misma forma que el recorte de destino",
+      abs((roi_asp[3] - roi_asp[1]) / (roi_asp[2] - roi_asp[0]) - ALTO / ANCHO) < 0.01)
 check("cubre todos los keypoints",
       roi[0] <= 100 and roi[1] <= 100 and roi[2] >= 200 and roi[3] >= 140)
 check("el margen agranda la caja",

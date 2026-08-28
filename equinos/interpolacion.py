@@ -11,9 +11,10 @@ dataset como si fuera bueno. Por eso este módulo trae las dos mitades juntas �
 experimento que mide su error— y el tope de relleno sale de la curva medida, no del criterio de
 quien lo implementa.
 
-La geometría (`similitud_desde_dos_puntos`, `destino_canonico`) se **extrae del notebook 02** en
-vez de duplicarse, igual que hace `tests/test_geometria.py`: dos copias divergen, y lo que hay que
-medir es exactamente el código que se va a ejecutar.
+La geometría se toma de donde vive, no se duplica: `similitud_desde_dos_puntos` se **extrae del
+notebook 02** —igual que hace `tests/test_geometria.py`— y el destino canónico sale de
+`equinos.encuadre`. Dos copias divergen, y lo que hay que medir es exactamente el código que se va
+a ejecutar.
 
 Uso típico:
 
@@ -31,6 +32,8 @@ from pathlib import Path
 
 import numpy as np
 
+from equinos import encuadre
+
 from equinos import rutas
 
 # ============================================================
@@ -41,11 +44,17 @@ from equinos import rutas
 # "detectado" cuando el ojo Y el hocico lo superan: alinear necesita el par completo.
 CONF_MINIMA_KEYPOINT = 0.50
 
-# Geometría del recorte, también del notebook 02. La separación canónica ojo-hocico
-# —(FRAC_HOCICO - FRAC_OJO) * LADO_RECORTE = 134,4 px— es la escala contra la que se lee el error.
-LADO_RECORTE = 224
-FRAC_OJO = 0.20
-FRAC_HOCICO = 0.80
+# Geometría del recorte. La separación canónica ojo-hocico es la escala contra la que se lee el
+# error: el desplazamiento en píxeles DENTRO del recorte es lo que ve el modelo.
+#
+# El encuadre cambió el 28/08/2026 para incluir las orejas, y con él esa escala pasó de 134 a
+# 149 px. **El criterio no se toca por eso**: no es un número de píxeles sino una comparación
+# contra una línea de base —el desplazamiento entre dos detecciones propias consecutivas— medida
+# del mismo modo y en la misma corrida. Los dos lados escalan igual, así que es invariante al
+# encuadre. Ver el change `encuadre-que-incluye-las-orejas`.
+CAMPO_RECORTE = encuadre.CampoDeVision(1.00, 0.30, 0.75)
+ANCHO_RECORTE = 224
+GEOMETRIA_RECORTE = encuadre.destino(CAMPO_RECORTE, ANCHO_RECORTE)
 
 # Criterio de aceptación VIGENTE: un largo de hueco se acepta si su mediana y su p90 no superan
 # los de la línea de base —el desplazamiento del recorte entre dos detecciones PROPIAS
@@ -65,7 +74,7 @@ UMBRAL_HISTORICO_P90_PX = 8.0
 ESTRATOS = (1, 2, 3, 4, 5)
 
 NOTEBOOK_GEOMETRIA = "02_roi_y_normalizacion.ipynb"
-FUNCIONES_GEOMETRIA = ("similitud_desde_dos_puntos", "destino_canonico")
+FUNCIONES_GEOMETRIA = ("similitud_desde_dos_puntos",)
 
 
 # ============================================================
@@ -284,9 +293,9 @@ def error_de_estimacion(ojo_est, hocico_est, ojo_real, hocico_real, geometria: d
     cero siempre, y ese error ya se cometió una vez en este proyecto.
     """
     similitud = geometria["similitud_desde_dos_puntos"]
-    canonico = geometria["destino_canonico"]
 
-    q_ojo, q_hocico = canonico(LADO_RECORTE, FRAC_OJO, FRAC_HOCICO)
+    q_ojo = GEOMETRIA_RECORTE["dest_ojo"]
+    q_hocico = GEOMETRIA_RECORTE["dest_hocico"]
 
     ojo_est = np.asarray(ojo_est, dtype=float)
     hocico_est = np.asarray(hocico_est, dtype=float)
@@ -548,7 +557,8 @@ def informe_validacion(clips: list[Clip] | None = None) -> dict:
     print(f"Umbral histórico (28/08/2026, superado): mediana <= {UMBRAL_HISTORICO_MEDIANA_PX} px "
           f"y p90 <= {UMBRAL_HISTORICO_P90_PX} px. Se informa contra ambos.")
     print(f"Separación canónica ojo-hocico : "
-          f"{(FRAC_HOCICO - FRAC_OJO) * LADO_RECORTE:.1f} px (la escala contra la que se lee).")
+          f"{GEOMETRIA_RECORTE['px_por_d']:.1f} px (la escala contra la que se lee), sobre un "
+          f"recorte de {GEOMETRIA_RECORTE['ancho']}x{GEOMETRIA_RECORTE['alto']}.")
     print()
 
     base = linea_de_base(clips, geometria)

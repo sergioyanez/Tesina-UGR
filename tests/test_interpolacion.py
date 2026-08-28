@@ -189,7 +189,7 @@ print("\n=== 2.5 geometría del recorte rescatado, contra un caso conocido ===")
 clip = clip_con([1, 0, 1])
 rescate = it.rellenar_clip(clip, max_hueco=1)[1]
 
-destino = geometria["destino_canonico"](it.LADO_RECORTE, it.FRAC_OJO, it.FRAC_HOCICO)
+destino = (it.GEOMETRIA_RECORTE["dest_ojo"], it.GEOMETRIA_RECORTE["dest_hocico"])
 M = geometria["similitud_desde_dos_puntos"](rescate["ojo"], rescate["hocico"], *destino)
 
 
@@ -211,12 +211,13 @@ check("sobre movimiento lineal la posición real cae en la canónica",
 # El recorte tiene que quedar dentro del lienzo de 224: si la escala saliera invertida, los
 # puntos canónicos caerían fuera y el recorte sería basura sin que nada falle.
 for punto in destino:
-    check(f"el destino {punto} está dentro del recorte de {it.LADO_RECORTE}",
-          0 <= punto[0] <= it.LADO_RECORTE and 0 <= punto[1] <= it.LADO_RECORTE)
+    check(f"el destino {punto} está dentro del recorte "
+          f"{it.GEOMETRIA_RECORTE['ancho']}x{it.GEOMETRIA_RECORTE['alto']}",
+          0 <= punto[0] <= it.GEOMETRIA_RECORTE["ancho"]
+          and 0 <= punto[1] <= it.GEOMETRIA_RECORTE["alto"])
 
 check("la separación canónica es la declarada",
-      abs((destino[1][1] - destino[0][1])
-          - (it.FRAC_HOCICO - it.FRAC_OJO) * it.LADO_RECORTE) < 1e-9)
+      abs((destino[1][1] - destino[0][1]) - it.GEOMETRIA_RECORTE["px_por_d"]) < 1e-9)
 
 
 print("\n=== clip_desde_filas / rescates_por_clip: el puente con el notebook ===")
