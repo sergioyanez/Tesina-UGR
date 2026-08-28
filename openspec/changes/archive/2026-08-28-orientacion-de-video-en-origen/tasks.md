@@ -34,9 +34,9 @@
 
 ## 4. Documentación
 
-- [ ] 4.1 Registrar en `openspec/project.md` la cobertura medida y la composición del dataset
+- [x] 4.1 Registrar en `openspec/project.md` la cobertura medida y la composición del dataset
       nuevo, incluidos los ejemplares por clase.
-- [ ] 4.2 Dejar anotado el error de etiquetado de `501_8v1_LY1ucwR9.avi` —archivo idéntico en dos
+- [x] 4.2 Dejar anotado el error de etiquetado de `501_8v1_LY1ucwR9.avi` —archivo idéntico en dos
       clases, resuelto como Disgustado— y evaluar si el criterio de armado de las carpetas dejó
       casos análogos que no comparten nombre.
 
@@ -73,3 +73,14 @@ y faltan 66 para el umbral.
 **Pendiente antes de cerrar:** verificar visualmente que los recortes provenientes de videos
 rotados salen derechos. 68 % es un buen número sólo si la orientación quedó bien; una cara
 invertida no la delata ninguna métrica.
+
+
+## Cierre — 28/08/2026
+
+- **4.1** cumplida: `openspec/project.md` tiene la cobertura medida y la composición del dataset
+  por clase y por ejemplar, actualizada tras la corrida de 368 clips.
+- **4.2** cumplida: ver `duplicados.md`. **No hay ningún caso análogo al `501`.** Se buscó en
+  tres pasadas —duplicados byte a byte, mismo ejemplar con misma duración y resolución, y marcas
+  de tiempo repetidas— y el único par que comparte contenido (`178_20260701-081313`) resultó ser
+  una secuencia **contigua**, no duplicada: la toma de `Interesado` termina donde empieza la de
+  `Disgustado`.
