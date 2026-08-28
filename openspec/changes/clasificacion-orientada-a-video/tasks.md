@@ -6,11 +6,15 @@ arquitectura, no después.
 
 ## 1. El conjunto de datos, y saber qué hay adentro
 
-- [ ] 1.1 Armar el cargador que arma el tensor `(N, 16, 343, 224, 3)` desde
-      `dataset_frames_alineados.csv`, tomando **sólo clips íntegros** y respetando el orden de
-      `orden` dentro de cada clip.
-- [ ] 1.2 Verificar contra un caso conocido que el frame `orden=k` del tensor es el archivo que
-      dice el CSV. Un desorden temporal no rompe nada y arruina todo modelo secuencial.
+- [x] 1.1 Armar el cargador que arma el tensor desde `dataset_frames_alineados.csv`, tomando
+      **sólo clips íntegros** y respetando el orden de `orden`. Vive en
+      `equinos.caracteristicas._tensor_del_clip`, dentro del extractor: el modelo consume las
+      características congeladas, así que el tensor de píxeles no se materializa aparte.
+- [x] 1.2 Verificar que el frame `orden=k` del tensor es el archivo que dice el CSV.
+      `verificar_orden_temporal.py`: el vector de cada archivo se parece a su propia fila
+      (d≈0,006) tres órdenes de magnitud más que a cualquier otra (d≈5–9). **Es load-bearing**:
+      con los frames barajados de fábrica, «permutar no cambia nada» sería trivial y la
+      conclusión del bloque 3 no valdría.
 - [x] 1.3 Informar la composición del conjunto: clips y ejemplares por clase, y cuántos clips
       quedaron afuera por no ser íntegros.
 - [x] 1.4 Construir la partición `GroupKFold` por `id_caballo` con 4 folds y **persistirla**,
@@ -55,26 +59,36 @@ arquitectura, no después.
       muestras igualadas: permutar los frames no cambia una sola predicción de la
       atención (+0,000) y la GRU rinde peor con el orden real (−0,034). La hipótesis
       del trabajo no queda sostenida.**
-- [ ] 3.4 Entrenar la elegida con `random_state=42` y guardar los pesos por fold.
+- [x] 3.4 Entrenar la elegida con `random_state=42` y guardar los pesos por fold. **La elegida
+      es el clasificador de un frame con voto** — la que se diseñó como línea de base y terminó
+      ganándole a las 18 configuraciones. Pesos en `modelos/objetivo3/`.
 
 ## 4. Evaluación
 
-- [ ] 4.1 F1 macro y balanced accuracy por fold, con media y desvío. Sin accuracy global.
-- [ ] 4.2 Matriz de confusión agregada sobre las predicciones fuera de muestra.
-- [ ] 4.3 Contrastar contra el criterio declarado en 2.4 e informar el resultado **aunque no lo
-      cumpla**.
-- [ ] 4.4 Ablación: repetir 3.4 y 4.1 sobre los 82 clips íntegros por detección propia
-      (`origen_alineacion = keypoints`) e informar las dos corridas lado a lado.
-- [ ] 4.5 Análisis de errores por ejemplar: si los fallos se concentran en pocos caballos,
-      decirlo — es información sobre el dataset, no sobre el modelo.
+- [x] 4.1 F1 macro y balanced accuracy por fold, con media y desvío. Sin accuracy global.
+      **F1 macro 0,626 ± 0,065 · balanced accuracy 0,638 ± 0,069 · recall `Disgustado` 0,346.**
+- [x] 4.2 Matriz de confusión agregada sobre las predicciones fuera de muestra. **La confusión
+      dominante contradice lo previsto**: el eje que el modelo mezcla es `Sereno`/`Disgustado`
+      (12 y 9 errores), no `Disgustado`/`Interesado` (5) como anticipaba el caso `178`.
+- [x] 4.3 Contrastar contra el criterio declarado en 2.4 e informar el resultado **aunque no lo
+      cumpla**. **NO LO CUMPLE: 0,626 contra 0,691, diferencia −0,065.**
+- [x] 4.4 Ablación sobre los 82 clips íntegros por detección propia. **0,518 ± 0,060 contra
+      0,626, y el recall de `Disgustado` cae a 0,000**: el subconjunto tiene 7 clips de esa clase
+      repartidos en 4 folds. No invalida el resultado completo — mide cuánto se apoya en
+      posiciones estimadas, y el resultado es un argumento a favor del relleno temporal.
+- [x] 4.5 Análisis de errores por ejemplar. **Se concentran: 22 de 73 ejemplares fallan alguna
+      vez y los 10 peores acumulan el 68 % de los 41 errores.** Cinco de los diez peores están
+      entre los que aparecen en más de una clase, coherente con el techo del caso `178`. `13`,
+      `44` y `231` fallan en el 100 % de sus clips: candidatos a revisión de etiqueta.
 
 ## 5. Documentación
 
 - [ ] 5.1 Notebook `03_clasificacion.ipynb` con la estructura de Bloques y Pasos del proyecto.
-- [ ] 5.2 Actualizar `openspec/project.md` con el estado del objetivo 3 y los resultados.
-- [ ] 5.3 Dejar escrito el techo de exactitud conocido: los frames de frontera entre tomas
-      contiguas de un mismo ejemplar con clases opuestas —el caso `178_20260701-081313`— son
-      ruido irreducible, medido en `orientacion-de-video-en-origen`.
-- [ ] 5.4 Registrar qué haría falta para mejorar el resultado si no alcanza. La respuesta
-      esperada es **más ejemplares**, no más arquitectura, y conviene que quede dicho con los
-      números al lado.
+- [x] 5.2 Actualizar `openspec/project.md` con el estado del objetivo 3 y los resultados.
+- [x] 5.3 Dejar escrito el techo de exactitud conocido: los frames de frontera entre tomas
+      contiguas de un mismo ejemplar con clases opuestas. **El análisis de errores lo confirma**:
+      cinco de los diez ejemplares que más fallan aparecen en más de una clase.
+- [x] 5.4 Registrar qué haría falta. **Más ejemplares**, con los números al lado, en
+      `resultado_final.md`: la aumentación se probó y no movió nada, y ninguna de las tres cabezas
+      en dos regímenes de capacidad superó a una regresión logística sobre características
+      congeladas.

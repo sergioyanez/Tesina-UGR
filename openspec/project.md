@@ -43,8 +43,61 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
-| 3. Clasificación orientada a video | 🔴 No iniciado |
+| 3. Clasificación orientada a video | 🟡 Modelo entrenado y evaluado; **la hipótesis no queda sostenida** y el criterio declarado no se cumple (0,626 contra 0,691). Falta el notebook de la etapa. Ver abajo |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
+
+### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
+
+**Modelo final: clasificador de un frame con voto, F1 macro 0,626 ± 0,065.** Cabeza lineal sobre
+las características de una ResNet-18 congelada, entrenada a nivel de frame y agregada por voto
+entre los 16 frames del clip. **NO cumple el criterio declarado antes de entrenar (0,691).**
+
+**La hipótesis del trabajo no queda sostenida por esta evidencia.** El modelo elegido es
+*invariante al orden*: barajar los frames del clip no cambia una predicción. Se probaron 18
+configuraciones —tres cabezas temporales, dos regímenes de aumentación, dos de capacidad, con las
+muestras igualadas— y en ninguna el orden aportó: la atención da predicciones idénticas con los
+frames barajados, y la GRU rinde peor con el orden real.
+
+Verificado que el tensor está en el orden que declara el CSV, porque con los frames barajados de
+fábrica esa conclusión sería trivial y no diría nada.
+
+**Lo que sí quedó demostrado, y es el resultado positivo del trabajo:**
+
+| Línea de base | F1 macro |
+|---|---:|
+| Clase mayoritaria | 0,188 ± 0,029 |
+| Sólo `id_caballo`, partición por ejemplar | 0,188 ± 0,029 |
+| Sólo `id_caballo`, **partición ingenua por clip** | 0,526 ± 0,116 |
+| **Modelo final** | **0,626 ± 0,065** |
+
+- **Las imágenes tienen señal**: de 0,188 a 0,626 con partición honesta por ejemplar. El
+  preprocesamiento facial del objetivo 2 produce una entrada de la que un clasificador lineal
+  extrae bastante más que las clases a priori.
+- **El confounder de individuo está cuantificado**: sin agrupar por caballo se llega a 0,53 *sin
+  mirar un píxel*, porque 63 de los 73 ejemplares aparecen en una sola clase. Esos +0,338 son la
+  fuga que el protocolo elimina, y la justificación medida de agrupar por ejemplar.
+
+**Confusión dominante, contraria a lo previsto.** El eje que el modelo mezcla es
+`Sereno`/`Disgustado` (12 y 9 errores), no `Disgustado`/`Interesado` (5), que era lo que anticipaba
+el techo del caso `178`.
+
+**Ablación por `origen_alineacion`:** con los 82 clips de detección propia el F1 macro cae a 0,518
+y el recall de `Disgustado` a 0,000 —ese subconjunto tiene 7 clips de la clase—. No invalida el
+resultado completo: mide cuánto se apoya en posiciones estimadas, y resulta ser un argumento **a
+favor** del relleno temporal y la anotación manual.
+
+**Los errores se concentran:** 22 de 73 ejemplares fallan alguna vez y los 10 peores acumulan el
+68 %. Cinco de esos diez están entre los que aparecen en más de una clase. `13`, `44` y `231`
+fallan en el 100 % de sus clips: candidatos a revisión de etiqueta, no a mejora de arquitectura.
+
+**Qué haría falta, con los números al lado: más ejemplares.** La aumentación temporalmente
+coherente se probó con 20 vistas por clip y no movió nada (−0,005 a +0,000) — veinte vistas del
+mismo clip siguen siendo el mismo caballo. Y ninguna de las tres cabezas, en dos regímenes de
+capacidad, superó a una regresión logística sobre características congeladas. El cuello de botella
+son los 73 ejemplares, y sobre todo los 15 de `Disgustado`.
+
+La evidencia completa está en `openspec/changes/clasificacion-orientada-a-video/`:
+`lineas_de_base.md`, `cabezas_temporales.md` y `resultado_final.md`.
 
 ### El encuadre del recorte, y por qué se corrigió (28/08/2026)
 
