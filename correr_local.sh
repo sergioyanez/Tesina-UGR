@@ -17,8 +17,9 @@
 #   ./correr_local.sh              abre Jupyter Lab (elegir el kernel "Tesina equinos (GPU local)")
 #   ./correr_local.sh estado       en qué estado está cada etapa, sin ejecutar nada
 #   ./correr_local.sh reportes     cobertura y calidad de los recortes de la última corrida
-#   ./correr_local.sh anotar       marca a mano el ojo y el hocico de los frames que faltan
-#   ./correr_local.sh anotar-que   qué falta anotar, sin abrir ninguna ventana
+#   ./correr_local.sh anotar       genera la página para marcar a mano el ojo y el hocico
+#   ./correr_local.sh anotar-que   qué falta anotar, sin generar nada
+#   ./correr_local.sh anotar-cargar <csv>   incorpora el CSV que bajó el navegador
 #   ./correr_local.sh entorno      versiones instaladas y GPU visible
 #   ./correr_local.sh etapa01      re-ejecuta el notebook 01 con papermill (LIMPIAR_ETAPA = False,
 #                                  PISO_VIDEO_CORTO = 1.0 s; sobrescribible por entorno)
@@ -63,14 +64,22 @@ case "${1:-jupyter}" in
         "$PY" -c "from equinos import anotacion; anotacion.informe()"
         ;;
     anotar)
-        # Abre una ventana por frame: dos clics, primero el ojo y después el hocico. Sólo pide
-        # los frames que COMPLETAN un clip —los que están a uno o dos de la integridad—, porque
-        # anotar un frame de un clip al que le faltan diez no suma nada.
+        # Genera una página con los frames embebidos y la abre en el navegador: dos clics por
+        # frame, primero el ojo y después el hocico. Sólo pide los frames que COMPLETAN un clip
+        # —los que están a uno o dos de la integridad—, porque anotar un frame de un clip al que
+        # le faltan diez no suma nada.
         #
-        # Cada anotación se guarda en el momento en resultados/keypoints_manuales.csv, así que
-        # cortar a la mitad no pierde trabajo. Para que entren al dataset hay que re-derivar
-        # después con `./correr_local.sh etapa02`.
-        "$PY" -c "from equinos import anotacion; anotacion.anotar(anotado_por='${USER}')"
+        # Va por el navegador y no por una ventana de OpenCV porque el cv2 de este entorno es el
+        # headless que arrastra DeepLabCut: no tiene GUI, y cambiarlo arriesga el stack de DLC.
+        "$PY" -c "from equinos import anotacion; anotacion.pagina(anotado_por='${USER}')"
+        ;;
+    anotar-cargar)
+        # Incorpora el CSV que bajó el navegador. Después hay que re-derivar con etapa02.
+        if [ -z "${2:-}" ]; then
+            echo "Falta el CSV: ./correr_local.sh anotar-cargar ~/Descargas/keypoints_manuales.csv"
+            exit 2
+        fi
+        "$PY" -c "import sys; from equinos import anotacion; anotacion.importar(sys.argv[1])" "$2"
         ;;
     entorno)
         "$PY" -c "from equinos import entorno; entorno.informe()"
@@ -116,7 +125,7 @@ case "${1:-jupyter}" in
         ;;
     *)
         echo "Opción desconocida: $1"
-        echo "Usá: estado | reportes | anotar | anotar-que | entorno | etapa01 | etapa02 | jupyter"
+        echo "Usá: estado | reportes | anotar | anotar-que | anotar-cargar | entorno | etapa01 | etapa02 | jupyter"
         exit 2
         ;;
 esac
