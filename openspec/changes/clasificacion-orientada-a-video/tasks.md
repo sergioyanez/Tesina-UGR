@@ -42,10 +42,15 @@ arquitectura, no después.
       `equinos/caracteristicas.py`: ResNet-18 de ImageNet congelada, 141 × 16 × 512, 11 s en la
       RTX 3070. La caché se invalida sola si cambia el backbone o el dataset. **Ojo: con la caché
       no se puede aumentar** — si el entrenamiento final usa aumentación, tiene que re-extraer.
-- [ ] 3.2 Implementar la cabeza temporal sobre las características cacheadas.
-- [ ] 3.3 Comparar a lo sumo tres variantes de cabeza sobre los mismos folds, y **dejar
-      registrado cuántas se probaron**. Con 141 muestras, probar veinte y quedarse con la mejor
-      es elegir ruido.
+- [x] 3.2 Implementar la cabeza temporal sobre las características cacheadas. Tres variantes en
+      `cabezas_temporales.py`, separadas por lo que el diseño no distinguía: `promedio` es
+      **invariante al orden** y por lo tanto no es un modelo temporal; `gru` y `atencion` sí lo
+      son. La prueba de la hipótesis es esa comparación, no sólo la de contra la línea de base.
+- [x] 3.3 Comparar a lo sumo tres variantes de cabeza sobre los mismos folds, y **dejar
+      registrado cuántas se probaron**. **Se probaron 6: tres cabezas × dos regímenes de
+      aumentación**, y se informan las seis en `cabezas_temporales.md`. Mejor cabeza `atencion`
+      0,599 ± 0,118 — **por debajo de la línea de base de un frame (0,626) y del criterio
+      (0,691)**. La aumentación no mueve nada (−0,005 / −0,006 / +0,000).
 - [ ] 3.4 Entrenar la elegida con `random_state=42` y guardar los pesos por fold.
 
 ## 4. Evaluación

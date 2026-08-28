@@ -45,6 +45,18 @@ DESVIO_IMAGENET = (0.229, 0.224, 0.225)
 ARCHIVO_CACHE = "caracteristicas_backbone.npz"
 ARCHIVO_HUELLA = "caracteristicas_backbone.json"
 
+ARCHIVO_AUMENTADAS = "caracteristicas_aumentadas.npz"
+ARCHIVO_AUMENTADAS_HUELLA = "caracteristicas_aumentadas.json"
+
+# Rangos de la aumentación. Salen de la propuesta de la rama `hector`, que es la parte de ese
+# trabajo que sí vale portar: los parámetros se sortean UNA VEZ POR CLIP y se aplican idénticos a
+# sus 16 frames. Aplicarlos por frame destruiría la continuidad temporal del gesto, que es
+# justamente la señal que el modelo secuencial tiene que aprovechar.
+ROTACION_GRADOS = 10.0
+BRILLO = (0.85, 1.15)
+CONTRASTE = (0.85, 1.15)
+PROB_ESPEJO = 0.5
+
 
 def huella(clips: list[dict]) -> str:
     """Identifica de qué corrida son estas características.
@@ -150,6 +162,103 @@ def extraer(clips: list[dict] | None = None, lote: int = 8, verbose: bool = True
     if verbose:
         print(f"Guardadas en {destino}  forma {arreglo.shape}")
     return orden_clips, arreglo
+
+
+def _transformar_clip(lote, generador):
+    """Aumentación TEMPORALMENTE COHERENTE: un sorteo por clip, aplicado a sus 16 frames.
+
+    `lote` llega ya normalizado, con forma (T, C, H, W). Las transformaciones geométricas y
+    fotométricas se aplican sobre el tensor normalizado; para brillo y contraste eso equivale a
+    un reescalado afín de la señal, que es lo que se quiere.
+    """
+    import torch
+    from torchvision.transforms import functional as TF
+
+    if torch.rand((), generator=generador).item() < PROB_ESPEJO:
+        lote = TF.hflip(lote)
+
+    angulo = (torch.rand((), generator=generador).item() * 2 - 1) * ROTACION_GRADOS
+    if abs(angulo) > 1e-6:
+        lote = TF.rotate(lote, angulo)
+
+    brillo = BRILLO[0] + torch.rand((), generator=generador).item() * (BRILLO[1] - BRILLO[0])
+    contraste = CONTRASTE[0] + torch.rand((), generator=generador).item() * (CONTRASTE[1] - CONTRASTE[0])
+    media = lote.mean(dim=(1, 2, 3), keepdim=True)
+    return (lote - media) * contraste + media * brillo
+
+
+def extraer_aumentadas(vistas: int = 20, semilla: int = 42, clips=None, verbose: bool = True):
+    """Genera `vistas` versiones aumentadas de cada clip y extrae sus características.
+
+    Se pre-generan y se cachean en vez de aumentar sobre la marcha porque el backbone está
+    congelado: una pasada completa cuesta ~11 s, así que 20 vistas son ~4 minutos UNA vez, contra
+    repetir esa pasada en cada época. Y quedan reproducibles, que sobre la marcha no quedarían.
+
+    Devuelve `(orden_de_clips, arreglo)` con forma `(n_clips, vistas, 16, 512)`.
+    """
+    import numpy as np
+    import torch
+
+    clips = clips if clips is not None else particion.cargar()
+    marca = f"{huella(clips)}-aum{vistas}-s{semilla}"
+    destino = rutas.carpeta("resultados") / ARCHIVO_AUMENTADAS
+    metadatos = rutas.carpeta("resultados") / ARCHIVO_AUMENTADAS_HUELLA
+    if destino.exists() and metadatos.exists():
+        previo = json.loads(metadatos.read_text(encoding="utf-8"))
+        if previo.get("huella") == marca:
+            if verbose:
+                print(f"Características aumentadas ya vigentes ({destino.name}).")
+            return list(previo["clips"]), np.load(destino, allow_pickle=False)["caracteristicas"]
+
+    dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    extractor = _cargar_backbone(dispositivo)
+    base = rutas.dir_trabajo("frames_alineados")
+    generador = torch.Generator().manual_seed(semilla)
+
+    import csv as _csv
+    with (rutas.carpeta("resultados") / "dataset_frames_alineados.csv").open(
+            encoding="utf-8", errors="replace") as archivo:
+        filas = list(_csv.DictReader(archivo))
+    por_clip: dict[str, list] = {}
+    for fila in filas:
+        por_clip.setdefault(fila["clip"], []).append(fila)
+
+    if verbose:
+        print(f"Extrayendo {vistas} vistas aumentadas por clip en {dispositivo} "
+              f"({len(clips)} clips)")
+    orden_clips, todas = [], []
+    for indice, clip in enumerate(clips):
+        frames = sorted(por_clip[clip["clip"]], key=lambda f: int(f["orden"]))
+        entrada = _tensor_del_clip([base / f["ruta_frame"] for f in frames], dispositivo)
+        del_clip = []
+        for _ in range(vistas):
+            aumentado = _transformar_clip(entrada.cpu(), generador).to(dispositivo)
+            with torch.no_grad():
+                del_clip.append(extractor(aumentado).flatten(1).cpu().numpy().astype(np.float32))
+        orden_clips.append(clip["clip"])
+        todas.append(np.stack(del_clip))
+        if verbose and (indice + 1) % 40 == 0:
+            print(f"  {indice + 1}/{len(clips)}")
+
+    arreglo = np.stack(todas)
+    np.savez_compressed(destino, caracteristicas=arreglo)
+    metadatos.write_text(json.dumps(
+        {"huella": marca, "vistas": vistas, "semilla": semilla,
+         "forma": list(arreglo.shape), "clips": orden_clips},
+        ensure_ascii=False, indent=1), encoding="utf-8")
+    if verbose:
+        print(f"Guardadas en {destino}  forma {arreglo.shape}")
+    return orden_clips, arreglo
+
+
+def cargar_aumentadas():
+    import numpy as np
+    destino = rutas.carpeta("resultados") / ARCHIVO_AUMENTADAS
+    metadatos = rutas.carpeta("resultados") / ARCHIVO_AUMENTADAS_HUELLA
+    if not destino.exists():
+        raise FileNotFoundError(f"No existe {destino}. Generarla con `extraer_aumentadas()`.")
+    previo = json.loads(metadatos.read_text(encoding="utf-8"))
+    return list(previo["clips"]), np.load(destino, allow_pickle=False)["caracteristicas"]
 
 
 def cargar():
