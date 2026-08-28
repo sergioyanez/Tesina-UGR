@@ -11,18 +11,22 @@ arquitectura, no después.
       `orden` dentro de cada clip.
 - [ ] 1.2 Verificar contra un caso conocido que el frame `orden=k` del tensor es el archivo que
       dice el CSV. Un desorden temporal no rompe nada y arruina todo modelo secuencial.
-- [ ] 1.3 Informar la composición del conjunto: clips y ejemplares por clase, y cuántos clips
+- [x] 1.3 Informar la composición del conjunto: clips y ejemplares por clase, y cuántos clips
       quedaron afuera por no ser íntegros.
-- [ ] 1.4 Construir la partición `GroupKFold` por `id_caballo` con 4 folds y **persistirla**,
+- [x] 1.4 Construir la partición `GroupKFold` por `id_caballo` con 4 folds y **persistirla**,
       para que todas las corridas y líneas de base usen exactamente los mismos cortes.
-- [ ] 1.5 Verificar que ningún ejemplar aparece en entrenamiento y test del mismo fold, y que
+- [x] 1.5 Verificar que ningún ejemplar aparece en entrenamiento y test del mismo fold, y que
       ninguna clase queda vacía. Informar clips por clase en cada fold.
 
 ## 2. Líneas de base
 
-- [ ] 2.1 Clase mayoritaria, sobre la partición persistida.
-- [ ] 2.2 **Sólo `id_caballo`**, sin mirar la imagen. Es la que dice si la clase está confundida
-      con el ejemplar; interpretarla antes de seguir.
+- [x] 2.1 Clase mayoritaria, sobre la partición persistida. **F1 macro 0,188 ± 0,029.**
+- [x] 2.2 **Sólo `id_caballo`**, sin mirar la imagen. Bajo el protocolo real da **exactamente lo
+      mismo que la mayoritaria (0,188)**, porque con partición por ejemplar el caballo de test
+      nunca se vio y cae al voto mayoritario en el 100 % de los clips: la partición neutraliza el
+      confounder. Para contestar la pregunta de fondo se midió además con partición ingenua por
+      clip, donde llega a **F1 macro 0,526** sin mirar un píxel — 63 de los 73 ejemplares aparecen
+      en una sola clase. Resultados en `lineas_de_base.md`.
 - [ ] 2.3 Un solo frame del clip, sin información temporal, con el mismo backbone congelado que
       usará el modelo. Es la que pone a prueba la hipótesis del trabajo.
 - [ ] 2.4 Tabla comparativa de las tres, con F1 macro y balanced accuracy, media y desvío entre
