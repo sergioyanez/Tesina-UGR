@@ -117,3 +117,32 @@ El resultado se informa aunque no se cumpla.
   probar veinte variantes y quedarse con la mejor es elegir ruido. Se acota de entrada la
   cantidad de configuraciones a comparar y se deja registrado cuántas se probaron.
 - **El techo por frames de frontera.** Documentado; no se puede eliminar, sí declarar.
+- **La oreja no está disponible de forma sostenida, y menos que nada en `Disgustado`.** Medido
+  antes de entrenar con `disponibilidad_orejas.py`, sobre los 2.256 frames de los 141 clips
+  íntegros y con el encuadre vigente:
+
+  | | oreja dentro | fuera del recorte | no detectada |
+  |---|---:|---:|---:|
+  | `Disgustado` | 48,5 % | 9,5 % | 40,5 % |
+  | `Interesado` | 70,5 % | 2,3 % | 26,6 % |
+  | `Sereno` | 42,8 % | 10,8 % | **46,3 %** |
+  | **total** | 54,7 % | 7,3 % | 37,6 % |
+
+  El change `encuadre-que-incluye-las-orejas` resolvió lo que le correspondía —las orejas fuera
+  del cuadro pasaron del 59,8 % al 7,3 %—. Lo que queda es un techo de **37,6 % de frames sin
+  oreja detectada**, invariante al encuadre porque la detección ocurre sobre el frame original,
+  antes de recortar: oclusión, desenfoque, o la oreja apuntando fuera de cámara.
+
+  A nivel de **clip**, que es la unidad que consume el modelo, `Disgustado` es la peor: de sus 21
+  clips íntegros sólo 8 tienen la oreja en la mitad de sus frames y **ninguno la tiene en los
+  16**, contra 42 de 56 en `Interesado`. Es además la clase con menos ejemplares, así que la
+  limitación pega donde más duele.
+
+  **Cómo se usa este número, y cómo no.** Es una explicación candidata declarada de antemano por
+  si `Disgustado` no se separa — no una excusa preparada, y tampoco un filtro: los 141 clips
+  entran al entrenamiento igual, porque el clasificador consume píxeles y no keypoints.
+
+  Y por eso mismo **"no detectada" no es "no visible"**: una oreja puede estar perfectamente en el
+  recorte sin que el modelo de pose la haya encontrado. El 54,7 % es una **cota inferior** de
+  cuántas veces el clasificador puede ver la oreja, no una medición de lo que ve. Si se cita en la
+  memoria, hay que citarlo así.
