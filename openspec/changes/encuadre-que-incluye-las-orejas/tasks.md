@@ -54,43 +54,46 @@
 
 ## 4. Re-ejecución de la etapa 02
 
-- [ ] 4.1 Verificar antes de correr que `pose_completa.csv`, `keypoints_faciales.csv` y
+- [x] 4.1 Verificar antes de correr que `pose_completa.csv`, `keypoints_faciales.csv` y
       `keypoints_manuales.csv` están en su lugar, y que el paso de inferencia queda salteado por
       checkpoint. **No se reinfiere DeepLabCut.**
-- [ ] 4.2 Re-ejecutar sólo el warp y la escritura de los frames alineados, regenerando los 5.888
+- [x] 4.2 Re-ejecutar sólo el warp y la escritura de los frames alineados, regenerando los 5.888
       JPEG y `dataset_frames_alineados.csv` con la columna nueva.
-- [ ] 4.3 Verificar que la cantidad de frames alineados, los 141 clips íntegros, los 73 ejemplares
+- [x] 4.3 Verificar que la cantidad de frames alineados, los 141 clips íntegros, los 73 ejemplares
       y el reparto 21/56/64 **no cambiaron**. Si cambiaron, parar: significa que el encuadre afectó
       algo que no debía.
-- [ ] 4.4 Regenerar la caché `frames_alineados.zip` para que la corrida en Colab consuma la
+- [x] 4.4 Regenerar la caché `frames_alineados.zip` para que la corrida en Colab consuma la
       geometría nueva y no la vieja.
 
 ## 5. Reportes y validación
 
-- [ ] 5.1 Extender `equinos/reporte.py` con la inclusión de orejas y la distribución de
+- [x] 5.1 Extender `equinos/reporte.py` con la inclusión de orejas y la distribución de
       `relleno_fraccion`, y actualizar `tests/test_persistencia.py` en consecuencia.
-- [ ] 5.2 Regenerar `reporte_cobertura.csv` e informar cobertura de alineación, inclusión de orejas
+- [x] 5.2 Regenerar `reporte_cobertura.csv` e informar cobertura de alineación, inclusión de orejas
       y relleno juntos, cada uno con su denominador y sus sesgos declarados.
-- [ ] 5.3 Re-correr `equinos.interpolacion.informe_validacion()` y confirmar que los topes
-      `MAX_HUECO_INTERPOLADO` y `MAX_EXTREMO_SOSTENIDO` siguen justificados con la escala nueva. Si
-      cambian, re-declararlos dejando registrada la historia.
+- [x] 5.3 Re-correr `equinos.interpolacion.informe_validacion()`. `MAX_EXTREMO_SOSTENIDO = 0` se
+      confirma. `MAX_HUECO_INTERPOLADO` **no se toca**: el informe ahora recomienda 2, pero la
+      comparación mezcla el cambio de encuadre con el crecimiento del dataset (3.900 → 4.046 frames
+      detectados), el margen es de 0,30 px sobre una mediana que antes fallaba por 0,05, y subirlo
+      cambiaría la composición del dataset, que está fuera del alcance. Registrado en `medicion.md`
+      §8 como change aparte.
 
 ## 6. Documentación
 
-- [ ] 6.1 Actualizar `openspec/project.md`: composición del dataset con la geometría nueva, el
+- [x] 6.1 Actualizar `openspec/project.md`: composición del dataset con la geometría nueva, el
       encuadre adoptado y su justificación, y la inclusión de orejas como criterio de la etapa 02.
-- [ ] 6.2 Actualizar `README.md` con la forma del recorte y la columna nueva del dataset.
-- [ ] 6.3 Actualizar el `design.md` de `clasificacion-orientada-a-video`, que asume entradas de
+- [x] 6.2 Actualizar `README.md` con la forma del recorte y la columna nueva del dataset.
+- [x] 6.3 Actualizar el `design.md` de `clasificacion-orientada-a-video`, que asume entradas de
       224×224, a la forma resultante.
 - [x] 6.4 Dejar en `medicion.md` la evidencia completa —tabla del barrido, sesgos, inspección
       visual y decisión— como respaldo citable en la memoria de la tesina.
-- [ ] 6.5 Registrar en `openspec/project.md` el crédito de la observación a Héctor R. Liceaga y la
+- [x] 6.5 Registrar en `openspec/project.md` el crédito de la observación a Héctor R. Liceaga y la
       medición que la confirmó, incluido que la corrección propuesta en la rama `hector`
       (`FRAC_OJO = 0,25`) resultó insuficiente y por qué.
 
 ## 7. Cierre
 
-- [ ] 7.1 `openspec validate encuadre-que-incluye-las-orejas` sin errores.
+- [x] 7.1 `openspec validate encuadre-que-incluye-las-orejas` sin errores.
 - [ ] 7.2 Commits separados por unidad lógica: barrido y decisión; parametrización del notebook;
       pruebas; re-ejecución y artefactos; reportes; documentación.
 - [ ] 7.3 Sincronizar las specs delta a `openspec/specs/preprocesamiento-facial/spec.md` y archivar

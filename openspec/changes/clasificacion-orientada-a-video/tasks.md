@@ -6,7 +6,7 @@ arquitectura, no después.
 
 ## 1. El conjunto de datos, y saber qué hay adentro
 
-- [ ] 1.1 Armar el cargador que arma el tensor `(N, 16, 224, 224, 3)` desde
+- [ ] 1.1 Armar el cargador que arma el tensor `(N, 16, 343, 224, 3)` desde
       `dataset_frames_alineados.csv`, tomando **sólo clips íntegros** y respetando el orden de
       `orden` dentro de cada clip.
 - [ ] 1.2 Verificar contra un caso conocido que el frame `orden=k` del tensor es el archivo que

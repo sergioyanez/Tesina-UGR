@@ -202,6 +202,23 @@ Recorta la cara del equino y la alinea, de modo que el ojo y el hocico caigan si
 posición. Sin esto, un modelo puede separar las clases mirando el fondo —los 3 videos de Disgustado
 son interior de box y el resto exterior— en lugar de la expresión facial.
 
+El recorte es un rectángulo de **224×343**, no un cuadrado. Se declara como campo de visión en
+unidades de la distancia ojo-hocico `d` —`AIRE_SOBRE_OJO = 1.00`, `AIRE_BAJO_HOCICO = 0.30`,
+`SEMIANCHO_LATERAL = 0.75`— y el alto se deriva del aspecto que ese campo exige. La forma
+rectangular **no deforma la cara**: lo que lo impide es la isotropía de la transformada de
+similitud, no que el destino sea cuadrado.
+
+Existe porque el encuadre cuadrado dejaba las orejas fuera, y en los equinos su posición es el
+indicador principal de disgusto: el vector base→punta de la oreja era legible en el 4,3 % de los
+frames, y con el encuadre nuevo lo es en el 77,2 %. Los candidatos se comparan sin escribir una sola
+imagen con `equinos.encuadre.barrido()`, sobre la pose ya persistida. Ver el change
+`encuadre-que-incluye-las-orejas`.
+
+`dataset_frames_alineados.csv` registra por frame `origen_alineacion` —detectado, interpolado,
+manual o recorte de caja— y `relleno_fraccion`, la parte del recorte completada con píxeles
+inventados. Los dos existen para poder entrenar con y sin, no para tranquilizar: dependen del
+ejemplar, y el ejemplar predice la clase.
+
 El Paso 10 imprime el esquema de keypoints que expone el modelo y deja explícito cuáles eligió como
 ojo y hocico. La extracción ya está adaptada a la estructura real de DeepLabCut, verificada en
 Colab. **La corrida completa lleva alrededor de una hora** para los 92 clips.

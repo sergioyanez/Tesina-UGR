@@ -42,9 +42,49 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | Objetivo específico | Estado |
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
-| 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar") |
+| 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
+
+### El encuadre del recorte, y por qué se corrigió (28/08/2026)
+
+El recorte facial es un rectángulo de **224×343** en el marco de la cabeza, con el eje ojo-hocico
+sobre la vertical. Se declara como **campo de visión en unidades de la distancia ojo-hocico `d`**:
+1,00 `d` de aire sobre el ojo, 0,30 bajo el hocico, ±0,75 lateral. El alto no se elige, se deriva
+del aspecto que ese campo exige.
+
+**Por qué dejó de ser cuadrado.** La observación es de Héctor R. Liceaga: en los equinos la
+posición de las orejas —hacia atrás o aplanadas— es el indicador principal de disgusto y estrés, y
+el recorte podía estar dejándolas fuera. Se pudo verificar sin reinferir, porque `pose_completa.csv`
+guarda los 39 bodyparts y entre ellos están `left_earbase`/`left_earend` y sus simétricos. Medido:
+con el encuadre anterior el **vector base→punta de la oreja era legible en el 4,3 % de los frames**.
+
+El déficit era asimétrico —la punta de oreja está a 0,81 `d` sobre el ojo en la mediana y el
+recorte mostraba 0,33 `d`, mientras que lateralmente sobraba campo—, y un recorte cuadrado no puede
+corregir eso: ganar aire vertical obliga a ampliar el lateral. Por eso la corrección que proponía la
+rama `hector` (`FRAC_OJO` de 0,20 a 0,25) sólo llega al 13,7 %: dirección correcta, palanca
+equivocada.
+
+El encuadre adoptado lleva el vector de oreja a **77,2 %** empatando exacto el relleno mediano del
+encuadre anterior (14,1 %), porque gasta todo el presupuesto en vertical y recorta campo lateral.
+De paso la cara queda 11 % más grande (`d`: 134 → 149 px) y con menos fondo.
+
+**La métrica que decide es el vector de oreja, no el conteo suelto de keypoints.** La orientación
+de la oreja se lee de base→punta; una base sin su punta no dice hacia dónde apunta. El conteo
+suelto sobrestima: el candidato descartado informaba 64,4 % contando keypoints y 50,6 % contando
+vectores.
+
+**Lo que NO cambió:** el par de anclaje sigue siendo ojo-hocico, así que las 14 anotaciones
+manuales siguen válidas; no se reinfirió pose; y la composición del dataset es idéntica —141 clips
+íntegros, 73 ejemplares, 21/56/64—, porque el encuadre no decide qué frames se alinean. Sólo
+cambiaron los píxeles.
+
+Cada frame registra ahora `relleno_fraccion`: la fracción del recorte completada con píxeles
+inventados. Depende de la distancia de filmación, que depende del ejemplar, que predice la clase, y
+por eso se registra por frame — para poder ablacionarlo, igual que `origen_alineacion`.
+
+La evidencia completa está en `openspec/changes/encuadre-que-incluye-las-orejas/medicion.md`, y el
+barrido se rehace en segundos con `equinos.encuadre.barrido()`, sin escribir una sola imagen.
 
 **Artefactos existentes:**
 
@@ -203,7 +243,8 @@ Se ejecuta desde `00_pipeline.ipynb`, que encadena las etapas y saltea las ya co
   → keypoints faciales               → resultados/keypoints_faciales.csv
      · reanudable, checkpoint por clip; el clip se copia al disco local antes de inferir
        porque DeepLabCut escribe sus auxiliares junto al archivo de entrada
-  → ROI cuadrada + alineación        · transformada de similitud (ojo, hocico)
+  → ROI 224x343 + alineación        · transformada de similitud (ojo, hocico), campo de
+                                       visión que incluye las orejas
                                      → /content + cache/frames_alineados.zip
                                      → resultados/dataset_frames_alineados.csv
   → reporte de cobertura             → resultados/reporte_cobertura.csv

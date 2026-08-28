@@ -8,7 +8,8 @@ técnico antes del 4 (aplicación o interfaz), y el que pone a prueba la hipóte
 
 ## Qué se construye
 
-Un clasificador que, dado un clip —16 frames de 224×224 alineados por el eje ojo-hocico—,
+Un clasificador que, dado un clip —16 frames de 224×343 alineados por el eje ojo-hocico, con un
+campo de visión que incluye las orejas desde el change `encuadre-que-incluye-las-orejas`—,
 prediga una de tres clases: `Disgustado`, `Interesado`, `Sereno`. Y, con el mismo peso, **el
 protocolo que permite creerle al número que devuelva.**
 
