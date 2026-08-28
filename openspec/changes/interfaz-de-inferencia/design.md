@@ -53,9 +53,23 @@ revés: ocultarlas deja la etiqueta sola, que es la lectura más engañosa de to
 mostrar el 87 %, es mostrarlo sin decir que el modelo acierta un tercio cuando dice esa clase.
 
 **Por qué precisión y no recall.** El recall contesta «de los `Disgustado` reales, ¿cuántos
-encontró?», que le sirve a quien evalúa el modelo. Al usuario le importa la pregunta inversa, y son
-números muy distintos: `Disgustado` tiene recall 0,35 y precisión 0,33, pero `Interesado` tiene
-recall 0,88 y precisión 0,79.
+encontró?», que le sirve a quien evalúa el modelo. Al usuario le importa la pregunta inversa. Sobre
+las 141 predicciones fuera de muestra:
+
+| clase | recall | precisión |
+|---|---:|---:|
+| `Disgustado` | 7/21 = 0,33 | 7/21 = 0,33 |
+| `Interesado` | 49/56 = 0,88 | 49/62 = **0,79** |
+| `Sereno` | 44/64 = 0,69 | 44/58 = **0,76** |
+
+En `Interesado` la precisión es menor que el recall y en `Sereno` es mayor: no hay una relación
+fija, y usar uno donde va el otro cambia lo que la interfaz afirma. En `Disgustado` coinciden por
+casualidad de esta matriz —el modelo predijo la clase 21 veces y hay 21 reales—, lo que hace de esa
+clase el peor ejemplo posible para explicar la distinción.
+
+**Ambos son agregados sobre las predicciones fuera de muestra**, no promedios entre folds. El
+recall promediado por folds da 0,346 para `Disgustado` y no 0,333: son dos agregaciones distintas y
+mezclarlas en una misma frase es un error fácil de cometer.
 
 ## Decisión 2 — Negarse es una respuesta de primera clase
 
@@ -105,9 +119,15 @@ que quien la use lea y ejecute celdas.
 **Alternativa descartada — desplegarla en la web.** Arrastra YOLO, DeepLabCut y una GPU. Fuera de
 alcance para septiembre, y sin valor para la defensa.
 
-**Qué framework concreto** —Gradio, Streamlit u otro— se decide al implementar, con una condición:
-la lógica va en `equinos/inferencia.py` y la interfaz es una envoltura delgada. Cambiar de
-framework no puede obligar a reimplementar nada.
+**Framework: Streamlit** (decidido el 28/08/2026), con la condición de que la lógica viva en
+`equinos/inferencia.py` y la interfaz sea una envoltura delgada — cambiar de framework no puede
+obligar a reimplementar nada.
+
+Se verificó antes de adoptarlo lo único que podía descalificarlo: **no toca el conjunto de
+versiones pineado**. Agrega 15 paquetes propios y deja `numpy 1.26.4`, `torch 2.5.1+cu121`,
+`pandas` y `scipy` donde estaban. Era el riesgo real, porque subir `numpy` por encima de 2 rompe
+DeepLabCut y con él toda la cadena de inferencia. Queda fijado en `requirements-local.txt` como
+`streamlit==1.62.0`.
 
 ## Decisión 5 — La inferencia reutiliza las etapas 01 y 02, no las reimplementa
 
@@ -137,7 +157,8 @@ restricción de `numpy<2` de DeepLabCut.
 
 ## Open Questions
 
-- **¿Qué framework?** Se decide al implementar; la Decisión 4 fija que sea intercambiable.
+- ~~**¿Qué framework?**~~ **Resuelta: Streamlit**, verificado que no perturba el conjunto de
+  versiones pineado. Ver Decisión 4.
 - **¿La interfaz acepta un video largo y lo segmenta, o exige un clip de 5–7 s?** Segmentar es más
   amable y reutiliza la etapa 01; exigir el clip es más simple y más predecible. Se decide con el
   primer video de prueba real.

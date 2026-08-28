@@ -260,4 +260,156 @@ def contra_el_criterio(resultado, criterio=CRITERIO_ACEPTACION):
 
 
 def ruta_pesos(fold):
+    """Pesos de un fold de validación cruzada. Respaldan la métrica; NO se despliegan."""
     return rutas.carpeta("modelos") / "objetivo3" / f"un_frame_fold{fold}.npz"
+
+
+# --- confiabilidad que se le muestra al usuario ----------------------------------------------
+
+ARCHIVO_EVALUACION = "objetivo3_evaluacion.json"
+
+
+def precision_por_clase(predicciones=None):
+    """De cuántas veces que el modelo dijo una clase, cuántas acertó.
+
+    **Es el número que hay que mostrarle a quien usa la interfaz**, y no el recall. El recall
+    contesta «de los `Disgustado` reales, ¿cuántos encontró?», que le sirve a quien evalúa el
+    modelo. Quien recibe una predicción se hace la pregunta inversa: «dijo esto, ¿cuántas veces
+    acierta cuando lo dice?». Son números distintos y confundirlos engaña.
+
+    Se deriva de las predicciones FUERA DE MUESTRA de la validación cruzada. No se escribe a
+    mano: escrita a mano diverge el día que se re-evalúe, y quedaría una interfaz informando una
+    confiabilidad que ya no corresponde a ningún modelo.
+    """
+    import json
+
+    if predicciones is None:
+        ruta = rutas.carpeta("resultados") / ARCHIVO_EVALUACION
+        if not ruta.exists():
+            raise FileNotFoundError(
+                f"No existe {ruta}. La produce la evaluación del objetivo 3; sin ella no hay de "
+                "dónde sacar la confiabilidad que la interfaz tiene que mostrar.")
+        predicciones = json.loads(ruta.read_text(encoding="utf-8"))["predicciones_fuera_de_muestra"]
+
+    salida = {}
+    for clase in CLASES:
+        dijo = [p for p in predicciones if p["predicha"] == clase]
+        acerto = sum(1 for p in dijo if p["real"] == clase)
+        salida[clase] = {
+            "precision": acerto / len(dijo) if dijo else float("nan"),
+            "acertadas": acerto,
+            "veces_que_lo_dijo": len(dijo),
+        }
+    return salida
+
+
+def texto_de_confiabilidad(clase, precisiones=None):
+    """El texto que acompaña a toda predicción. Vive acá, en un solo lugar.
+
+    Si estuviera repetido en la interfaz, cambiar el modelo dejaría el texto viejo en pantalla.
+    """
+    precisiones = precisiones or precision_por_clase()
+    p = precisiones[clase]
+    return (
+        f"Cuando este modelo predijo «{clase}», acertó {p['acertadas']} de "
+        f"{p['veces_que_lo_dijo']} veces ({p['precision']:.0%}) en validación cruzada.\n"
+        f"El modelo NO alcanzó el criterio declarado para considerarse útil "
+        f"(F1 macro 0,626 contra 0,691 exigido).\n"
+        f"Este resultado NO es un diagnóstico veterinario."
+    )
+
+
+# --- modelo de producción -------------------------------------------------------------------
+
+ARCHIVO_PRODUCCION = "un_frame_produccion.npz"
+ARCHIVO_PROCEDENCIA = "un_frame_produccion.json"
+
+
+def ruta_produccion():
+    return rutas.carpeta("modelos") / "objetivo3" / ARCHIVO_PRODUCCION
+
+
+def entrenar_produccion(clips, vectores, indice, metrica_validacion=None, verbose=True):
+    """Entrena sobre TODOS los clips íntegros y persiste el modelo que va a usar la interfaz.
+
+    **Su métrica no se mide acá.** Es la de validación cruzada, y no se vuelve a calcular sobre
+    los datos con los que se entrenó. Entrenar con todo mejora el modelo, pero no hay forma
+    honesta de medir cuánto sin dejar material afuera; informar una exactitud calculada sobre el
+    conjunto de entrenamiento sería informar cuánto memorizó.
+
+    No se despliega ninguno de los modelos de fold: cada uno vio 3 de 4 partes del material y
+    elegir cuál sería arbitrario. Promediarlos tampoco: sería un ensamble, y su métrica no es la
+    que se reportó.
+    """
+    import json
+
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    filas, etiquetas = [], []
+    for c in clips:
+        v = vectores[indice[c["clip"]]]
+        filas.append(v)
+        etiquetas.extend([c["clase"]] * len(v))
+    X = np.concatenate(filas)
+    y = np.array(etiquetas)
+
+    escalador = StandardScaler().fit(X)
+    modelo = LogisticRegression(max_iter=2000, class_weight="balanced", random_state=SEMILLA)
+    modelo.fit(escalador.transform(X), y)
+
+    destino = ruta_produccion()
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(
+        destino, coeficientes=modelo.coef_, intercepto=modelo.intercept_,
+        clases=np.array(modelo.classes_), media=escalador.mean_, escala=escalador.scale_)
+
+    # Procedencia: de qué conjunto salió este modelo. Sin esto, dentro de dos meses no hay forma
+    # de saber si los pesos corresponden al dataset vigente o a una corrida anterior.
+    procedencia = {
+        "modelo": "un frame + voto, cabeza lineal sobre backbone congelado",
+        "clips": len(clips),
+        "ejemplares": len({c["id_caballo"] for c in clips}),
+        "frames_de_entrenamiento": int(len(y)),
+        "clases": sorted(set(y.tolist())),
+        "semilla": SEMILLA,
+        "huella_caracteristicas": _huella_caracteristicas(),
+        "metrica_validacion_cruzada": metrica_validacion,
+        "advertencia": (
+            "La métrica de este modelo es la de validación cruzada, no una calculada sobre el "
+            "conjunto con el que se entrenó. No alcanza el criterio declarado de "
+            f"{CRITERIO_ACEPTACION}."),
+    }
+    (destino.parent / ARCHIVO_PROCEDENCIA).write_text(
+        json.dumps(procedencia, ensure_ascii=False, indent=1), encoding="utf-8")
+
+    if verbose:
+        print(f"Modelo de producción entrenado sobre {len(clips)} clips "
+              f"({procedencia['ejemplares']} ejemplares, {len(y)} frames)")
+        print(f"  pesos      : {destino}")
+        print(f"  procedencia: {destino.parent / ARCHIVO_PROCEDENCIA}")
+    return modelo, escalador, procedencia
+
+
+def _huella_caracteristicas():
+    """De qué corrida del preprocesamiento salen las características que entrenaron el modelo."""
+    import json
+
+    ruta = rutas.carpeta("resultados") / "caracteristicas_backbone.json"
+    if not ruta.exists():
+        return None
+    return json.loads(ruta.read_text(encoding="utf-8")).get("huella")
+
+
+def cargar_produccion():
+    """Carga el modelo de producción para inferir. Devuelve `(coef, intercepto, clases, escalador)`."""
+    import numpy as np
+
+    ruta = ruta_produccion()
+    if not ruta.exists():
+        raise FileNotFoundError(
+            f"No existe {ruta}. Entrenarlo con `clasificacion.entrenar_produccion()`. "
+            "Los pesos por fold NO se despliegan: cada uno vio sólo 3 de 4 partes del material.")
+    d = np.load(ruta, allow_pickle=False)
+    return d["coeficientes"], d["intercepto"], [str(c) for c in d["clases"]], (d["media"], d["escala"])

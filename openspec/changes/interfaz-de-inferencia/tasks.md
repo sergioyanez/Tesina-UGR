@@ -6,24 +6,29 @@ como terminan siendo una nota al pie.
 
 ## 1. El modelo de producción
 
-- [ ] 1.1 Entrenar sobre los 141 clips íntegros con `random_state=42`, reutilizando
+- [x] 1.1 Entrenar sobre los 141 clips íntegros con `random_state=42`, reutilizando
       `clasificacion.predecir_un_frame`, y persistirlo en `modelos/objetivo3/` con nombre que lo
       distinga de los cuatro de validación cruzada.
-- [ ] 1.2 Registrar su procedencia junto a los pesos: cantidad de clips y ejemplares, corrida del
+- [x] 1.2 Registrar su procedencia junto a los pesos: cantidad de clips y ejemplares, corrida del
       preprocesamiento de la que salen las características, y la métrica de validación cruzada que
       le corresponde.
-- [ ] 1.3 Verificar que sobre los 141 clips de entrenamiento predice mejor que 0,626 —tiene que
-      hacerlo, los vio a todos— y **dejar escrito que ese número no se informa en ningún lado**.
-      Es el control de que el modelo entrenó, no una métrica.
+- [x] 1.3 Verificar que sobre los 141 clips de entrenamiento predice mejor que 0,626. **Da F1
+      macro 1,000**: memoriza el conjunto entero, que es lo esperable y la ilustración más clara
+      de por qué una métrica de entrenamiento no se informa nunca. **Ese número no se informa en
+      ningún lado**; es el control de que el modelo entrenó y se persistió bien.
 
 ## 2. La confiabilidad, calculada desde los datos y no escrita a mano
 
-- [ ] 2.1 Derivar la **precisión por clase** de las predicciones fuera de muestra guardadas en
+- [x] 2.1 Derivar la **precisión por clase** de las predicciones fuera de muestra guardadas en
       `objetivo3_evaluacion.json`, y exponerla desde `equinos/clasificacion.py`. Escribirla a mano
       la deja divergir del día que se re-evalúe.
-- [ ] 2.2 Verificar contra la matriz de confusión: `Disgustado` 7/21, `Interesado` 49/62,
-      `Sereno` 44/58.
-- [ ] 2.3 Redactar el texto que acompaña a cada predicción —precisión de la clase, criterio no
+- [x] 2.2 Verificar contra la matriz de confusión: `Disgustado` 7/21, `Interesado` 49/62,
+      `Sereno` 44/58. **Las tres coinciden.** La verificación destapó además un error en el
+      diseño: comparaba la precisión agregada contra el recall promediado por folds. En
+      `Disgustado` precisión y recall coinciden (7/21 las dos), así que es la peor clase para
+      ilustrar la distinción; se corrigió usando `Interesado` y `Sereno`, donde difieren en
+      direcciones opuestas.
+- [x] 2.3 Redactar el texto que acompaña a cada predicción —precisión de la clase, criterio no
       alcanzado, no es diagnóstico— y dejarlo en un solo lugar del código.
 
 ## 3. Inferencia de punta a punta
@@ -53,8 +58,10 @@ como terminan siendo una nota al pie.
 
 ## 5. La interfaz
 
-- [ ] 5.1 Elegir el framework y dejar escrito por qué. La lógica queda en `equinos/inferencia.py`:
-      cambiar de framework no puede obligar a reimplementar nada.
+- [x] 5.1 Elegir el framework y dejar escrito por qué. **Streamlit 1.62.0.** Verificado antes de
+      adoptarlo que no toca el conjunto pineado: agrega 15 paquetes y deja numpy 1.26.4, torch
+      2.5.1+cu121, pandas y scipy donde estaban. Era el riesgo real —subir numpy por encima de 2
+      rompe DeepLabCut—. Fijado en `requirements-local.txt`.
 - [ ] 5.2 Pantalla de carga: recibir el video, decir de antemano cuánto puede tardar y qué formatos
       admite.
 - [ ] 5.3 Pantalla de resultado: clase, las tres probabilidades, **la precisión medida de la clase

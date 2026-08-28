@@ -45,6 +45,12 @@ albumentations==1.4.3
 timm==1.0.28
 huggingface-hub==1.28.0
 
+# --- Interfaz del objetivo 4 ---
+# Verificado el 28/08/2026 que instalarlo NO toca ninguna versión del conjunto: agrega 15
+# paquetes propios y deja numpy 1.26.4, torch 2.5.1+cu121, pandas y scipy donde estaban. Era el
+# riesgo a descartar antes de adoptarlo, porque subir numpy por encima de 2 rompe DeepLabCut.
+streamlit==1.62.0
+
 # --- Ejecución de notebooks ---
 papermill==2.7.0
 ipykernel==7.3.0
