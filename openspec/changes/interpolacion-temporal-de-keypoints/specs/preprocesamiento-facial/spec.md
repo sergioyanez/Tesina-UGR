@@ -86,6 +86,26 @@ solamente de un promedio.
 El umbral de aceptación DEBE declararse antes de medir, y el resultado DEBE informarse aunque no lo
 cumpla.
 
+El umbral DEBE anclarse en una **línea de base medida**: el desplazamiento del recorte entre dos
+detecciones propias consecutivas. Ese valor es el piso físico del problema —lo que se mueve la
+cabeza del caballo entre dos frames muestreados— y ninguna estimación puede ser sistemáticamente
+más precisa que él sin estar sobreajustando. Un umbral fijado sin esa referencia no distingue "el
+relleno no sirve" de "el criterio era imposible de cumplir".
+
+**Umbral vigente.** Un largo de hueco se acepta si, medido en píxeles dentro del recorte de 224, su
+**mediana** y su **percentil 90** no superan los de la línea de base. Se informa además el máximo,
+que no forma parte del criterio pero sí del informe, porque lo que arruina una muestra es la cola.
+
+> **Historia de este umbral, que hay que poder contar.** El 28/08/2026 se declaró, antes de medir,
+> un umbral de mediana ≤ 3,0 px y p90 ≤ 8,0 px. Ningún largo de hueco lo cumplió: el mejor caso
+> dio 13,99 px. Al medir después la línea de base —16,28 px de mediana, 78,22 de p90— quedó claro
+> que el umbral exigía que la estimación fuera cinco veces más exacta que el propio movimiento del
+> caballo entre frames, y que la interpolación de un hueco de 1 es de hecho **más precisa que usar
+> la detección real del frame vecino**. El umbral se re-declaró el 28/08/2026 anclándolo en la
+> línea de base. El resultado contra el umbral original queda registrado en `validacion.md`, y se
+> informa junto con el nuevo: cambiar un criterio después de ver los números sólo es legítimo si
+> queda escrito que se cambió, por qué, y qué daba antes.
+
 La validación DEBE estratificarse por la cantidad de frames consecutivos que se está estimando, de
 modo que el tope de relleno surja de la curva de error medida.
 
