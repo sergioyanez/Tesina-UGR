@@ -18,11 +18,13 @@
 #   ./correr_local.sh estado       en qué estado está cada etapa, sin ejecutar nada
 #   ./correr_local.sh reportes     cobertura y calidad de los recortes de la última corrida
 #   ./correr_local.sh entorno      versiones instaladas y GPU visible
-#   ./correr_local.sh etapa01      re-ejecuta el notebook 01 con papermill (LIMPIAR_ETAPA = False)
+#   ./correr_local.sh etapa01      re-ejecuta el notebook 01 con papermill (LIMPIAR_ETAPA = False,
+#                                  PISO_VIDEO_CORTO = 1.0 s; sobrescribible por entorno)
 #   ./correr_local.sh etapa02      re-ejecuta el notebook 02 con papermill (LIMPIAR_ETAPA = False)
 #
-# Las rutas se pueden sobrescribir desde afuera:
+# Las rutas y el piso se pueden sobrescribir desde afuera:
 #   TESINA_EQUINOS_RAIZ=/otra/raiz ./correr_local.sh estado
+#   PISO_VIDEO_CORTO=2.0 ./correr_local.sh etapa01     (vuelve al piso anterior)
 
 set -euo pipefail
 
@@ -63,12 +65,21 @@ case "${1:-jupyter}" in
         # compara contra el catálogo, así que material nuevo entra sólo corriendo el notebook
         # directamente. Con LIMPIAR_ETAPA=False el checkpoint hace que procese únicamente los
         # videos que todavía no están, en vez de las horas que cuesta empezar de cero.
+        #
+        # PISO_VIDEO_CORTO va explícito aunque coincida con el default del notebook. Es el
+        # parámetro que decide cuántos EJEMPLARES de `Disgustado` entran al dataset, y su valor
+        # tiene que estar a la vista en el comando que se corre, no sólo dentro de una celda:
+        # con 2.0 quedaban 11 caballos de la clase minoritaria enteros afuera, con 1.0 entran 7.
+        # El checkpoint lo incluye en su hash_config, así que cambiarlo re-segmenta todo solo.
+        PISO_VIDEO_CORTO="${PISO_VIDEO_CORTO:-1.0}"
         MARCA="$(date +%Y%m%d_%H%M%S)"
         SALIDA="$TESINA_EQUINOS_RAIZ/ejecuciones/preparar_dataset_${MARCA}.ipynb"
         mkdir -p "$TESINA_EQUINOS_RAIZ/ejecuciones"
         echo "Ejecutando 01_preparar_dataset_equinos.ipynb -> $SALIDA"
+        echo "  PISO_VIDEO_CORTO = $PISO_VIDEO_CORTO s"
         "$VENV/bin/papermill" 01_preparar_dataset_equinos.ipynb "$SALIDA" \
             -p EJECUCION_AUTOMATICA True -p LIMPIAR_ETAPA False \
+            -p PISO_VIDEO_CORTO "$PISO_VIDEO_CORTO" \
             -k tesina-equinos --cwd . --log-output
         ;;
     etapa02)
