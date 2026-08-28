@@ -143,3 +143,94 @@ una sesión nueva no apuntan a nada.
 - **THEN** las rutas resueltas apuntan a los archivos reales en la raíz de proyecto vigente
 - **AND** la verificación de existencia de archivos no reporta faltantes espurios
 
+### Requirement: Fuente única declarada del material de video
+
+El material de video DEBE (MUST) resolverse contra una única fuente declarada explícitamente para
+la ejecución en curso. El sistema NO DEBE (MUST NOT) sustituirla en silencio por otra copia del
+material que encuentre disponible, aunque esa copia exista y tenga la estructura esperada.
+
+Si la fuente declarada no está disponible, el sistema DEBE interrumpir la ejecución informando qué
+rutas revisó y cómo declarar la correcta. Continuar con otra copia NO DEBE ser un resultado
+posible: una copia parcial no produce un fallo sino una métrica plausible y equivocada, que es
+peor, porque se publica sin que nadie la cuestione.
+
+La declaración DEBE viajar con el entorno donde el pipeline se ejecuta, y no depender de que quien
+lo arranca recuerde fijarla en cada sesión.
+
+#### Scenario: Fuente declarada disponible
+
+- **WHEN** el entorno declara la carpeta de videos y esa carpeta contiene carpetas de clase
+- **THEN** el sistema cataloga el material desde ahí
+- **AND** informa la ruta absoluta que resolvió, para que quede en la salida del notebook
+- **AND** registra en el inventario la ruta de cada video, con la fuente incluida
+
+#### Scenario: Fuente declarada ausente
+
+- **WHEN** el entorno no declara ninguna carpeta de videos
+- **AND** ninguna de las rutas de la cascada contiene carpetas de clase
+- **THEN** el sistema interrumpe la ejecución
+- **AND** enumera las rutas que revisó y cómo declarar la carpeta correcta
+
+#### Scenario: Copia parcial del material bajo la raíz de artefactos
+
+- **WHEN** existe bajo la raíz de artefactos una copia del material con la estructura de clases
+- **AND** esa copia no es la fuente declarada
+- **THEN** el sistema no la usa como fuente
+- **AND** la corrida no puede completarse midiendo sobre ella
+
+#### Scenario: Arranque por fuera del lanzador
+
+- **WHEN** un notebook del pipeline se ejecuta desde un Jupyter arrancado sin el lanzador del
+  proyecto
+- **THEN** el entorno de ejecución aporta igualmente la raíz de artefactos y la fuente de videos
+- **AND** la corrida resuelve las mismas rutas que resolvería a través del lanzador
+
+### Requirement: Admisión de los videos más cortos que un clip
+
+Un video cuya duración no alcance para formar un clip del largo objetivo NO DEBE (MUST NOT) quedar
+excluido del dataset por ese solo motivo. El sistema DEBE (MUST) admitirlo entero como una única
+muestra siempre que supere un piso declarado explícitamente, y ese piso DEBE ser un parámetro
+auditable de la etapa, no una constante implícita en el código de segmentación.
+
+La regla DEBE aplicarse únicamente cuando la segmentación no produjo ninguna ventana. Un video que
+alcanza el largo objetivo DEBE segmentarse igual que antes, sin que la admisión de videos cortos
+altere sus clips.
+
+Este requisito existe porque el piso de duración no filtra tomas de mala calidad: filtra
+ejemplares. Medido sobre el catálogo de 234 videos, la clase minoritaria tenía 42 caballos y su
+video mediano duraba 2,9 segundos, así que un piso de 5 segundos dejaba entrar 11 y descartaba 31
+ejemplares completos. Como el ejemplar está correlacionado con la clase, ese descarte no protege la
+calidad del dato: alimenta el confounder que el trabajo tiene que resolver antes de entrenar.
+
+El parámetro que fija el piso DEBE formar parte de la configuración que invalida el checkpoint de la
+etapa, para que cambiarlo no pueda mezclar muestras generadas con dos criterios distintos.
+
+Las muestras resultantes tienen largo variable, así que cada muestra DEBE registrar su duración en
+el inventario, de modo que la heterogeneidad quede auditable y se pueda informar o ablacionar.
+
+#### Scenario: Video más corto que el largo objetivo pero por encima del piso
+
+- **WHEN** un video no alcanza la duración mínima para segmentarse
+- **AND** su duración supera el piso declarado para videos cortos
+- **THEN** el sistema lo admite entero como una única muestra
+- **AND** registra la duración real de esa muestra en el inventario
+
+#### Scenario: Video por debajo del piso
+
+- **WHEN** la duración de un video no alcanza el piso declarado
+- **THEN** el sistema no genera ninguna muestra a partir de ese video
+- **AND** lo informa, en vez de descartarlo en silencio
+
+#### Scenario: Video que alcanza el largo objetivo
+
+- **WHEN** un video admite al menos una ventana de segmentación
+- **THEN** sus muestras son exactamente las que produciría la segmentación sin la regla de videos
+  cortos
+- **AND** las muestras generadas en corridas anteriores siguen siendo válidas
+
+#### Scenario: Cambio del piso declarado
+
+- **WHEN** se ejecuta la etapa con un piso distinto del registrado en el checkpoint
+- **THEN** el sistema descarta el progreso previo y vuelve a segmentar todo el material
+- **AND** no mezcla muestras generadas con los dos criterios
+
