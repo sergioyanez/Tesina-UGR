@@ -67,6 +67,28 @@ def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
     for clase, (total, ok) in sorted(por_clase.items()):
         print(f"  {clase:<14} {total:>5} frames   {ok / total:6.1%} alineados")
 
+    # Desglose por origen. Un frame cuya posición midió el modelo y uno cuya posición se estimó
+    # NO son equivalentes, y sumarlos bajo "alineado" vuelve invisible el rescate en cuanto se
+    # calcula la primera métrica. Con esta columna se puede además recalcular la cobertura
+    # considerando sólo los detectados, que es lo que hay que poder citar.
+    origenes: dict[str, int] = {}
+    for fila in frames:
+        origen = fila.get("origen_alineacion")
+        if origen:
+            origenes[origen] = origenes.get(origen, 0) + 1
+
+    solo_detectados = origenes.get("keypoints")
+    if origenes:
+        print("\nPor origen de la alineación:")
+        for origen, cuantos in sorted(origenes.items(), key=lambda kv: -kv[1]):
+            print(f"  {origen:<20} {cuantos:>5}   {cuantos / generados:6.1%}")
+        if solo_detectados is not None and solo_detectados != alineados:
+            print(f"\n  Cobertura contando SÓLO posiciones detectadas: "
+                  f"{solo_detectados / generados:.1%}")
+            print(f"  Cobertura contando también las estimadas       : "
+                  f"{alineados / generados:.1%}")
+            print("  La primera es la comparable con las corridas anteriores al relleno.")
+
     caballos = sorted(_leer("reporte_cobertura.csv"), key=lambda f: float(f["tasa"]))
     problematicos = [f for f in caballos if float(f["tasa"]) < umbral]
 
@@ -100,6 +122,9 @@ def cobertura(umbral: float = 0.70, peores: int = 8) -> dict:
         "por_clase": {c: {"frames": t, "alineados": o, "tasa": o / t}
                       for c, (t, o) in por_clase.items()},
         "ejemplares_bajo_umbral": [f["id_caballo"] for f in problematicos],
+        "por_origen": origenes,
+        "tasa_solo_detectados": (solo_detectados / generados
+                                 if solo_detectados is not None else None),
     }
 
 
@@ -699,3 +724,102 @@ def calidad_recortes(lado: int = 224, frac_ojo: float = 0.20, frac_hocico: float
     return {"evaluados": len(filas), "sospechosos": len(sospechosos),
             "por_caballo": {c: {"total": t, "sospechosos": s}
                             for c, (t, s) in por_caballo.items()}}
+
+
+def clips_integros(minimo_por_clase: int = 15) -> dict:
+    """Clips con los 16 frames alineados, por clase y por ejemplar.
+
+    **Es la métrica que decide si se puede entrenar**, y es distinta de la cobertura por frame.
+    El modelo consume la secuencia completa: un clip con 11 frames alineados y 5 recortes de caja
+    no es una muestra a medias, es una muestra contaminada, porque la mitad tiene el aspecto de un
+    recorte alineado y la otra el de un recorte de caja, y a qué frame le toca cuál está
+    correlacionado con el ejemplar, que a su vez predice la clase.
+
+    `minimo_por_clase` es la cantidad de ejemplares con al menos un clip íntegro por debajo de la
+    cual una partición por caballo deja folds sin la clase. No es un valor sagrado: es el orden de
+    magnitud que hace falta para que `GroupKFold` de 5 folds tenga con qué llenar cada uno.
+    """
+    frames = _leer("dataset_frames_alineados.csv")
+    if not frames:
+        raise ValueError("dataset_frames_alineados.csv no tiene filas.")
+
+    # clip -> [total, alineados, clase, id_caballo, alineados_solo_detectados]
+    #
+    # Se llevan las dos cuentas porque un clip íntegro "gracias a una posición estimada" y uno
+    # íntegro por detección propia no son la misma evidencia, y la spec pide poder separarlos.
+    por_clip: dict[str, list] = {}
+    for fila in frames:
+        estado = por_clip.setdefault(fila["clip"], [0, 0, fila["clase"], fila["id_caballo"], 0])
+        estado[0] += 1
+        estado[1] += _es_si(fila["alineado"])
+        origen = fila.get("origen_alineacion")
+        # Sin la columna (corridas previas al relleno) "alineado" ya significaba "detectado".
+        estado[4] += (origen == "keypoints") if origen else _es_si(fila["alineado"])
+
+    por_clase: dict[str, dict] = {}
+    for total, ok, clase, caballo, solo_det in por_clip.values():
+        acumulado = por_clase.setdefault(clase, {
+            "clips": 0, "integros": 0, "integros_detectados": 0,
+            "caballos": set(), "caballos_integros": set(), "caballos_integros_detectados": set()})
+        acumulado["clips"] += 1
+        acumulado["caballos"].add(caballo)
+        if ok == total == FRAMES_POR_CLIP:
+            acumulado["integros"] += 1
+            acumulado["caballos_integros"].add(caballo)
+        if solo_det == total == FRAMES_POR_CLIP:
+            acumulado["integros_detectados"] += 1
+            acumulado["caballos_integros_detectados"].add(caballo)
+
+    print("=" * 62)
+    print("CLIPS ÍNTEGROS — la métrica que decide si se puede entrenar")
+    print("=" * 62)
+    print(f"Un clip es íntegro cuando sus {FRAMES_POR_CLIP} frames quedaron alineados.")
+    print("Las dos columnas de la derecha separan lo detectado de lo estimado: un clip que sólo")
+    print("es íntegro gracias a una posición interpolada no es la misma evidencia.")
+    print()
+    print(f"  {'clase':<12} {'clips':>6} {'íntegros':>9} {'tasa':>7} | "
+          f"{'sólo det.':>9} {'caballos':>9} {'sólo det.':>10}")
+
+    total_clips = total_integros = total_detectados = 0
+    for clase in sorted(por_clase):
+        datos = por_clase[clase]
+        total_clips += datos["clips"]
+        total_integros += datos["integros"]
+        total_detectados += datos["integros_detectados"]
+        print(f"  {clase:<12} {datos['clips']:>6} {datos['integros']:>9} "
+              f"{datos['integros'] / datos['clips']:>7.1%} | "
+              f"{datos['integros_detectados']:>9} "
+              f"{len(datos['caballos_integros']):>9} "
+              f"{len(datos['caballos_integros_detectados']):>10}")
+
+    print(f"  {'-' * 68}")
+    print(f"  {'global':<12} {total_clips:>6} {total_integros:>9} "
+          f"{total_integros / total_clips:>7.1%} | {total_detectados:>9}")
+
+    escasas = {c: len(d["caballos_integros"]) for c, d in por_clase.items()
+               if len(d["caballos_integros"]) < minimo_por_clase}
+
+    print("\n" + "-" * 62)
+    if not escasas:
+        print(f"Todas las clases llegan a {minimo_por_clase} ejemplares utilizables.")
+        print("El dataset admite una partición por caballo.")
+    else:
+        for clase, cuantos in sorted(escasas.items(), key=lambda kv: kv[1]):
+            print(f"{clase}: {cuantos} ejemplar{'es' if cuantos != 1 else ''} con clip íntegro "
+                  f"(hacen falta ~{minimo_por_clase}).")
+        print()
+        print("Con esa cantidad, GroupKFold por caballo deja folds sin la clase: el modelo no")
+        print("tendría de dónde aprenderla ni contra qué evaluarse. NO entrenar todavía.")
+
+    return {
+        "total_clips": total_clips,
+        "total_integros": total_integros,
+        "total_integros_detectados": total_detectados,
+        "por_clase": {c: {"clips": d["clips"], "integros": d["integros"],
+                          "integros_detectados": d["integros_detectados"],
+                          "caballos": len(d["caballos"]),
+                          "caballos_integros": len(d["caballos_integros"]),
+                          "caballos_integros_detectados": len(d["caballos_integros_detectados"])}
+                      for c, d in por_clase.items()},
+        "clases_bajo_minimo": escasas,
+    }
