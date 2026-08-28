@@ -4,8 +4,8 @@ Corrida el **28/08/2026** sobre la partición persistida en `resultados/particio
 Reproducible con `lineas_de_base.py`. 141 clips íntegros, 73 ejemplares, reparto
 `Disgustado` 15 % / `Interesado` 40 % / `Sereno` 45 %.
 
-Estas dos líneas de base **no miran la imagen**. La tercera —un solo frame con el backbone
-congelado, tarea 2.3— necesita el modelo y va aparte.
+Las tres líneas de base del diseño, corridas sobre los mismos folds. Reproducible: dos corridas
+seguidas dan los mismos números hasta el tercer decimal.
 
 ## La partición
 
@@ -29,8 +29,21 @@ ejemplares y desempata por nombre. Está probado en `tests/test_particion.py`.
 |---|---:|---:|---:|
 | 1. Clase mayoritaria | 0,188 ± 0,029 | 0,333 ± 0,000 | 0,000 |
 | 2. Sólo `id_caballo` | 0,188 ± 0,029 | 0,333 ± 0,000 | 0,000 |
+| **3. Un frame + voto, sin orden** | **0,626 ± 0,065** | 0,638 ± 0,069 | 0,346 ± 0,131 |
 
-**Las dos dan exactamente lo mismo, y era inevitable.** Con partición por ejemplar, un caballo de
+La tercera usa el **mismo backbone congelado** que va a usar el modelo —ResNet-18 de ImageNet,
+512 dimensiones por frame— con una cabeza lineal encima y pesos por clase balanceados. Usa los 16
+frames pero es **invariante a su orden**: barajar el clip no cambia una sola predicción. Por eso
+aísla exactamente lo que el modelo secuencial tiene que aportar, y no cualquier otra ventaja del
+backbone o de disponer de más frames.
+
+**Las imágenes tienen señal, y bastante.** De 0,188 a 0,626 sin usar información temporal, con
+partición por ejemplar. Es el resultado más importante de esta etapa y era necesario conocerlo
+antes de elegir arquitectura.
+
+### Las dos primeras
+
+**Dan exactamente lo mismo, y era inevitable.** Con partición por ejemplar, un caballo de
 test nunca se vio en entrenamiento: el modelo de identidad **cayó al voto mayoritario en los 141
 clips, el 100 %**. No tenía con qué predecir.
 
@@ -62,16 +75,36 @@ resultado de 0,50 bajo partición ingenua sería **peor** que ignorar las imáge
 > Este número se informa como diagnóstico del dataset. **No se usa para reportar ningún resultado
 > del trabajo**, y el script lo dice en su encabezado para que no se cite fuera de contexto.
 
-## Qué queda declarado a partir de acá
+## Criterio de aceptación, declarado antes de entrenar (tarea 2.4)
 
-- **El piso es F1 macro 0,188 ± 0,029.** Cualquier modelo se lee contra ese número, no contra cero
-  y no contra la accuracy global —que con este reparto llega a 0,45 prediciendo siempre `Sereno`—.
-- **El recall de `Disgustado` de las dos líneas de base es 0,000.** Es el número a vigilar: un
-  modelo puede subir el F1 macro sin predecir nunca la clase de interés clínico.
+Sale de la Decisión 7 del diseño, que lo definió antes de tener estos números: *el modelo se
+considera útil si su F1 macro medio supera al de las tres líneas de base en al menos un desvío
+estándar entre folds*. Anclado en las líneas de base y no en un número redondo, porque un 0,60
+puede ser excelente o irrelevante según contra qué se lea.
+
+La línea de base más alta es la de un frame: **0,626 ± 0,065**. Aplicando la regla:
+
+> **El modelo secuencial se considera útil si su F1 macro medio supera 0,691.**
+
+Es una vara exigente, y lo es a propósito: la hipótesis del trabajo dice que la evolución temporal
+es lo que permite clasificar. Si el modelo secuencial no le gana a un clasificador que ignora el
+orden de los frames, **la hipótesis no queda sostenida por la evidencia de este dataset**, y eso
+hay que escribirlo tal cual. El resultado se informa aunque no se cumpla.
+
+**Qué NO forma parte del criterio, y por qué se informa igual.** El recall de `Disgustado` de la
+línea de base de un frame es **0,346**. Un modelo puede subir el F1 macro y a la vez empeorar la
+clase de interés clínico. Ese número acompaña todo resultado que se reporte, pero no se convierte
+en condición: el diseño no lo declaró como tal, y agregarlo ahora que se conocen los números sería
+exactamente lo que este proyecto evita.
+
+## Qué más queda declarado
+
+- **La accuracy global no se usa.** Con este reparto llega a 0,45 prediciendo siempre `Sereno`.
 - **La partición está persistida y es obligatoria.** Todas las corridas —las variantes de cabeza
   temporal, la ablación por `origen_alineacion`— tienen que leer `particion_clips.json`. Comparar
   números medidos sobre cortes distintos no dice nada.
-
-Falta la tercera línea de base (tarea 2.3, un solo frame sin información temporal) antes de
-declarar el criterio de aceptación en la tarea 2.4. Es la que pone a prueba la hipótesis del
-trabajo, y con toda probabilidad la que va a fijar el piso real.
+- **Las características del backbone congelado están cacheadas** (`caracteristicas_backbone.npz`,
+  141 × 16 × 512). Comparar cabezas temporales cuesta segundos. **Pero con la caché no se puede
+  aumentar**: la aumentación cambia los píxeles y obligaría a repasar el backbone en cada época.
+  Si el entrenamiento final usa aumentación, tiene que re-extraer, y no se puede comparar un
+  modelo aumentado contra cabezas medidas sin aumentar.

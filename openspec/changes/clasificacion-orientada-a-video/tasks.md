@@ -27,17 +27,21 @@ arquitectura, no después.
       confounder. Para contestar la pregunta de fondo se midió además con partición ingenua por
       clip, donde llega a **F1 macro 0,526** sin mirar un píxel — 63 de los 73 ejemplares aparecen
       en una sola clase. Resultados en `lineas_de_base.md`.
-- [ ] 2.3 Un solo frame del clip, sin información temporal, con el mismo backbone congelado que
-      usará el modelo. Es la que pone a prueba la hipótesis del trabajo.
-- [ ] 2.4 Tabla comparativa de las tres, con F1 macro y balanced accuracy, media y desvío entre
-      folds. **Declarar acá el criterio de aceptación**, anclado en estos números, y dejarlo
-      escrito antes de entrenar nada.
+- [x] 2.3 Un solo frame del clip, sin información temporal, con el mismo backbone congelado que
+      usará el modelo. **F1 macro 0,626 ± 0,065**, recall `Disgustado` 0,346. Usa los 16 frames
+      pero es invariante a su orden, así que aísla exactamente lo que el modelo secuencial tiene
+      que aportar. Las imágenes tienen señal: de 0,188 a 0,626 sin información temporal.
+- [x] 2.4 Tabla comparativa de las tres, con F1 macro y balanced accuracy, media y desvío entre
+      folds, en `lineas_de_base.md`. **Criterio declarado antes de entrenar: el modelo secuencial
+      se considera útil si su F1 macro medio supera 0,691** — la línea de base más alta (0,626)
+      más un desvío entre folds (0,065), según la Decisión 7 del diseño.
 
 ## 3. El modelo
 
-- [ ] 3.1 Extraer las características por frame con el backbone congelado y **cachearlas**: son
-      141 × 16 vectores y no cambian entre configuraciones. Evita recomputar el backbone en cada
-      corrida.
+- [x] 3.1 Extraer las características por frame con el backbone congelado y **cachearlas**.
+      `equinos/caracteristicas.py`: ResNet-18 de ImageNet congelada, 141 × 16 × 512, 11 s en la
+      RTX 3070. La caché se invalida sola si cambia el backbone o el dataset. **Ojo: con la caché
+      no se puede aumentar** — si el entrenamiento final usa aumentación, tiene que re-extraer.
 - [ ] 3.2 Implementar la cabeza temporal sobre las características cacheadas.
 - [ ] 3.3 Comparar a lo sumo tres variantes de cabeza sobre los mismos folds, y **dejar
       registrado cuántas se probaron**. Con 141 muestras, probar veinte y quedarse con la mejor

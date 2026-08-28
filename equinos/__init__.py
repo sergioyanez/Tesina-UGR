@@ -18,11 +18,12 @@ Módulos:
     pose        selección de keypoints faciales sobre la pose completa y su barrido
     encuadre    campo de visión del recorte facial y barrido de encuadres candidatos
     particion   clips íntegros que entran al modelo y su partición por ejemplar
+    caracteristicas  vectores por frame del backbone congelado, y su caché
     reporte     lectura de los resultados del preprocesamiento facial
 """
 
-from equinos import (cache, catalogo, checkpoint, encuadre, entorno, etapas, particion,
-                     pose, reporte, rutas)
+from equinos import (cache, caracteristicas, catalogo, checkpoint, encuadre, entorno,
+                     etapas, particion, pose, reporte, rutas)
 
 __all__ = ["rutas", "catalogo", "checkpoint", "cache", "encuadre", "entorno", "etapas",
-           "particion", "pose", "reporte"]
+           "caracteristicas", "particion", "pose", "reporte"]

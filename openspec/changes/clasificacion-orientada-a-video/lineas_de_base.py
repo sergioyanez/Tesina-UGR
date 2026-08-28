@@ -1,4 +1,9 @@
-"""Líneas de base que no miran la imagen: clase mayoritaria e identidad del ejemplar.
+"""Las tres líneas de base del objetivo 3, sobre la partición persistida.
+
+  1. clase mayoritaria
+  2. sólo `id_caballo`, sin mirar la imagen
+  3. un frame a la vez con el backbone congelado, y voto — sin información temporal
+
 
 Sin ellas, un F1 macro de 0,55 no significa nada: puede ser un modelo que aprendió algo o uno que
 descubrió la clase mayoritaria. Se corren ANTES que el modelo, y el criterio de aceptación del
@@ -31,7 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from equinos import particion, rutas  # noqa: E402
+from equinos import caracteristicas, particion, rutas  # noqa: E402
 
 SEMILLA = 42
 CLASES = ("Disgustado", "Interesado", "Sereno")
@@ -98,6 +103,48 @@ def predecir_por_identidad(entrenamiento, prueba):
             predichas.append(mayoritaria)
             sin_ver += 1
     return predichas, sin_ver
+
+
+def predecir_por_frame_y_votar(entrenamiento, prueba, vectores, indice):
+    """Clasifica CADA frame por separado con el backbone congelado, y vota entre los 16.
+
+    Es la línea de base que pone a prueba la hipótesis del trabajo. Usa los 16 frames, pero es
+    **invariante a su orden**: barajar el clip no cambia una sola predicción. Por eso aísla
+    exactamente lo que el modelo secuencial tiene que aportar —la evolución temporal— y no
+    cualquier otra ventaja del backbone o de tener más frames.
+
+    Cabeza lineal sobre las características congeladas, con pesos por clase balanceados: la
+    métrica es F1 macro, así que dejar que `Sereno` domine la pérdida mediría otra cosa.
+    """
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    def aplanar(clips):
+        filas, etiquetas, de_clip = [], [], []
+        for c in clips:
+            v = vectores[indice[c["clip"]]]           # (16, 512)
+            filas.append(v)
+            etiquetas.extend([c["clase"]] * len(v))
+            de_clip.extend([c["clip"]] * len(v))
+        return np.concatenate(filas), np.array(etiquetas), np.array(de_clip)
+
+    X_ent, y_ent, _ = aplanar(entrenamiento)
+    X_pru, _, clip_de_frame = aplanar(prueba)
+
+    escalador = StandardScaler().fit(X_ent)
+    cabeza = LogisticRegression(max_iter=2000, class_weight="balanced")
+    cabeza.fit(escalador.transform(X_ent), y_ent)
+    por_frame = cabeza.predict(escalador.transform(X_pru))
+
+    # Voto mayoritario entre los frames de cada clip. El desempate es por orden alfabético de
+    # clase, fijo, para que el resultado no dependa del orden de iteración.
+    votos = defaultdict(Counter)
+    for clip, prediccion in zip(clip_de_frame, por_frame):
+        votos[clip][prediccion] += 1
+    predichas = [sorted(votos[c["clip"]].items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+                 for c in prueba]
+    return predichas, 0
 
 
 # --- protocolos de partición ----------------------------------------------------------------
@@ -183,6 +230,15 @@ def main():
     identidad = imprimir(evaluar("2. Sólo id_caballo, sin mirar la imagen",
                                  predecir_por_identidad, por_ejemplar))
 
+    orden_clips, vectores = caracteristicas.cargar()
+    indice = {clip: i for i, clip in enumerate(orden_clips)}
+    un_frame = imprimir(evaluar(
+        "3. Un frame a la vez + voto, sin información temporal",
+        lambda ent, pru: predecir_por_frame_y_votar(ent, pru, vectores, indice),
+        por_ejemplar))
+    print("     (usa los 16 frames pero es invariante a su orden: barajar el clip no cambia")
+    print("      ninguna predicción. Aísla lo que el modelo secuencial tiene que aportar.)")
+
     print("\n" + "-" * 70)
     print("PROTOCOLO INGENUO — reparto al azar por clip, SIN agrupar por ejemplar")
     print("-" * 70)
@@ -190,6 +246,7 @@ def main():
     print("que es lo que justifica agrupar por ejemplar.")
     ingenuo = imprimir(evaluar("2b. Sólo id_caballo, partición ingenua",
                                predecir_por_identidad, folds_ingenuos(clips)))
+
 
     print("\n" + "=" * 70)
     print("LECTURA")
@@ -201,9 +258,16 @@ def main():
     print(f"Diferencia: {delta:+.3f}. Eso es la fuga que la partición por ejemplar elimina, y el")
     print("motivo por el que ningún número de este trabajo se mide sobre cortes por clip.")
     print()
-    print(f"El piso contra el que hay que leer el modelo es F1 macro "
-          f"{max(mayoritaria['f1_macro'][0], identidad['f1_macro'][0]):.3f}.")
-    return {"mayoritaria": mayoritaria, "identidad": identidad, "ingenuo": ingenuo}
+    piso = max(mayoritaria["f1_macro"][0], identidad["f1_macro"][0], un_frame["f1_macro"][0])
+    print(f"El piso contra el que hay que leer el modelo es F1 macro {piso:.3f}, "
+          f"que lo fija la línea de base de un frame.")
+    print()
+    print("HIPÓTESIS DEL TRABAJO: la expresión es un evento dinámico y la evolución temporal es")
+    print("lo que permite clasificarla. Queda a prueba contra ese 3: si el modelo secuencial no")
+    print("le gana, la hipótesis no queda sostenida por la evidencia de este dataset, y eso hay")
+    print("que escribirlo tal cual.")
+    return {"mayoritaria": mayoritaria, "identidad": identidad,
+            "un_frame": un_frame, "ingenuo": ingenuo, "piso": piso}
 
 
 if __name__ == "__main__":
