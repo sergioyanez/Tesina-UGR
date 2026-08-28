@@ -41,8 +41,8 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 
 | Objetivo específico | Estado |
 |---|---|
-| 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **234 videos → 342 clips → 5472 frames** (25/08/2026) |
-| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 342/342 clips; **alineación 69,9 % global**, y ese global dejó de ser el criterio útil (ver "El número que hay que citar") |
+| 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
+| 2. Pipeline de preprocesamiento | 🟡 Ejecutado 368/368 clips con relleno temporal; **73,2 % con estimadas, 68,7 % contando sólo detectadas**. El global dejó de ser el criterio útil (ver "El número que hay que citar") |
 | 3. Clasificación orientada a video | 🔴 No iniciado |
 | 4. Aplicación / interfaz | 🔴 No iniciado |
 
@@ -377,17 +377,36 @@ alineado**: `Disgustado` pasó de 11 a **32** de sus 42 caballos.
 
 **Y falta una métrica más, que es la que decide si se puede entrenar: clips con los 16 frames
 alineados.** El modelo consume clips, no frames sueltos, y un clip con 11 frames alineados y 5
-recortes de caja mete el confondir de recorte adentro de una sola muestra. Contado así el dataset
-es mucho más chico de lo que sugiere el 69,9 %:
+recortes de caja mete el confondir de recorte adentro de una sola muestra. Se pide con
+`reporte.clips_integros()`.
 
-| | clips íntegros | caballos | `Disgustado` |
-|---|---:|---:|---|
-| hoy | **80** de 342 | 49 | **5 clips, 4 caballos** |
-| rellenando huecos interiores de keypoints | 180 | 84 | 24 clips, 19 caballos |
-| rellenando además los extremos | 330 | 113 | 61 clips, 32 caballos |
+Estado al **28/08/2026**, con el relleno temporal (`MAX_HUECO_INTERPOLADO = 1`) y el piso de
+video corto en 1,0 s:
 
-Con 4 ejemplares en `Disgustado`, `GroupKFold` por caballo deja folds sin la clase: **hoy el
-dataset no se puede entrenar de forma honesta sobre el subconjunto limpio.**
+| | clips íntegros | `Disgustado` clips/caballos |
+|---|---:|---|
+| sólo posiciones detectadas | **82** de 368 | **7 / 5** |
+| con las interpoladas (vigente) | **133** de 368 | **13 / 10** |
+
+Con 10 ejemplares en `Disgustado`, `GroupKFold` por caballo sigue dejando folds sin la clase:
+**el dataset todavía no se puede entrenar de forma honesta.** Pero la distancia ya es corta y
+está medida:
+
+| | ejemplares de `Disgustado` |
+|---|---:|
+| hoy | **10** de 47 |
+| rescatando los clips a los que falta **1** frame | **15** |
+| rescatando los que faltan ≤ 2 | **19** |
+
+Son **14 clips a uno o dos frames de estar completos, 23 frames en total**. Anotarlos a mano
+—la vía que la spec ya contempla— lleva `Disgustado` a 19 ejemplares. Bajar
+`CONF_MINIMA_KEYPOINT` NO los rescata: ninguno tiene las dos confianzas por encima de 0,4.
+
+**La proyección con la que se planificó el change no se sostuvo, y conviene registrarlo.** El
+diseño esperaba 180 clips íntegros y 19 ejemplares de `Disgustado` rellenando huecos interiores.
+Medido: 130 y 8 (sobre 354 clips). Para llegar a 17 ejemplares haría falta un tope de 3, cuyo error mediano ya
+supera la línea de base. La interpolación movió el dataset de *imposible* a *insuficiente* — es un
+avance real, pero **no sustituye a filmar más caballos de la clase minoritaria**.
 
 ### Lo que se cerró el 25/08
 
@@ -402,16 +421,36 @@ dataset no se puede entrenar de forma honesta sobre el subconjunto limpio.**
 
 ### La primera acción de la próxima sesión
 
-**Implementar `interpolacion-temporal-de-keypoints`, empezando por su validación.** El change está
-planificado y validado (26/08/2026), con 17 tareas y ninguna hecha.
+**`interpolacion-temporal-de-keypoints` está implementado y medido (28/08/2026): las 17 tareas
+cerradas.** Lo que sigue es conseguir ejemplares nuevos de `Disgustado`; ninguna palanca de
+software mueve ya la métrica que bloquea.
 
-1. **Correr primero la tarea 1, que es autónoma y barata**: el experimento de dejar uno afuera
-   sobre los 3824 frames detectados, con el error medido en píxeles del recorte de 224 y
-   estratificado por largo de hueco. De ahí sale el tope de relleno, y de ahí sale si conviene
-   seguir. Nada de esto reinfiere DeepLabCut.
-2. **Implementar el relleno y re-derivar los recortes** (~14 min), y volver a contar clips íntegros.
-   Lo esperado es 80 → 180, y `Disgustado` de 4 a 19 ejemplares.
-3. **Barrer `CONF_MINIMA_KEYPOINT`** con `reporte.confianzas()`, que también lee el CSV y no
+Lo que dejó, además del relleno:
+
+- `equinos/interpolacion.py` y `tests/test_interpolacion.py` (49 pruebas), con la validación de
+  dejar-uno-afuera completa y su línea de base.
+- `origen_alineacion` por frame en `dataset_frames_alineados.csv`, y los reportes desglosados: la
+  cobertura se puede recalcular contando sólo posiciones detectadas, que es la comparable con las
+  corridas anteriores al relleno.
+- **Una lección de método que conviene no repetir:** el umbral de aceptación se declaró antes de
+  medir —como corresponde— pero sin anclarlo en ninguna referencia física, y resultó imposible de
+  cumplir por construcción: exigía cinco veces más precisión que el propio movimiento del caballo
+  entre frames. Hacen falta las dos cosas, declararlo antes **y** anclarlo en una línea de base
+  medible. Está contado en `validacion.md` del change.
+
+El plan que resta:
+
+1. ~~El experimento de dejar uno afuera.~~ **Hecho.** `MAX_HUECO_INTERPOLADO = 1`,
+   `MAX_EXTREMO_SOSTENIDO = 0`; sólo el largo 1 queda por debajo de la línea de base.
+2. ~~Implementar el relleno y re-derivar.~~ **Hecho.** 81 → 130 clips íntegros; `Disgustado` de 5
+   a 8 ejemplares, no a los 19 esperados.
+3. ~~Bajar `PISO_VIDEO_CORTO` a 1,0 s.~~ **Hecho (28/08/2026).** Los 11 caballos de
+   `Disgustado` que se perdían enteros por durar menos de 2 s: entraron 7, y sus clips alinean
+   al **68,0 %**, mejor que el 63,1 % del resto de la clase — 16 frames sobre 1,5 s se mueven
+   menos entre sí. La contrapartida es que esos clips cubren una ventana temporal más corta que
+   los de 6 s, y eso hay que declararlo en el informe. Corrido con `-p PISO_VIDEO_CORTO 1.0`;
+   **el default del notebook sigue en 2.0 y hay que cambiarlo si se adopta.**
+4. **Barrer `CONF_MINIMA_KEYPOINT`** con `reporte.confianzas()`, que también lee el CSV y no
    reinfiere: puede rescatar frames antes de tener que estimarlos.
 4. **Reemplazar el criterio de aceptación**: `COBERTURA_MINIMA_ACEPTABLE` sobre el global premia
    dejar afuera a la clase difícil. El criterio útil es cobertura por clase más clips íntegros por
