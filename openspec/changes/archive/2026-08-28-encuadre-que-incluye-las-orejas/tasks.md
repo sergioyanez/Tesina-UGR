@@ -94,7 +94,7 @@
 ## 7. Cierre
 
 - [x] 7.1 `openspec validate encuadre-que-incluye-las-orejas` sin errores.
-- [ ] 7.2 Commits separados por unidad lógica: barrido y decisión; parametrización del notebook;
+- [x] 7.2 Commits separados por unidad lógica: barrido y decisión; parametrización del notebook;
       pruebas; re-ejecución y artefactos; reportes; documentación.
-- [ ] 7.3 Sincronizar las specs delta a `openspec/specs/preprocesamiento-facial/spec.md` y archivar
+- [x] 7.3 Sincronizar las specs delta a `openspec/specs/preprocesamiento-facial/spec.md` y archivar
       el change.
