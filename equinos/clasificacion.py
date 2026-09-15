@@ -511,7 +511,7 @@ def texto_de_confiabilidad(clase, precisiones=None):
 
 # --- modelo de producción -------------------------------------------------------------------
 
-ARCHIVO_PRODUCCION = "un_frame_produccion.npz"
+ARCHIVO_PRODUCCION = "un_frame_produccion.pt"
 ARCHIVO_PROCEDENCIA = "un_frame_produccion.json"
 
 
@@ -519,50 +519,56 @@ def ruta_produccion():
     return rutas.carpeta("modelos") / "objetivo3" / ARCHIVO_PRODUCCION
 
 
-def entrenar_produccion(clips, vectores, indice, metrica_validacion=None, verbose=True):
+def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=None, verbose=True):
     """Entrena sobre TODOS los clips íntegros y persiste el modelo que va a usar la interfaz.
 
     **Su métrica no se mide acá.** Es la de validación cruzada, y no se vuelve a calcular sobre
     los datos con los que se entrenó. Entrenar con todo mejora el modelo, pero no hay forma
     honesta de medir cuánto sin dejar material afuera; informar una exactitud calculada sobre el
     conjunto de entrenamiento sería informar cuánto memorizó.
-
-    No se despliega ninguno de los modelos de fold: cada uno vio 3 de 4 partes del material y
-    elegir cuál sería arbitrario. Promediarlos tampoco: sería un ensamble, y su métrica no es la
-    que se reportó.
     """
     import json
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+    from collections import Counter
 
-    import numpy as np
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.preprocessing import StandardScaler
+    torch.manual_seed(SEMILLA)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    filas, etiquetas = [], []
-    for c in clips:
-        v = vectores[indice[c["clip"]]]
-        filas.append(v)
-        etiquetas.extend([c["clase"]] * len(v))
-    X = np.concatenate(filas)
-    y = np.array(etiquetas)
+    ds = MultimodalEquineDataset(clips, vectores, indice, pose_filas)
 
-    escalador = StandardScaler().fit(X)
-    modelo = LogisticRegression(max_iter=2000, class_weight="balanced", random_state=SEMILLA)
-    modelo.fit(escalador.transform(X), y)
+    clases_lista = [c["clase"] for c in clips]
+    conteos = Counter(clases_lista)
+    pesos_clase = []
+    for c in ds.clases:
+        pesos_clase.append(len(clases_lista) / (len(ds.clases) * max(1, conteos[c])))
+    weight_tensor = torch.tensor(pesos_clase, dtype=torch.float32).to(device)
+
+    dl = DataLoader(ds, batch_size=32, shuffle=True, collate_fn=collate_fn)
+
+    modelo = MILFusionModel().to(device)
+    optimizer = torch.optim.Adam(modelo.parameters(), lr=1e-3, weight_decay=1e-4)
+    criterion = nn.CrossEntropyLoss(weight=weight_tensor)
+
+    for epoch in range(50):
+        modelo.train()
+        for v_vis, v_geom, attn_mask, _, labels in dl:
+            optimizer.zero_grad()
+            logits = modelo(v_vis.to(device), v_geom.to(device), attn_mask.to(device))
+            loss = criterion(logits, labels.to(device))
+            loss.backward()
+            optimizer.step()
 
     destino = ruta_produccion()
     destino.parent.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(
-        destino, coeficientes=modelo.coef_, intercepto=modelo.intercept_,
-        clases=np.array(modelo.classes_), media=escalador.mean_, escala=escalador.scale_)
+    torch.save(modelo.state_dict(), destino)
 
-    # Procedencia: de qué conjunto salió este modelo. Sin esto, dentro de dos meses no hay forma
-    # de saber si los pesos corresponden al dataset vigente o a una corrida anterior.
     procedencia = {
-        "modelo": "un frame + voto, cabeza lineal sobre backbone congelado",
+        "modelo": "MILFusionModel (Multimodal) sobre secuencia entera",
         "clips": len(clips),
         "ejemplares": len({c["id_caballo"] for c in clips}),
-        "frames_de_entrenamiento": int(len(y)),
-        "clases": sorted(set(y.tolist())),
+        "clases": ds.clases,
         "semilla": SEMILLA,
         "huella_caracteristicas": _huella_caracteristicas(),
         "metrica_validacion_cruzada": metrica_validacion,
@@ -576,10 +582,10 @@ def entrenar_produccion(clips, vectores, indice, metrica_validacion=None, verbos
 
     if verbose:
         print(f"Modelo de producción entrenado sobre {len(clips)} clips "
-              f"({procedencia['ejemplares']} ejemplares, {len(y)} frames)")
+              f"({procedencia['ejemplares']} ejemplares)")
         print(f"  pesos      : {destino}")
         print(f"  procedencia: {destino.parent / ARCHIVO_PROCEDENCIA}")
-    return modelo, escalador, procedencia
+    return modelo, procedencia
 
 
 def _huella_caracteristicas():
@@ -593,13 +599,18 @@ def _huella_caracteristicas():
 
 
 def cargar_produccion():
-    """Carga el modelo de producción para inferir. Devuelve `(coef, intercepto, clases, escalador)`."""
-    import numpy as np
-
+    """Carga el modelo de producción para inferir. Devuelve `(modelo, clases)`."""
+    import torch
+    
     ruta = ruta_produccion()
     if not ruta.exists():
         raise FileNotFoundError(
             f"No existe {ruta}. Entrenarlo con `clasificacion.entrenar_produccion()`. "
             "Los pesos por fold NO se despliegan: cada uno vio sólo 3 de 4 partes del material.")
-    d = np.load(ruta, allow_pickle=False)
-    return d["coeficientes"], d["intercepto"], [str(c) for c in d["clases"]], (d["media"], d["escala"])
+            
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    modelo = MILFusionModel().to(device)
+    modelo.load_state_dict(torch.load(ruta, map_location=device, weights_only=True))
+    modelo.eval()
+    
+    return modelo, CLASES

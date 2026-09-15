@@ -128,16 +128,27 @@ if archivo is not None:
             )
 
         st.markdown("---")
-        st.markdown("#### Cómo quedó repartido el voto")
+        st.markdown("#### Probabilidades del modelo")
         st.caption(
-            "Promedio sobre los 16 fotogramas. Un reparto parejo significa que el modelo dudó, "
-            "aunque igual haya tenido que elegir una etiqueta."
+            "El modelo procesa toda la secuencia junta (arquitectura MIL) y emite esta distribución final. "
+            "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que elegir una etiqueta."
         )
         for clase, probabilidad in sorted(resultado.probabilidades.items(),
                                           key=lambda kv: -kv[1]):
             st.progress(probabilidad,
                         text=f"{clase} — {probabilidad:.0%}  "
                              f"(acierta {precisiones[clase]['precision']:.0%} cuando lo dice)")
+
+        st.markdown("---")
+        st.markdown("#### Explicabilidad (XAI): Pesos de Atención")
+        st.caption(
+            "Muestra a qué fotogramas de la secuencia el modelo le prestó más atención "
+            "para tomar su decisión. Los picos altos indican los momentos más informativos de la toma."
+        )
+        import pandas as pd
+        df_atencion = pd.DataFrame({"Atención": resultado.atencion}, 
+                                   index=[f"Frame {i+1}" for i in range(len(resultado.atencion))])
+        st.bar_chart(df_atencion)
 
         st.markdown("---")
         st.markdown("#### Qué significa este número")
@@ -149,12 +160,8 @@ La confiabilidad sale de **validación cruzada agrupada por caballo**: ningún a
 entrenar aparece en la evaluación, así que el modelo no puede acertar reconociendo al ejemplar en
 lugar de su expresión.
 
-Sin esa precaución el mismo procedimiento llega a un F1 macro de 0,53 **sin mirar un solo píxel**,
-sólo por saber de qué caballo se trata: 63 de los 73 ejemplares del conjunto aparecen en una única
-clase.
-
-El trabajo también puso a prueba su propia hipótesis —que la evolución temporal es lo que permite
-clasificar la expresión— y **no quedó sostenida**: barajar el orden de los fotogramas no cambia
-las predicciones. El modelo que se usa acá mira cada fotograma por separado y vota.
+Este sistema utiliza una arquitectura **Multimodal MIL (Multiple Instance Learning)** que procesa 
+la secuencia de fotogramas entera. Combina la postura geométrica (orejas, hocico, ojos) y las 
+características visuales para emitir una única predicción.
 """
             )

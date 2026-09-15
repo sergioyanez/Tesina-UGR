@@ -68,6 +68,7 @@ class Prediccion(NamedTuple):
     veces_que_lo_dijo: int
     texto_confiabilidad: str
     frames_alineados: int
+    atencion: list[float]
 
     @property
     def hay_prediccion(self) -> bool:
@@ -136,18 +137,11 @@ def campo_de_vision(parametros: dict | None = None):
 
 # --- la parte que decide, aislada de la GPU y del video ----------------------------------------
 
-def predecir_desde_caracteristicas(vectores, precisiones=None,
+def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
                                    modelo=None) -> Prediccion | Negativa:
-    """Predice a partir de las características de los 16 frames. Sin GPU y sin video.
-
-    Es la mitad del módulo que toma la decisión final, y está separada a propósito: se puede
-    probar sin nada del stack pesado, y es donde vive el contrato de la salida.
-
-    `modelo` permite inyectar `(coef, intercepto, clases, (media, escala))` en vez de leerlo del
-    disco. Existe para las pruebas: sin eso, probar el contrato de la salida exigiría tener el
-    modelo entrenado, y el contrato es justamente lo que no debería depender de eso.
-    """
-    import numpy as np
+    """Predice a partir de las características y pose de los frames alineados. Sin video."""
+    import torch
+    import torch.nn.functional as F
 
     if not (12 <= len(vectores) <= FRAMES_POR_CLIP):
         return Negativa("ALINEACION_INSUFICIENTE",
@@ -155,20 +149,30 @@ def predecir_desde_caracteristicas(vectores, precisiones=None,
                         + f" Se alinearon {len(vectores)} de {FRAMES_POR_CLIP}.",
                         len(vectores))
 
-    coef, intercepto, clases, (media, escala) = modelo or clasificacion.cargar_produccion()
-    logits = ((np.asarray(vectores) - media) / escala) @ coef.T + intercepto
+    modelo, clases = modelo or clasificacion.cargar_produccion()
+    
+    # Reutilizamos MultimodalEquineDataset para el pipeline de características geométricas
+    clip_name = filas_pose[0]["clip"] if filas_pose else "inferencia"
+    dummy_clips = [{"clip": clip_name, "clase": clases[0]}]
+    dummy_indice = {clip_name: 0}
+    dummy_vectores = [vectores]
+    
+    ds = clasificacion.MultimodalEquineDataset(dummy_clips, dummy_vectores, dummy_indice, filas_pose)
+    v_vis, v_geom, _ = ds[0]
+    
+    v_vis = v_vis.unsqueeze(0)
+    v_geom = v_geom.unsqueeze(0)
+    seq_len = v_vis.shape[1]
+    attn_mask = torch.ones((1, seq_len), dtype=torch.bool)
+    
+    device = next(modelo.parameters()).device
+    with torch.no_grad():
+        logits, attn_weights = modelo(v_vis.to(device), v_geom.to(device), attn_mask.to(device), return_attn=True)
+        probs = F.softmax(logits, dim=1).cpu().numpy()[0]
+        atencion = attn_weights.cpu().numpy()[0].tolist()
 
-    # Voto entre los 16 frames, igual que en la evaluación: es el mismo modelo, no una variante.
-    exp = np.exp(logits - logits.max(axis=1, keepdims=True))
-    probas_por_frame = exp / exp.sum(axis=1, keepdims=True)
-    ganadores = probas_por_frame.argmax(axis=1)
-    conteo = {c: int((ganadores == i).sum()) for i, c in enumerate(clases)}
-    clase = max(sorted(conteo), key=lambda c: conteo[c])
-
-    # Las probabilidades que se muestran son el promedio por frame: describen cuán repartido
-    # quedó el voto, que es lo que una persona necesita para no leer la etiqueta como certeza.
-    promedio = probas_por_frame.mean(axis=0)
-    probabilidades = {c: float(promedio[i]) for i, c in enumerate(clases)}
+    clase = clases[probs.argmax()]
+    probabilidades = {c: float(p) for c, p in zip(clases, probs)}
 
     precisiones = precisiones or clasificacion.precision_por_clase()
     p = precisiones[clase]
@@ -179,7 +183,8 @@ def predecir_desde_caracteristicas(vectores, precisiones=None,
         acertadas=p["acertadas"],
         veces_que_lo_dijo=p["veces_que_lo_dijo"],
         texto_confiabilidad=clasificacion.texto_de_confiabilidad(clase, precisiones),
-        frames_alineados=FRAMES_POR_CLIP,
+        frames_alineados=len(vectores),
+        atencion=atencion,
     )
 
 
@@ -247,7 +252,7 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
         return Negativa("SIN_DETECCION", MOTIVOS["SIN_DETECCION"], 0)
 
     avisar("pose", "estimando keypoints faciales (~20 s)")
-    pares = _keypoints(ruta_video, frames, indices, p)
+    pares, filas_pose = _keypoints(ruta_video, frames, indices, p)
     validos = sum(1 for par in pares if par is not None)
     if validos == 0:
         return Negativa("SIN_KEYPOINTS", MOTIVOS["SIN_KEYPOINTS"], 0)
@@ -271,7 +276,7 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
             f"{FRAMES_POR_CLIP}. Es el resultado más frecuente: sobre el conjunto propio sólo "
             "el 38 % de los clips llegó a los 16.",
             len(recortes))
-    return recortes
+    return recortes, filas_pose
 
 
 def _detectar(frames, parametros):
@@ -327,17 +332,15 @@ def _keypoints(ruta_video, frames, indices, parametros):
     _limpiar_auxiliares(ruta_video)
 
     if not isinstance(resultado, dict) or not resultado:
-        return [None] * len(indices)
+        return [None] * len(indices), []
     tabla = next(iter(resultado.values()))
 
     # A formato largo con `equinos.pose`, que es donde vive la decisión de qué individuo seguir.
-    # DeepLabCut devuelve diez `individuals` aunque haya un solo animal, y quedarse con el
-    # equivocado deja todos los keypoints en NaN sin que nada falle.
     filas = sel_pose.a_formato_largo(
         tabla, list(enumerate(indices)), Path(ruta_video).name)
 
     if not filas:
-        return [None] * len(indices)
+        return [None] * len(indices), []
 
     pares = sel_pose.seleccionar_par(filas, bodypart_hocico=parametros["BODYPART_HOCICO"])
     umbral = parametros["CONF_MINIMA_KEYPOINT"]
@@ -353,7 +356,7 @@ def _keypoints(ruta_video, frames, indices, parametros):
             continue
         salida.append(((float(p["x_ojo"]), float(p["y_ojo"])),
                        (float(p["x_hocico"]), float(p["y_hocico"]))))
-    return salida
+    return salida, filas
 
 
 def _limpiar_auxiliares(ruta_video):
@@ -376,11 +379,13 @@ def clasificar_video(ruta_video, progreso=None):
     preparado = preparar_clip(ruta_video, progreso=progreso)
     if isinstance(preparado, Negativa):
         return preparado
+    
+    recortes, filas_pose = preparado
 
     avisar("caracteristicas", "extrayendo características con el backbone congelado")
-    vectores = _caracteristicas_de(preparado)
+    vectores = _caracteristicas_de(recortes)
     avisar("predecir", "clasificando")
-    return predecir_desde_caracteristicas(vectores)
+    return predecir_desde_caracteristicas(vectores, filas_pose)
 
 
 def _caracteristicas_de(recortes):
