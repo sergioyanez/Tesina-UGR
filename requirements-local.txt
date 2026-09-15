@@ -27,6 +27,7 @@
 # --- Cómputo en GPU ---
 torch==2.5.1+cu121
 torchvision==0.20.1+cu121
+tensorboard==2.21.0
 
 # --- Stack científico (atado por numpy<2 de DeepLabCut) ---
 numpy==1.26.4
