@@ -33,8 +33,22 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV="${TESINA_EQUINOS_VENV:-$HOME/.venvs/tesina-equinos}"
-PY="$VENV/bin/python"
+VENV="${TESINA_EQUINOS_VENV:-}"
+if [ -z "$VENV" ]; then
+    if [ -d "$REPO/env" ]; then
+        VENV="$REPO/env"
+    else
+        VENV="$HOME/.venvs/tesina-equinos"
+    fi
+fi
+
+if [ -d "$VENV/Scripts" ]; then
+    BIN_DIR="$VENV/Scripts"
+else
+    BIN_DIR="$VENV/bin"
+fi
+
+PY="$BIN_DIR/python"
 
 # La raíz oficial es la del repositorio en el disco externo: es donde viven los artefactos
 # buenos (223 videos, 4016 frames) y donde hay lugar de sobra. `$HOME/tesina_equinos` quedó
@@ -102,7 +116,7 @@ case "${1:-jupyter}" in
         mkdir -p "$TESINA_EQUINOS_RAIZ/ejecuciones"
         echo "Ejecutando 01_preparar_dataset_equinos.ipynb -> $SALIDA"
         echo "  PISO_VIDEO_CORTO = $PISO_VIDEO_CORTO s"
-        "$VENV/bin/papermill" 01_preparar_dataset_equinos.ipynb "$SALIDA" \
+        "$BIN_DIR/papermill" 01_preparar_dataset_equinos.ipynb "$SALIDA" \
             -p EJECUCION_AUTOMATICA True -p LIMPIAR_ETAPA False \
             -p PISO_VIDEO_CORTO "$PISO_VIDEO_CORTO" \
             -k tesina-equinos --cwd . --log-output
@@ -114,7 +128,7 @@ case "${1:-jupyter}" in
         SALIDA="$TESINA_EQUINOS_RAIZ/ejecuciones/roi_normalizacion_${MARCA}.ipynb"
         mkdir -p "$TESINA_EQUINOS_RAIZ/ejecuciones"
         echo "Ejecutando 02_roi_y_normalizacion.ipynb -> $SALIDA"
-        "$VENV/bin/papermill" 02_roi_y_normalizacion.ipynb "$SALIDA" \
+        "$BIN_DIR/papermill" 02_roi_y_normalizacion.ipynb "$SALIDA" \
             -p EJECUCION_AUTOMATICA True -p LIMPIAR_ETAPA False \
             -k tesina-equinos --cwd . --log-output
         ;;
@@ -122,7 +136,7 @@ case "${1:-jupyter}" in
         # La interfaz del objetivo 4. Corre en esta máquina porque arrastra la cadena entera de
         # inferencia —YOLO y DeepLabCut— y sin GPU los 35 s por clip se vuelven varios minutos.
         echo "Abriendo la interfaz. Ctrl+C para cerrarla."
-        exec "$VENV/bin/streamlit" run app_inferencia.py
+        exec "$BIN_DIR/streamlit" run app_inferencia.py
         ;;
     jupyter)
         # Jupyter sale del Python del sistema, no del venv: lo único que hace falta del entorno es
