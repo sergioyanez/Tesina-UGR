@@ -807,17 +807,17 @@ def clips_integros(minimo_por_clase: int = 15) -> dict:
             "caballos": set(), "caballos_integros": set(), "caballos_integros_detectados": set()})
         acumulado["clips"] += 1
         acumulado["caballos"].add(caballo)
-        if ok == total == FRAMES_POR_CLIP:
+        if 12 <= ok <= FRAMES_POR_CLIP and ok == total:
             acumulado["integros"] += 1
             acumulado["caballos_integros"].add(caballo)
-        if solo_det == total == FRAMES_POR_CLIP:
+        if 12 <= solo_det <= FRAMES_POR_CLIP and solo_det == total:
             acumulado["integros_detectados"] += 1
             acumulado["caballos_integros_detectados"].add(caballo)
 
     print("=" * 62)
     print("CLIPS ÍNTEGROS — la métrica que decide si se puede entrenar")
     print("=" * 62)
-    print(f"Un clip es íntegro cuando sus {FRAMES_POR_CLIP} frames quedaron alineados.")
+    print(f"Un clip es íntegro cuando sus frames quedaron alineados (mínimo 12, máximo {FRAMES_POR_CLIP}).")
     print("Las dos columnas de la derecha separan lo detectado de lo estimado: un clip que sólo")
     print("es íntegro gracias a una posición interpolada no es la misma evidencia.")
     print()

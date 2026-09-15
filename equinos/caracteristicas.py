@@ -120,7 +120,7 @@ def extraer(clips: list[dict] | None = None, lote: int = 8, verbose: bool = True
         if previo.get("huella") == marca:
             if verbose:
                 print(f"Características ya extraídas y vigentes ({destino.name}).")
-            datos = np.load(destino, allow_pickle=False)
+            datos = np.load(destino, allow_pickle=True)
             return list(previo["clips"]), datos["caracteristicas"]
         if verbose:
             print("La caché de características corresponde a otra corrida; se descarta.")
@@ -153,11 +153,12 @@ def extraer(clips: list[dict] | None = None, lote: int = 8, verbose: bool = True
         if verbose and (indice + 1) % 40 == 0:
             print(f"  {indice + 1}/{len(clips)}")
 
-    arreglo = np.stack(vectores)
+    arreglo = np.empty(len(vectores), dtype=object)
+    arreglo[:] = vectores
     np.savez_compressed(destino, caracteristicas=arreglo)
     metadatos.write_text(json.dumps(
         {"huella": marca, "backbone": BACKBONE, "pesos": PESOS,
-         "dimensiones": DIMENSIONES, "forma": list(arreglo.shape), "clips": orden_clips},
+         "dimensiones": DIMENSIONES, "forma": "variable", "clips": orden_clips},
         ensure_ascii=False, indent=1), encoding="utf-8")
     if verbose:
         print(f"Guardadas en {destino}  forma {arreglo.shape}")
@@ -208,7 +209,7 @@ def extraer_aumentadas(vistas: int = 20, semilla: int = 42, clips=None, verbose:
         if previo.get("huella") == marca:
             if verbose:
                 print(f"Características aumentadas ya vigentes ({destino.name}).")
-            return list(previo["clips"]), np.load(destino, allow_pickle=False)["caracteristicas"]
+            return list(previo["clips"]), np.load(destino, allow_pickle=True)["caracteristicas"]
 
     dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     extractor = _cargar_backbone(dispositivo)
@@ -240,11 +241,12 @@ def extraer_aumentadas(vistas: int = 20, semilla: int = 42, clips=None, verbose:
         if verbose and (indice + 1) % 40 == 0:
             print(f"  {indice + 1}/{len(clips)}")
 
-    arreglo = np.stack(todas)
+    arreglo = np.empty(len(todas), dtype=object)
+    arreglo[:] = todas
     np.savez_compressed(destino, caracteristicas=arreglo)
     metadatos.write_text(json.dumps(
         {"huella": marca, "vistas": vistas, "semilla": semilla,
-         "forma": list(arreglo.shape), "clips": orden_clips},
+         "forma": "variable", "clips": orden_clips},
         ensure_ascii=False, indent=1), encoding="utf-8")
     if verbose:
         print(f"Guardadas en {destino}  forma {arreglo.shape}")
@@ -258,7 +260,7 @@ def cargar_aumentadas():
     if not destino.exists():
         raise FileNotFoundError(f"No existe {destino}. Generarla con `extraer_aumentadas()`.")
     previo = json.loads(metadatos.read_text(encoding="utf-8"))
-    return list(previo["clips"]), np.load(destino, allow_pickle=False)["caracteristicas"]
+    return list(previo["clips"]), np.load(destino, allow_pickle=True)["caracteristicas"]
 
 
 def cargar():
@@ -276,4 +278,4 @@ def cargar():
         raise ValueError(
             "La caché de características no corresponde al conjunto de clips vigente. "
             "Volver a extraer: usarla igual daría números que no son de ningún dataset.")
-    return list(previo["clips"]), np.load(destino, allow_pickle=False)["caracteristicas"]
+    return list(previo["clips"]), np.load(destino, allow_pickle=True)["caracteristicas"]

@@ -161,6 +161,196 @@ def predecir_un_frame(entrenamiento, prueba, vectores, indice, guardar_en=None):
             clases=np.array(modelo.classes_), media=escalador.mean_, escala=escalador.scale_)
     return predichas, {"sin_ver": 0}
 
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+import math
+
+class MultimodalEquineDataset(Dataset):
+    def __init__(self, clips, vectores, indice, pose_filas):
+        self.clips = clips
+        self.vectores = vectores
+        self.indice = indice
+        from collections import defaultdict
+        self.pose_por_clip = defaultdict(lambda: defaultdict(list))
+        for f in pose_filas:
+            self.pose_por_clip[f['clip']][int(f['orden'])].append(f)
+        self.clases = ["Disgustado", "Interesado", "Sereno"]
+        self.clase_a_idx = {c: i for i, c in enumerate(self.clases)}
+
+    def __len__(self):
+        return len(self.clips)
+        
+    def _mejor_de(self, candidatos, frames_medidos):
+        mejor = (float("nan"), float("nan"), -1.0)
+        for c in candidatos:
+            for f in frames_medidos:
+                if f['bodypart'].lower() == c.lower() or c.lower() in f['bodypart'].lower():
+                    conf = float(f['confianza'])
+                    if conf > mejor[2]:
+                        mejor = (float(f['x']), float(f['y']), conf)
+        return mejor
+
+    def __getitem__(self, idx):
+        clip_info = self.clips[idx]
+        clip_name = clip_info["clip"]
+        clase_idx = self.clase_a_idx[clip_info["clase"]]
+        v_vis = self.vectores[self.indice[clip_name]]
+        seq_len = v_vis.shape[0]
+        
+        geom_features = []
+        val_masks = []
+        pose_del_clip = self.pose_por_clip.get(clip_name, {})
+        
+        for orden in range(seq_len):
+            medidos = pose_del_clip.get(orden, [])
+            x_ojo, y_ojo, c_ojo = self._mejor_de(["eye"], medidos)
+            x_hoc, y_hoc, c_hoc = self._mejor_de(["nose", "snout", "muzzle", "upper_jaw", "mouth"], medidos)
+            x_ore, y_ore, c_ore = self._mejor_de(["earbase", "earend"], medidos)
+            
+            if c_ojo > 0 and c_hoc > 0:
+                cx, cy = (x_ojo + x_hoc) / 2, (y_ojo + y_hoc) / 2
+                escala = math.hypot(x_ojo - x_hoc, y_ojo - y_hoc)
+                if escala < 1e-6:
+                    escala = 1.0
+            else:
+                cx, cy, escala = 0.0, 0.0, 1.0
+                
+            def normalizar(x, y, c):
+                if c > 0.0 and not math.isnan(x) and not math.isnan(y):
+                    return (x - cx) / escala, (y - cy) / escala, 1.0
+                return 0.0, 0.0, 0.0
+                
+            nx_ojo, ny_ojo, val_ojo = normalizar(x_ojo, y_ojo, c_ojo)
+            nx_hoc, ny_hoc, val_hoc = normalizar(x_hoc, y_hoc, c_hoc)
+            nx_ore, ny_ore, val_ore = normalizar(x_ore, y_ore, c_ore)
+            
+            geom_features.append([nx_ojo, ny_ojo, nx_hoc, ny_hoc, nx_ore, ny_ore])
+            val_masks.append([val_ojo, val_hoc, val_ore])
+            
+        v_vis = torch.tensor(v_vis, dtype=torch.float32)
+        v_geom = torch.tensor(geom_features, dtype=torch.float32)
+        v_val = torch.tensor(val_masks, dtype=torch.float32)
+        v_geom_full = torch.cat([v_geom, v_val], dim=-1)
+        return v_vis, v_geom_full, torch.tensor(clase_idx, dtype=torch.long)
+
+def collate_fn(batch):
+    v_vis_list, v_geom_list, labels = zip(*batch)
+    lengths = torch.tensor([v.shape[0] for v in v_vis_list])
+    v_vis_pad = nn.utils.rnn.pad_sequence(v_vis_list, batch_first=True, padding_value=0.0)
+    v_geom_pad = nn.utils.rnn.pad_sequence(v_geom_list, batch_first=True, padding_value=0.0)
+    batch_size = len(batch)
+    max_len = v_vis_pad.shape[1]
+    attn_mask = torch.arange(max_len).expand(batch_size, max_len) < lengths.unsqueeze(1)
+    labels = torch.stack(labels)
+    return v_vis_pad, v_geom_pad, attn_mask, lengths, labels
+
+class MILFusionModel(nn.Module):
+    def __init__(self, vis_dim=512, geom_dim=9, geom_embed_dim=128, num_classes=3):
+        super().__init__()
+        self.geom_mlp = nn.Sequential(
+            nn.Linear(geom_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, geom_embed_dim),
+            nn.ReLU()
+        )
+        fusion_dim = vis_dim + geom_embed_dim
+        self.attention = nn.Sequential(
+            nn.Linear(fusion_dim, 128),
+            nn.Tanh(),
+            nn.Linear(128, 1, bias=False)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(fusion_dim, 64),
+            nn.ReLU(),
+            nn.Linear(64, num_classes)
+        )
+
+    def forward(self, v_vis, v_geom, attn_mask, return_attn=False):
+        geom_embed = self.geom_mlp(v_geom)
+        fusion = torch.cat([v_vis, geom_embed], dim=-1)
+        attn_scores = self.attention(fusion).squeeze(-1)
+        attn_scores = attn_scores.masked_fill(~attn_mask, float('-1e9'))
+        attn_weights = torch.softmax(attn_scores, dim=1)
+        bag_rep = torch.sum(fusion * attn_weights.unsqueeze(-1), dim=1)
+        logits = self.classifier(bag_rep)
+        if return_attn:
+            return logits, attn_weights
+        return logits
+
+def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas, guardar_en=None):
+    from torch.utils.tensorboard import SummaryWriter
+    import time
+    import matplotlib.pyplot as plt
+
+    torch.manual_seed(SEMILLA)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    ds_ent = MultimodalEquineDataset(entrenamiento, vectores, indice, pose_filas)
+    ds_pru = MultimodalEquineDataset(prueba, vectores, indice, pose_filas)
+    
+    # Calculate class weights for CrossEntropyLoss
+    clases = [c["clase"] for c in entrenamiento]
+    from collections import Counter
+    conteos = Counter(clases)
+    pesos_clase = []
+    for c in ds_ent.clases:
+        pesos_clase.append(len(clases) / (len(ds_ent.clases) * max(1, conteos[c])))
+    weight_tensor = torch.tensor(pesos_clase, dtype=torch.float32).to(device)
+    
+    dl_ent = DataLoader(ds_ent, batch_size=32, shuffle=True, collate_fn=collate_fn)
+    dl_pru = DataLoader(ds_pru, batch_size=32, shuffle=False, collate_fn=collate_fn)
+    
+    model = MILFusionModel().to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
+    criterion = nn.CrossEntropyLoss(weight=weight_tensor)
+    
+    # Setup TensorBoard
+    log_dir = f"runs/mil_multimodal_{int(time.time())}"
+    writer = SummaryWriter(log_dir=log_dir)
+    
+    for epoch in range(50):
+        model.train()
+        train_loss = 0.0
+        for v_vis, v_geom, attn_mask, _, labels in dl_ent:
+            optimizer.zero_grad()
+            logits = model(v_vis.to(device), v_geom.to(device), attn_mask.to(device))
+            loss = criterion(logits, labels.to(device))
+            loss.backward()
+            optimizer.step()
+            train_loss += loss.item() * v_vis.size(0)
+            
+        train_loss /= len(ds_ent)
+        writer.add_scalar('Loss/train', train_loss, epoch)
+            
+    model.eval()
+    predichas = []
+    with torch.no_grad():
+        for i, (v_vis, v_geom, attn_mask, lengths, _) in enumerate(dl_pru):
+            logits, attn_weights = model(v_vis.to(device), v_geom.to(device), attn_mask.to(device), return_attn=True)
+            preds = torch.argmax(logits, dim=1)
+            predichas.extend([ds_ent.clases[p] for p in preds.cpu().numpy()])
+            
+            # Log attention weights for the first batch
+            if i == 0:
+                fig, ax = plt.subplots(figsize=(10, 4))
+                sample_idx = 0
+                seq_len = lengths[sample_idx].item()
+                weights = attn_weights[sample_idx, :seq_len].cpu().numpy()
+                ax.bar(range(seq_len), weights)
+                ax.set_title(f"Pesos de Atención - Clip Validación")
+                ax.set_xlabel("Frame")
+                ax.set_ylabel("Atención")
+                writer.add_figure('Attention/val_sample', fig, global_step=0)
+                plt.close(fig)
+                
+    writer.close()
+    if guardar_en is not None:
+        guardar_en.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(model.state_dict(), guardar_en.with_suffix('.pt'))
+        
+    return predichas, {"sin_ver": 0}
+
 
 # --- evaluación -----------------------------------------------------------------------------
 

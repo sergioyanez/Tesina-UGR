@@ -71,7 +71,7 @@ def tabla_clips(solo_detectados: bool = False) -> list[dict]:
     clips = []
     for clip, filas in por_clip.items():
         alineados = [f for f in filas if _es_si(f["alineado"])]
-        if len(alineados) != FRAMES_POR_CLIP:
+        if not (12 <= len(alineados) <= FRAMES_POR_CLIP):
             continue
         origenes = {f["origen_alineacion"] for f in alineados}
         if solo_detectados and not origenes <= set(ORIGENES_DETECTADOS):

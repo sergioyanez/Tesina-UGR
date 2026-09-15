@@ -123,7 +123,15 @@ class Checkpoint:
         temporal.write_text(
             json.dumps(datos, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
         )
-        os.replace(temporal, destino)
+        import time
+        for _ in range(10):
+            try:
+                os.replace(temporal, destino)
+                break
+            except PermissionError:
+                time.sleep(0.2)
+        else:
+            os.replace(temporal, destino)
 
     def limpiar(self, verbose: bool = True) -> None:
         """Borra el estado y el CSV parcial de esta etapa."""

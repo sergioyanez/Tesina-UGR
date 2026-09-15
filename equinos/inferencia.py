@@ -149,7 +149,7 @@ def predecir_desde_caracteristicas(vectores, precisiones=None,
     """
     import numpy as np
 
-    if len(vectores) != FRAMES_POR_CLIP:
+    if not (12 <= len(vectores) <= FRAMES_POR_CLIP):
         return Negativa("ALINEACION_INSUFICIENTE",
                         MOTIVOS["ALINEACION_INSUFICIENTE"]
                         + f" Se alinearon {len(vectores)} de {FRAMES_POR_CLIP}.",
@@ -214,10 +214,10 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
     if total <= 0:
         captura.release()
         return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
-    if total < FRAMES_POR_CLIP:
+    if total < 12:
         captura.release()
         return Negativa("VIDEO_CORTO",
-                        MOTIVOS["VIDEO_CORTO"] + f" Tiene {total} fotogramas.", 0)
+                        MOTIVOS["VIDEO_CORTO"] + f" Tiene {total} fotogramas (mínimo 12).", 0)
 
     fps = captura.get(cv2.CAP_PROP_FPS) or 30.0
     duracion = total / fps if fps > 0 else 0.0
@@ -230,7 +230,8 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
             "Recortá el momento de interés a una toma de 5 a 7 segundos.",
             0)
 
-    indices = np.linspace(0, total - 1, FRAMES_POR_CLIP).astype(int)
+    num_a_extraer = min(total, FRAMES_POR_CLIP)
+    indices = np.linspace(0, total - 1, num_a_extraer).astype(int)
     frames = []
     for i in indices:
         captura.set(cv2.CAP_PROP_POS_FRAMES, int(i))
@@ -263,7 +264,7 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
         recortes.append(cv2.warpAffine(imagen, matriz, (destino["ancho"], destino["alto"]),
                                        borderMode=cv2.BORDER_REPLICATE))
 
-    if len(recortes) != FRAMES_POR_CLIP:
+    if not (12 <= len(recortes) <= FRAMES_POR_CLIP):
         return Negativa(
             "ALINEACION_INSUFICIENTE",
             MOTIVOS["ALINEACION_INSUFICIENTE"] + f" Se alinearon {len(recortes)} de "
