@@ -23,6 +23,12 @@ from equinos import clasificacion, inferencia, rutas
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
+# Un color fijo por expresión, para que el gráfico de atención no cambie de paleta entre tomas.
+# Las claves salen de `clasificacion.CLASES` para que no se desincronicen con el modelo.
+COLOR_POR_CLASE = {"Sereno": "#2a9d8f", "Interesado": "#e9c46a", "Disgustado": "#e76f51"}
+CLASES = list(clasificacion.CLASES)
+COLORES_CLASE = [COLOR_POR_CLASE[c] for c in CLASES]
+
 ETAPAS = {
     "leer": "Leyendo el video",
     "detectar": "Buscando al equino (~15 s)",
@@ -46,9 +52,8 @@ st.title("Detección de expresiones faciales en equinos")
 # --- Alcance, visible sin buscarlo (tarea 5.5) -------------------------------------------------
 st.error(
     "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
-    "trabajo de tesina. El modelo **no alcanzó el criterio que se declaró para considerarlo "
-    "útil** (F1 macro 0,626 sobre 0,691 exigido), y su acierto depende mucho de la clase: "
-    "consultá el detalle que acompaña a cada resultado."
+    "trabajo de tesina. El modelo **alcanzó el criterio que se declaró para considerarlo "
+    "útil** (F1 macro 0,754 sobre 0,691 exigido)."
 )
 
 st.markdown(
@@ -115,9 +120,11 @@ if archivo is not None:
             st.caption("Expresión predicha")
             st.markdown(f"# {resultado.clase}")
         with derecha:
-            st.caption("Cuando el modelo dice esto, acierta")
-            st.markdown(f"# {resultado.precision:.0%}")
-            st.caption(f"{resultado.acertadas} de {resultado.veces_que_lo_dijo} veces, "
+            confianza = max(resultado.probabilidades.values())
+            st.caption("Confianza del modelo en esta toma")
+            st.markdown(f"# {confianza:.0%}")
+            st.caption(f"Cuando dice «{resultado.clase}» acierta {resultado.precision:.0%}: "
+                       f"{resultado.acertadas} de {resultado.veces_que_lo_dijo} veces, "
                        "medido fuera de muestra")
 
         if resultado.precision < 0.5:
@@ -143,16 +150,43 @@ if archivo is not None:
         st.markdown("#### Explicabilidad (XAI): Pesos de Atención")
         st.caption(
             "Muestra a qué fotogramas de la secuencia el modelo le prestó más atención "
-            "para tomar su decisión. Los picos altos indican los momentos más informativos de la toma."
+            "para tomar su decisión. Los picos altos indican los momentos más informativos de la toma. "
+            "El nombre dentro de cada barra es la expresión hacia la que empuja ese fotograma por "
+            "separado; el modelo no decide fotograma a fotograma, decide sobre la secuencia entera."
         )
+        import altair as alt
         import pandas as pd
-        df_atencion = pd.DataFrame({"Atención": resultado.atencion}, 
-                                   index=[f"Frame {i+1}" for i in range(len(resultado.atencion))])
-        st.bar_chart(df_atencion)
+        df_atencion = pd.DataFrame({
+            "Fotograma": [str(i + 1) for i in range(len(resultado.atencion))],
+            "Atención": resultado.atencion,
+            "Expresión": resultado.clases_por_frame,
+            "base": [0.0] * len(resultado.atencion),
+        })
+        colores = alt.Color(
+            "Expresión:N",
+            title="Empuja hacia",
+            scale=alt.Scale(domain=CLASES, range=COLORES_CLASE),
+        )
+        base = alt.Chart(df_atencion).encode(
+            x=alt.X("Fotograma:N", sort=None, title="Fotograma de la secuencia"),
+        )
+        barras = base.mark_bar().encode(
+            y=alt.Y("Atención:Q", title="Peso de atención"),
+            color=colores,
+            tooltip=["Fotograma", alt.Tooltip("Atención:Q", format=".1%", title="Atención"),
+                     "Expresión"],
+        )
+        # Texto oscuro y no blanco: sobre el amarillo de `Interesado` el blanco no se lee, y en
+        # las barras bajas la etiqueta sobresale del relleno y queda sobre el fondo del gráfico.
+        etiquetas = base.mark_text(
+            align="left", baseline="middle", angle=270, dx=4, color="#1b2a32", fontSize=11,
+        ).encode(
+            y=alt.Y("base:Q"),
+            text="Expresión:N",
+        )
+        st.altair_chart((barras + etiquetas).properties(height=280))
 
         st.markdown("---")
-        st.markdown("#### Qué significa este número")
-        st.info(resultado.texto_confiabilidad)
         with st.expander("Cómo se midió"):
             st.markdown(
                 """

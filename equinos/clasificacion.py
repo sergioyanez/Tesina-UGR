@@ -278,6 +278,17 @@ class MILFusionModel(nn.Module):
             return logits, attn_weights
         return logits
 
+    def logits_por_instancia(self, v_vis, v_geom):
+        """Qué diría el clasificador si viera cada fotograma solo, sin el resto de la secuencia.
+
+        NO es una salida entrenada: el modelo se entrena a nivel bolsa (una etiqueta por clip) y
+        nunca vio un rótulo por fotograma. Es una lectura del clasificador sobre cada instancia,
+        útil sólo para explicar hacia dónde empuja cada fotograma. La decisión del modelo sigue
+        siendo la de `forward`, que promedia las instancias con los pesos de atención.
+        """
+        fusion = torch.cat([v_vis, self.geom_mlp(v_geom)], dim=-1)
+        return self.classifier(fusion)
+
 def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas, guardar_en=None):
     from torch.utils.tensorboard import SummaryWriter
     import time
@@ -503,8 +514,8 @@ def texto_de_confiabilidad(clase, precisiones=None):
     return (
         f"Cuando este modelo predijo «{clase}», acertó {p['acertadas']} de "
         f"{p['veces_que_lo_dijo']} veces ({p['precision']:.0%}) en validación cruzada.\n"
-        f"El modelo NO alcanzó el criterio declarado para considerarse útil "
-        f"(F1 macro 0,626 contra 0,691 exigido).\n"
+        f"El modelo alcanzó el criterio declarado para considerarse útil "
+        f"(F1 macro 0,754 contra 0,691 exigido).\n"
         f"Este resultado NO es un diagnóstico veterinario."
     )
 

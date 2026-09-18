@@ -69,6 +69,7 @@ class Prediccion(NamedTuple):
     texto_confiabilidad: str
     frames_alineados: int
     atencion: list[float]
+    clases_por_frame: list[str]
 
     @property
     def hay_prediccion(self) -> bool:
@@ -170,6 +171,9 @@ def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
         logits, attn_weights = modelo(v_vis.to(device), v_geom.to(device), attn_mask.to(device), return_attn=True)
         probs = F.softmax(logits, dim=1).cpu().numpy()[0]
         atencion = attn_weights.cpu().numpy()[0].tolist()
+        # Lectura por instancia, sólo para el gráfico de atención: no es una salida entrenada.
+        logits_frame = modelo.logits_por_instancia(v_vis.to(device), v_geom.to(device))
+        probs_frame = F.softmax(logits_frame, dim=-1).cpu().numpy()[0]
 
     clase = clases[probs.argmax()]
     probabilidades = {c: float(p) for c, p in zip(clases, probs)}
@@ -185,6 +189,7 @@ def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
         texto_confiabilidad=clasificacion.texto_de_confiabilidad(clase, precisiones),
         frames_alineados=len(vectores),
         atencion=atencion,
+        clases_por_frame=[clases[i] for i in probs_frame.argmax(axis=1)],
     )
 
 
