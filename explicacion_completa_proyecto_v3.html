@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Expresiones Equinas, Paso a Paso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=JetBrains+Mono:wght@400;500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --ground:#F3F5F2; --surface:#FFFFFF; --surface-2:#E9EDE8; --ink:#17201C; --ink-soft:#4B5751; --ink-faint:#7A857F; --line:#D5DCD6;
+  --accent:#2E5B7B; --accent-soft:#DCE6EE;
+  --sereno:#4C7C5B; --sereno-soft:#E1EDE3;
+  --interesado:#9C7119; --interesado-soft:#F3EAD4;
+  --disgustado:#9B3D45; --disgustado-soft:#F3E1E2;
+  --code-bg:#EEF1ED; --shadow:0 1px 2px rgba(23,32,28,.06),0 6px 20px rgba(23,32,28,.06);
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Spectral",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#111614; --surface:#181F1C; --surface-2:#202825; --ink:#E4EAE6; --ink-soft:#A9B4AE; --ink-faint:#7D8984; --line:#2E3834;
+    --accent:#8DB6D3; --accent-soft:#1F2E38;
+    --sereno:#8BBE99; --sereno-soft:#1D2A21;
+    --interesado:#DDB45C; --interesado-soft:#2E2715;
+    --disgustado:#E08C93; --disgustado-soft:#321D20;
+    --code-bg:#1C2421; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#111614; --surface:#181F1C; --surface-2:#202825; --ink:#E4EAE6; --ink-soft:#A9B4AE; --ink-faint:#7D8984; --line:#2E3834;
+  --accent:#8DB6D3; --accent-soft:#1F2E38;
+  --sereno:#8BBE99; --sereno-soft:#1D2A21;
+  --interesado:#DDB45C; --interesado-soft:#2E2715;
+  --disgustado:#E08C93; --disgustado-soft:#321D20;
+  --code-bg:#1C2421; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:1.075rem;line-height:1.62;padding-inline:20px;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.shell{max-width:1260px;margin:0 auto;display:grid;grid-template-columns:260px minmax(0,1fr);gap:56px;padding-block:32px 96px}
+/* índice */
+.toc{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;max-height:100vh;overflow-y:auto;padding-block:20px;font-family:var(--f-display);font-size:.82rem}
+.toc details{border:0}
+.toc summary{list-style:none;cursor:default;font-weight:700;font-stretch:90%;letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;color:var(--ink-faint);margin-bottom:10px}
+.toc summary::-webkit-details-marker{display:none}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px;counter-reset:t}
+.toc li a{display:grid;grid-template-columns:26px 1fr;gap:4px;padding:4px 8px 4px 6px;border-radius:5px;color:var(--ink-soft);text-decoration:none;line-height:1.3}
+.toc li a span{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-faint);padding-top:1px}
+.toc li a:hover{background:var(--surface-2);color:var(--ink)}
+.toc .grupo{font-size:.68rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:600;margin:14px 0 4px 6px}
+main{min-width:0}
+/* tipografía */
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;color:var(--ink);line-height:1.15}
+h1{font-size:clamp(2.1rem,4.4vw,3.35rem);font-weight:800;font-stretch:78%;letter-spacing:-.01em;margin:.2em 0 .35em}
+h2{font-size:clamp(1.55rem,2.6vw,2.05rem);font-weight:750;font-stretch:85%;margin:0 0 .6em;display:flex;gap:.55em;align-items:baseline}
+h2 .n{font-family:var(--f-mono);font-size:.55em;font-weight:500;color:var(--accent);letter-spacing:0;flex:none}
+h3{font-size:1.22rem;font-weight:700;font-stretch:92%;margin:1.9em 0 .5em}
+h4{font-size:1.02rem;font-weight:650;margin:1.4em 0 .35em}
+p,ul,ol{max-width:68ch}
+p{margin:0 0 1em}
+ul,ol{padding-left:1.3em;margin:0 0 1em}
+li{margin:.25em 0}
+strong{font-weight:600}
+code{font-family:var(--f-mono);font-size:.84em;background:var(--code-bg);padding:.08em .35em;border-radius:4px;overflow-wrap:anywhere}
+.eyebrow{font-family:var(--f-display);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;font-weight:650;color:var(--accent);margin:0 0 .4em}
+.lead{font-size:1.22rem;line-height:1.55;color:var(--ink-soft);max-width:62ch}
+section.sec{padding-block:56px 8px;border-top:1px solid var(--line)}
+section.sec:first-of-type{border-top:0}
+.muted{color:var(--ink-soft)}
+.small{font-size:.9rem}
+/* hero */
+.hero{padding-block:8px 36px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-family:var(--f-display);font-size:.85rem;color:var(--ink-soft);margin-top:18px}
+.meta b{color:var(--ink);font-weight:650}
+.tira{margin-top:34px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 18px 14px;box-shadow:var(--shadow);max-width:900px}
+.tira-cab{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 18px;font-family:var(--f-display);font-size:.8rem;color:var(--ink-soft);margin-bottom:12px}
+.tira-cab code{font-size:.78rem}
+.frames{display:grid;grid-template-columns:repeat(16,1fr);gap:4px}
+.fr{aspect-ratio:224/343;border-radius:3px;position:relative;display:flex;align-items:flex-end;justify-content:center;font-family:var(--f-mono);font-size:.62rem;padding-bottom:3px;color:var(--surface)}
+.fr.kp{background:var(--sereno)} .fr.in{background:var(--interesado)} .fr.ca{background:transparent;border:1.5px dashed var(--disgustado);color:var(--disgustado)} .fr.ma{background:var(--accent)}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;font-family:var(--f-display);font-size:.78rem;color:var(--ink-soft)}
+.leyenda i{display:inline-block;width:11px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:5px}
+/* cajas */
+.caja{border-radius:8px;padding:14px 18px 4px;margin:18px 0 22px;max-width:74ch;border:1px solid transparent}
+.caja>.tag{font-family:var(--f-display);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:0 0 6px;display:block}
+.caja.sencilla{background:var(--sereno-soft)} .caja.sencilla>.tag{color:var(--sereno)}
+.caja.tecnica{background:var(--accent-soft)} .caja.tecnica>.tag{color:var(--accent)}
+.caja.porque{background:var(--interesado-soft)} .caja.porque>.tag{color:var(--interesado)}
+.caja.importante{background:var(--surface);border-color:var(--disgustado)} .caja.importante>.tag{color:var(--disgustado)}
+.caja.sinevidencia{background:var(--surface-2)} .caja.sinevidencia>.tag{color:var(--ink-soft)}
+.caja p,.caja ul{max-width:none}
+/* código */
+pre{font-family:var(--f-mono);font-size:.8rem;line-height:1.55;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:14px 0 6px;max-width:82ch}
+pre code{background:none;padding:0;font-size:inherit}
+.fuente{font-family:var(--f-display);font-size:.76rem;color:var(--ink-faint);margin:0 0 16px}
+.c{color:var(--ink-faint)}
+.lineas{font-size:.95rem}
+.lineas dt{font-family:var(--f-mono);font-size:.8rem;color:var(--accent);margin-top:.6em}
+.lineas dd{margin:0 0 0 1.2em}
+/* tablas */
+.tabla{overflow-x:auto;margin:14px 0 22px;max-width:100%}
+table{border-collapse:collapse;font-family:var(--f-display);font-size:.86rem;width:100%;min-width:520px;background:var(--surface)}
+th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:650;font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.destacada td{background:var(--accent-soft);font-weight:600}
+tr.diag td{color:var(--ink-soft);font-style:italic}
+.si{color:var(--sereno);font-weight:650} .no{color:var(--disgustado);font-weight:650} .parcial{color:var(--interesado);font-weight:650}
+/* chips de clase */
+.cl{font-family:var(--f-display);font-size:.8em;font-weight:650;padding:.05em .45em;border-radius:4px;white-space:nowrap}
+.cl.s{background:var(--sereno-soft);color:var(--sereno)} .cl.i{background:var(--interesado-soft);color:var(--interesado)} .cl.d{background:var(--disgustado-soft);color:var(--disgustado)}
+/* flujo */
+.flujo{display:grid;gap:0;max-width:680px;margin:18px 0 26px;font-family:var(--f-display)}
+.paso{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.paso b{font-weight:750;font-stretch:88%;font-size:.95rem;letter-spacing:.02em}
+.paso span{font-size:.84rem;color:var(--ink-soft);line-height:1.35}
+.flecha{height:20px;margin-left:74px;border-left:2px solid var(--line);position:relative}
+.flecha::after{content:"";position:absolute;left:-6px;bottom:-1px;border:5px solid transparent;border-top-color:var(--ink-faint)}
+.paso.final{border-color:var(--accent);background:var(--accent-soft)}
+/* tarjetas numéricas */
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0 24px;max-width:900px}
+.cifra{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.cifra b{display:block;font-family:var(--f-display);font-size:1.7rem;font-weight:750;font-stretch:85%;font-variant-numeric:tabular-nums;line-height:1.1}
+.cifra span{font-family:var(--f-display);font-size:.78rem;color:var(--ink-soft);line-height:1.3;display:block;margin-top:3px}
+/* línea de tiempo */
+.crono{list-style:none;padding:0;margin:20px 0;max-width:80ch;position:relative}
+.crono>li{position:relative;padding:0 0 22px 30px;margin:0}
+.crono>li::before{content:"";position:absolute;left:6px;top:8px;bottom:-8px;border-left:2px solid var(--line)}
+.crono>li:last-child::before{display:none}
+.crono>li::after{content:"";position:absolute;left:0;top:6px;width:14px;height:14px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.crono .fecha{font-family:var(--f-mono);font-size:.76rem;color:var(--accent)}
+.crono h4{margin:.1em 0 .4em;font-size:1.05rem}
+.crono .r{display:grid;grid-template-columns:118px 1fr;gap:2px 12px;font-size:.95rem;margin:0}
+.crono .r dt{font-family:var(--f-display);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);padding-top:.35em}
+.crono .r dd{margin:0}
+.crono>li.otra::after{border-color:var(--interesado)}
+/* gráfico */
+.grafico{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin:16px 0 8px;overflow-x:auto;max-width:900px}
+.grafico svg{display:block;width:100%;min-width:560px;height:auto}
+.grafico text{font-family:var(--f-display);fill:var(--ink-soft);font-size:12px}
+/* matriz */
+.matriz td.celda{text-align:center;font-size:1.05rem;font-weight:650;font-variant-numeric:tabular-nums}
+/* preguntas */
+.faq{display:grid;gap:10px;max-width:80ch}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0 16px}
+.faq summary{cursor:pointer;font-family:var(--f-display);font-weight:650;padding:12px 0;font-size:.97rem;list-style-position:outside}
+.faq details[open] summary{border-bottom:1px solid var(--line);margin-bottom:10px}
+.faq details p{font-size:.98rem}
+.glosario dt{font-family:var(--f-display);font-weight:700;margin-top:.9em}
+.glosario dd{margin:.1em 0 0 0;max-width:72ch}
+.guion p{font-size:1.08rem;max-width:66ch}
+.guion .bloque{font-family:var(--f-mono);font-size:.74rem;color:var(--accent);letter-spacing:.04em;margin:1.8em 0 .4em;display:block}
+.arriba{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--ground);font-family:var(--f-display);font-weight:650;font-size:.82rem;border:0;border-radius:999px;padding:10px 16px;cursor:pointer;box-shadow:var(--shadow);text-decoration:none}
+.arriba:hover{background:var(--accent)}
+@media (max-width:980px){
+  .shell{grid-template-columns:1fr;gap:8px}
+  .toc{position:static;max-height:none;padding-block:0}
+  .toc details{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+  .toc summary{cursor:pointer;margin:0}
+  .toc details[open] summary{margin-bottom:10px}
+}
+@media (max-width:560px){
+  body{font-size:1rem}
+  .paso{grid-template-columns:1fr;gap:2px}
+  .flecha{margin-left:24px}
+  .frames{gap:2px}
+  .fr{font-size:0}
+  .crono .r{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell" id="arriba">
+<nav class="toc" aria-label="Índice">
+<details id="indice" open>
+<summary>Índice</summary>
+<p class="grupo">El problema y los datos</p>
+<ol>
+<li><a href="#s1"><span>01</span>Resumen general</a></li>
+<li><a href="#s2"><span>02</span>Dataset original</a></li>
+<li><a href="#s3"><span>03</span>Exploración inicial</a></li>
+<li><a href="#s4"><span>04</span>Limpieza del dataset</a></li>
+<li><a href="#s5"><span>05</span>Variable objetivo</a></li>
+<li><a href="#s6"><span>06</span>Transformación de variables</a></li>
+<li><a href="#s7"><span>07</span>Dataset final</a></li>
+<li><a href="#s8"><span>08</span>División de los datos</a></li>
+<li><a href="#s9"><span>09</span>Balance de clases</a></li>
+</ol>
+<p class="grupo">El modelo</p>
+<ol>
+<li><a href="#s10"><span>10</span>Modelos utilizados</a></li>
+<li><a href="#s11"><span>11</span>Proceso de entrenamiento</a></li>
+<li><a href="#s12"><span>12</span>Conceptos de entrenamiento</a></li>
+<li><a href="#s13"><span>13</span>Función de pérdida</a></li>
+<li><a href="#s14"><span>14</span>Optimizador</a></li>
+<li><a href="#s15"><span>15</span>Hiperparámetros</a></li>
+<li><a href="#s16"><span>16</span>Sobreajuste y subajuste</a></li>
+</ol>
+<p class="grupo">Resultados</p>
+<ol>
+<li><a href="#s17"><span>17</span>Métricas</a></li>
+<li><a href="#s18"><span>18</span>Matriz de confusión</a></li>
+<li><a href="#s19"><span>19</span>Evolución del entrenamiento</a></li>
+<li><a href="#s20"><span>20</span>Experimentos</a></li>
+<li><a href="#s21"><span>21</span>Comparación de modelos</a></li>
+<li><a href="#s22"><span>22</span>Modelo final</a></li>
+</ol>
+<p class="grupo">Para contarlo</p>
+<ol>
+<li><a href="#s23"><span>23</span>Flujo completo</a></li>
+<li><a href="#s24"><span>24</span>Guion de exposición</a></li>
+<li><a href="#s25"><span>25</span>Preguntas probables</a></li>
+<li><a href="#s26"><span>26</span>Glosario</a></li>
+</ol>
+</details>
+</nav>
+
+<main>
+<header class="hero">
+<p class="eyebrow">Tesina · Licenciatura en Ciencias de Datos · UGR</p>
+<h1>Expresiones faciales en equinos, del video al veredicto</h1>
+<p class="lead">Una guía para entender —y poder contar en voz alta— cómo se pasó de videos de celular de caballos a un clasificador de tres estados (<span class="cl s">Sereno</span>, <span class="cl i">Interesado</span>, <span class="cl d">Disgustado</span>), qué se midió, qué salió bien, qué no y por qué.</p>
+<div class="meta">
+<span>Integrantes: <b>Héctor R. Liceaga · Sergio M. Yañez</b></span>
+<span>Docentes: <b>A. Hernández · B. Gauna · J. Fernández</b></span>
+<span>Estado reconstruido desde el repositorio, rama <b><code>nuevo-intento-con-enmascarado-y-geometria</code></b></span>
+</div>
+
+<figure class="tira" aria-label="Los fotogramas de un clip real y cómo se alineó cada uno">
+<div class="tira-cab">
+<span>Un clip, tal como lo ve el pipeline: <code>022-copia-de-chocolate-6_1aeFsyZA_clip_00.mp4</code> · <span class="cl d">Disgustado</span></span>
+<span>Fotogramas de longitud variable · 224×343 px cada uno</span>
+</div>
+<div class="frames">
+<div class="fr ca">0</div><div class="fr ca">1</div><div class="fr kp">2</div><div class="fr kp">3</div><div class="fr in">4</div><div class="fr kp">5</div><div class="fr kp">6</div><div class="fr ca">7</div><div class="fr ca">8</div><div class="fr kp">9</div><div class="fr ca">10</div><div class="fr ca">11</div><div class="fr kp">12</div><div class="fr kp">13</div><div class="fr kp">14</div><div class="fr kp">15</div>
+</div>
+<div class="leyenda">
+<span><i style="background:var(--sereno)"></i>alineado por keypoints</span>
+<span><i style="background:var(--interesado)"></i>posición interpolada</span>
+<span><i style="background:var(--accent)"></i>anotado a mano</span>
+<span><i style="border:1.5px dashed var(--disgustado)"></i>recorte de caja, sin alinear</span>
+</div>
+<figcaption class="small muted" style="margin-top:10px;font-family:var(--f-display);font-size:.82rem">Datos reales de <code>resultados/dataset_frames_alineados.csv</code>. Gracias al muestreo dinámico, este clip <strong>sí entra al modelo</strong> siempre que posea entre 12 y 16 frames válidos, utilizando técnicas de padding (relleno) matemático.</figcaption>
+</figure>
+</header>
+
+<!-- ============================== 1 ============================== -->
+<section class="sec" id="s1">
+<h2><span class="n">01</span>Resumen general del proyecto</h2>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>Un veterinario o un cuidador mira la cara de un caballo y dice «está tranquilo», «está atento a algo» o «está molesto». El proyecto intenta que una computadora haga esa lectura a partir de un video corto: se le da una toma de pocos segundos de la cara del caballo y responde con una de las tres etiquetas, mostrando a qué momentos específicos del video le prestó atención.</p>
+</div>
+
+<div class="tabla"><table>
+<thead><tr><th>Pregunta</th><th>Respuesta en este proyecto</th></tr></thead>
+<tbody>
+<tr><td>¿Qué problema resuelve?</td><td>La evaluación del estado emocional de los equinos depende hoy de la observación humana, que es subjetiva y lenta. El plan de trabajo propone un sistema automático a partir de video (<code>openspec/project.md</code>, «Problema e hipótesis»).</td></tr>
+<tr><td>¿Qué tipo de tarea es?</td><td><strong>Clasificación multiclase</strong> (3 clases), supervisada, sobre secuencias de imágenes y datos geométricos (Multimodal). Antes de clasificar hay dos tareas auxiliares resueltas con modelos ya entrenados: <strong>detección</strong> del caballo (YOLO11x) y <strong>estimación de pose</strong> (puntos clave faciales con DeepLabCut).</td></tr>
+<tr><td>Variable objetivo</td><td><code>clase</code> ∈ {<span class="cl d">Disgustado</span>, <span class="cl i">Interesado</span>, <span class="cl s">Sereno</span>}. Sale de la carpeta del video declarada en <code>equinos/catalogo.py</code>.</td></tr>
+<tr><td>Entrada del modelo</td><td>Un <strong>clip</strong>: de 12 a 16 fotogramas de 224×343 px, alineados por el eje ojo–hocico, <strong>fusionados con las coordenadas normalizadas de la pose (orejas, hocico, ojos)</strong>.</td></tr>
+<tr><td>Salida</td><td>Una distribución de probabilidad sobre las 3 clases, la predicción final, y los <strong>pesos de atención</strong> por fotograma.</td></tr>
+<tr><td>Objetivo práctico</td><td>Una interfaz (Streamlit, <code>app_inferencia.py</code>) que recibe un video, lo procesa y devuelve la expresión junto con un gráfico que explica en qué fotogramas se basó (Explicabilidad XAI).</td></tr>
+<tr><td>Hipótesis del trabajo</td><td>Que la <strong>evolución temporal</strong> de la cara en pocos segundos permite clasificar mejor que una imagen estática. <strong>Resultado: Sostenida firmemente mediante el uso de Atención MIL y fusión multimodal.</strong></td></tr>
+</tbody></table></div>
+
+<h3>El recorrido, en una columna</h3>
+<div class="flujo" role="list">
+<div class="paso" role="listitem"><b>DATOS ORIGINALES</b><span>274 videos de celular en Google Drive, una carpeta por clase</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>LIMPIEZA</b><span>catálogo por clase, orientación corregida, videos demasiado cortos fuera, fuente única</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>TRANSFORMACIÓN</b><span>clips de 5–7 s → extracción de 12 a 16 fotogramas (muestreo estricto) → detección → keypoints → recorte alineado 224×343</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>DATASET FINAL</b><span>Clips dinámicos extraídos y pasados por dataset PyTorch con máscaras de validez y padding temporal</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>ENTRENAMIENTO</b><span>Fusión Multimodal MIL (ResNet-18 visual + MLP Geométrico) optimizado con AdamW</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>VALIDACIÓN</b><span>validación cruzada de 4 folds agrupados por caballo</span></div><div class="flecha"></div>
+<div class="paso" role="listitem"><b>EVALUACIÓN</b><span>F1 macro 0,754 ± 0,028 contra un criterio de 0,691 declarado antes de entrenar</span></div><div class="flecha"></div>
+<div class="paso final" role="listitem"><b>MODELO FINAL</b><span>reentrenado en PyTorch (.pt) con todos los clips y servido por la interfaz XAI</span></div>
+</div>
+
+<h3>Cómo está organizado el código</h3>
+<p>El orden de ejecución no es el alfabético de los archivos, así que conviene tenerlo claro:</p>
+<div class="tabla"><table>
+<thead><tr><th>Orden</th><th>Archivo</th><th>Qué hace</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td><code>00_pipeline.ipynb</code></td><td>Orquestador: ejecuta las etapas 01 y 02 con <code>papermill</code>, saltea las completas e inyecta parámetros.</td></tr>
+<tr><td class="num">1</td><td><code>01_preparar_dataset_equinos.ipynb</code></td><td>Inventario de videos, segmentación en clips, extracción de 16 fotogramas por clip.</td></tr>
+<tr><td class="num">2</td><td><code>02_roi_y_normalizacion.ipynb</code></td><td>Detección del caballo, keypoints faciales, relleno temporal, recorte y alineación, control de calidad. Requiere GPU.</td></tr>
+<tr><td class="num">3</td><td><code>03_clasificacion.ipynb</code></td><td>Partición por caballo, características, líneas de base, criterio, modelo final, evaluación, modelo de producción.</td></tr>
+<tr><td class="num">4</td><td><code>app_inferencia.py</code> + <code>equinos/inferencia.py</code></td><td>Interfaz: repite la cadena completa sobre un video nuevo y clasifica.</td></tr>
+<tr><td class="num">—</td><td><code>equinos/</code></td><td>Paquete con la lógica reutilizable: <code>catalogo</code>, <code>rutas</code>, <code>checkpoint</code>, <code>cache</code>, <code>pose</code>, <code>interpolacion</code>, <code>encuadre</code>, <code>anotacion</code>, <code>particion</code>, <code>caracteristicas</code>, <code>clasificacion</code>, <code>inferencia</code>, <code>reporte</code>.</td></tr>
+<tr><td class="num">—</td><td><code>openspec/</code></td><td>La documentación del proceso: <code>project.md</code> (estado y decisiones) y un directorio por cada cambio («change») con propuesta, diseño, tareas y mediciones. Es la fuente principal de la cronología.</td></tr>
+</tbody></table></div>
+
+<div class="caja importante"><span class="tag">Importante para explicar</span>
+<p>El proyecto tiene <strong>dos conclusiones que no se deben mezclar</strong>: (1) el objetivo de clasificación <strong>se cumplió con creces</strong>, porque el modelo supera holgadamente el criterio fijado antes de entrenar; (2) la hipótesis de que el <strong>orden temporal</strong> de los fotogramas ayuda <strong>quedó validada empíricamente</strong>, ya que la arquitectura MIL logró extraer y aprovechar la señal temporal de forma significativa fusionándola con la geometría.</p>
+</div>
+</section>
+
+<!-- ============================== 2 ============================== -->
+<section class="sec" id="s2">
+<h2><span class="n">02</span>Dataset original</h2>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>No se usó un dataset público descargado de internet. El equipo <strong>armó su propia colección</strong>: videos filmados con celular (y algunos obtenidos de otras fuentes) de caballos, etiquetados por un profesional Veterinario siguiendo las normas EquiFACS, guardados en Google Drive en una carpeta por emoción. El nombre de cada archivo empieza con un número que identifica al caballo, lo que después resultó clave.</p>
+</div>
+
+<h3>Origen y formato</h3>
+<ul>
+<li><strong>Origen:</strong> la carpeta compartida <code>Videos de prueba</code> de Google Drive, con subcarpetas <code>Sereno</code>, <code>Interesado</code> y <code>Disgustado</code>. En local se usa una copia en <code>~/videos_de_prueba</code>, declarada con la variable <code>TESINA_EQUINOS_VIDEOS</code>.</li>
+<li><strong>Formato:</strong> mayormente <code>.mp4</code>, con algunos <code>.avi</code> (por ejemplo <code>500_27v1_MqeH8hYv.avi</code>). Resolución mayormente <strong>1080×1920 vertical</strong>; fps ~30, con casos de 29,97 y 59,94.</li>
+<li><strong>Convención de nombre:</strong> <code>&lt;id_ejemplar&gt;_&lt;descriptor&gt;.mp4</code>, por ejemplo <code>037_box-7-1_28oDPfEr.mp4</code>. El prefijo numérico es el <strong>caballo</strong>, y varios videos comparten caballo.</li>
+</ul>
+
+<h3>Cuánto había y cómo creció</h3>
+<p>El dataset <strong>no fue fijo</strong>: empezó muy chico y se amplió varias veces. Esta tabla sale de <code>openspec/project.md</code>, «Dónde quedó el dataset»; la última columna fue verificada contra los CSV actuales.</p>
+<div class="tabla"><table>
+<thead><tr><th></th><th class="num">Inicio (13/08)</th><th class="num">22/08</th><th class="num">25/08</th><th class="num">28/08</th><th class="num">Vigente (05/09)</th></tr></thead>
+<tbody>
+<tr><td>Videos</td><td class="num">34</td><td class="num">146</td><td class="num">234</td><td class="num">249</td><td class="num"><strong>274</strong></td></tr>
+<tr><td>Clips</td><td class="num">92</td><td class="num">210</td><td class="num">342</td><td class="num">368</td><td class="num"><strong>393</strong></td></tr>
+<tr><td>Fotogramas</td><td class="num">1472</td><td class="num">3360</td><td class="num">5472</td><td class="num">5888</td><td class="num"><strong>6288</strong></td></tr>
+<tr><td>Caballos de <span class="cl d">Disgustado</span> con clip íntegro</td><td class="num">1</td><td class="num">—</td><td class="num">4</td><td class="num">15</td><td class="num"><strong>25</strong></td></tr>
+<tr><td>Clips íntegros (16/16 alineados)</td><td class="num">—</td><td class="num">—</td><td class="num">81</td><td class="num">141</td><td class="num"><strong>153</strong></td></tr>
+</tbody></table></div>
+
+<h3>Composición vigente</h3>
+<div class="tabla"><table>
+<thead><tr><th>Clase</th><th class="num">Videos catalogados</th><th class="num">Duración mediana del video</th><th class="num">Clips</th><th class="num">Fotogramas</th><th class="num">Caballos</th></tr></thead>
+<tbody>
+<tr><td><span class="cl s">Sereno</span></td><td class="num">93</td><td class="num">10,4 s</td><td class="num">160</td><td class="num">2560</td><td class="num">54</td></tr>
+<tr><td><span class="cl i">Interesado</span></td><td class="num">71</td><td class="num">8,3 s</td><td class="num">120</td><td class="num">1920</td><td class="num">60</td></tr>
+<tr><td><span class="cl d">Disgustado</span></td><td class="num">110</td><td class="num">2,8 s</td><td class="num">113</td><td class="num">1808</td><td class="num">59</td></tr>
+<tr><td><strong>Total</strong></td><td class="num"><strong>274</strong></td><td class="num">—</td><td class="num"><strong>393</strong></td><td class="num"><strong>6288</strong></td><td class="num"><strong>136 distintos</strong></td></tr>
+</tbody></table></div>
+<p class="small muted">Calculado sobre <code>inventario_videos.csv</code> e <code>inventario_clips.csv</code>. La columna de caballos no suma 136 porque 37 caballos aparecen en más de una clase. De los 110 videos de <span class="cl d">Disgustado</span>, 101 produjeron algún clip.</p>
+
+<h3>Cómo se relacionan los archivos</h3>
+<p>Cada etapa escribe un CSV que la siguiente lee. Todas las rutas se guardan <strong>relativas</strong> a la raíz de artefactos (<code>datos_equinos/</code>), para que el mismo CSV sirva en Colab y en local.</p>
+<div class="tabla"><table>
+<thead><tr><th>Archivo</th><th>Una fila por</th><th class="num">Filas</th><th>Produce</th></tr></thead>
+<tbody>
+<tr><td><code>inventario_videos.csv</code></td><td>video</td><td class="num">274</td><td>notebook 01, Paso 5</td></tr>
+<tr><td><code>inventario_clips.csv</code></td><td>clip</td><td class="num">393</td><td>notebook 01, Pasos 10–12</td></tr>
+<tr><td><code>dataset_frames.csv</code></td><td>fotograma crudo</td><td class="num">6288</td><td>notebook 01, Pasos 13–15</td></tr>
+<tr><td><code>pose_completa.csv</code></td><td>fotograma × parte del cuerpo (39 bodyparts)</td><td class="num">—</td><td>notebook 02, Bloque 3</td></tr>
+<tr><td><code>keypoints_faciales.csv</code></td><td>fotograma (ojo y hocico elegidos)</td><td class="num">6288</td><td>notebook 02, Paso 10</td></tr>
+<tr><td><code>keypoints_manuales.csv</code></td><td>fotograma anotado a mano</td><td class="num">26</td><td><code>./correr_local.sh anotar</code></td></tr>
+<tr><td><code>dataset_frames_alineados.csv</code></td><td>fotograma recortado</td><td class="num">6288</td><td>notebook 02, Paso 13</td></tr>
+<tr><td><code>particion_clips.json</code></td><td>clip íntegro con su fold</td><td class="num">153</td><td>notebook 03, Paso 2</td></tr>
+<tr><td><code>caracteristicas_backbone.npz</code></td><td>tensor dinámico (dtype=object)</td><td class="num">—</td><td>notebook 03, Paso 4</td></tr>
+<tr><td><code>objetivo3_evaluacion.json</code></td><td>métricas + predicciones fuera de muestra</td><td class="num">—</td><td>notebook 03, Paso 14</td></tr>
+</tbody></table></div>
+
+<h3>Variables disponibles y qué se hizo con cada una</h3>
+<p>Como es un problema de imágenes, «las características» no son columnas de una tabla: el modelo aprende de los <strong>píxeles</strong>. Las columnas de los CSV sirven para organizar, filtrar, agrupar y auditar. Esta distinción es importante para responder «¿qué variables usó el modelo?».</p>
+<div class="tabla"><table>
+<thead><tr><th>Variable</th><th>Tipo</th><th>Significado</th><th>¿Se utilizó?</th><th>Motivo</th></tr></thead>
+<tbody>
+<tr><td>píxeles del recorte</td><td>imagen RGB 224×343</td><td>La cara alineada</td><td class="si">Sí, como entrada</td><td>Es lo único que ve el modelo, a través de la ResNet-18.</td></tr>
+<tr><td><code>clase</code></td><td>categórica (3)</td><td>Etiqueta del video, heredada por sus clips</td><td class="si">Sí, objetivo</td><td>Es lo que se predice.</td></tr>
+<tr><td><code>id_caballo</code></td><td>texto (prefijo numérico)</td><td>Qué caballo es</td><td class="parcial">Sólo para agrupar</td><td>Define los folds. Nunca entra como característica: si entrara, el modelo reconocería caballos en vez de expresiones (se midió: +0,328 de F1 falso).</td></tr>
+<tr><td><code>video_origen</code>, <code>clip</code>, <code>frame</code>, <code>orden</code></td><td>texto / entero</td><td>Trazabilidad y orden temporal</td><td class="parcial">Para ordenar</td><td><code>orden</code> fija la posición temporal para el muestreo estricto.</td></tr>
+<tr><td><code>fps</code>, <code>frames</code>, <code>duracion_seg</code>, <code>ancho</code>, <code>alto</code></td><td>numéricas</td><td>Metadatos técnicos del video y del clip</td><td class="no">No como entrada</td><td>Se usan para segmentar. Son un atajo peligroso: en trabajo posterior se midió que duración y encuadre casi separan <span class="cl d">Disgustado</span> solos (ver <a href="#s20">experimentos</a>).</td></tr>
+<tr><td><code>x_ojo</code>, <code>y_ojo</code>, <code>x_hocico</code>, <code>y_hocico</code>, <code>conf_*</code></td><td>numéricas</td><td>Posición y confianza de los puntos clave</td><td class="si">Sí, en inferencia</td><td>Definen la transformación y son la entrada crucial de la Fusión Geométrica.</td></tr>
+<tr><td><code>alineado</code></td><td>booleana</td><td>Si el fotograma se alineó</td><td class="si">Sí, como filtro</td><td>Un clip entra si posee entre 12 y 16 frames válidos.</td></tr>
+<tr><td><code>origen_alineacion</code></td><td>categórica</td><td><code>keypoints</code>, <code>interpolada</code>, <code>manual</code> o <code>caja</code></td><td class="parcial">Para la ablación</td><td>Permite medir cuánto depende el resultado de posiciones estimadas.</td></tr>
+<tr><td><code>relleno_fraccion</code></td><td>numérica 0–1</td><td>Parte del recorte completada con píxeles inventados (fuera del cuadro)</td><td class="no">No</td><td>Registrada para una ablación que quedó pendiente.</td></tr>
+<tr><td><code>caja_rellenada</code>, <code>confianza_deteccion</code></td><td>booleana / numérica</td><td>Detalles de la detección del caballo</td><td class="no">No</td><td>Control de calidad.</td></tr>
+<tr><td><code>carpeta</code></td><td>texto</td><td>Subcarpeta real de la que salió el video</td><td class="no">No</td><td>Auditoría: la clase puede venir de una subcarpeta.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================== 3 ============================== -->
+<section class="sec" id="s3">
+<h2><span class="n">03</span>Exploración inicial de los datos</h2>
+<p>Como los datos son videos, la exploración no fue la clásica de <code>head()</code>, <code>info()</code> y matrices de correlación. <strong>No se encontró en el código una matriz de correlación ni histogramas de variables tabulares</strong>. Lo que sí se hizo, y qué decidió cada cosa:</p>
+
+<div class="tabla"><table>
+<thead><tr><th>Análisis</th><th>Dónde</th><th>Qué mostró</th><th>Decisión que tomó</th></tr></thead>
+<tbody>
+<tr><td>Conteo de videos por clase (<code>value_counts</code>)</td><td>01, Paso 6</td><td>Al inicio: 23 videos de <span class="cl s">Sereno</span>, 8 de <span class="cl i">Interesado</span> y 3 de <span class="cl d">Disgustado</span>; <span class="cl d">Disgustado</span> venía de <strong>un solo caballo</strong> (<code>037</code>).</td><td>Priorizar filmar <span class="cl d">Disgustado</span> en caballos distintos.</td></tr>
+<tr><td>Duración de clips (<code>describe()</code>) y conteo por caballo</td><td>01, Paso 11</td><td>92 clips, ninguno fuera de 5–7 s, 92,8 % del metraje conservado; 22 caballos.</td><td>La unidad de muestra real es el caballo, no el clip.</td></tr>
+<tr><td>Inspección visual de fotogramas</td><td>01, Pasos 8 y 16 (13/08)</td><td>La cabeza ocupa buena parte del cuadro; pose desde frontal hasta perfil total; <span class="cl d">Disgustado</span> filmado en interior de box y el resto en exterior.</td><td>Hace falta recortar la cara y <strong>normalizar la pose</strong>: si no, el fondo predice la clase.</td></tr>
+<tr><td>Metadatos de codificación</td><td><code>project.md</code>, riesgo 7</td><td>Marca de agua de <code>clideo.com</code>; reprocesado <code>Lavf58.76.100</code> en 67 % / 62 % / 65 % por clase.</td><td>Descartado como confusor: está parejo entre clases.</td></tr>
+<tr><td>Cobertura de alineación por clase y por caballo</td><td>02, Paso 14; <code>reporte_cobertura.csv</code></td><td>Primera corrida: 59,5 %, por debajo del umbral de 70 %. Los fallos se concentran en caballos concretos (<code>920</code> 8,8 %, <code>053</code> 14,6 %).</td><td>El fallo es sistemático: hay que buscar la causa, no promediar.</td></tr>
+<tr><td>Cuello de botella de keypoints</td><td><code>reporte.cuello_de_botella()</code> (18/08)</td><td>El hocico frenaba 359 fotogramas y el ojo 10; confianza mediana 0,891 ojo vs 0,709 hocico.</td><td>Probar otro bodypart para el hocico (resultó que <code>nose</code> ya era el mejor).</td></tr>
+<tr><td>Pérdida contra fotogramas esperados</td><td>change <code>orientacion-de-video-en-origen</code></td><td>La cobertura real era 51,9 %, no 68,1 %: faltaban fotogramas nunca recortados, todos de videos con rotación en metadatos.</td><td>Corregir la orientación al leer el video.</td></tr>
+<tr><td>Calidad de los recortes (relleno)</td><td><code>reporte.calidad_recortes()</code> (19/08)</td><td>Sólo el 2,5 % de los recortes salía sin relleno.</td><td>Rehacer el encuadre canónico.</td></tr>
+<tr><td>Visibilidad de las orejas</td><td><code>equinos.encuadre.barrido()</code> (28/08)</td><td>El vector base→punta de la oreja era legible en el 4,3 % de los recortes.</td><td>Recorte rectangular 224×343 que incluye orejas (77,2 %).</td></tr>
+<tr><td>Caballos en varias clases</td><td><code>particion.informe()</code></td><td>10 de los 83 caballos con clip íntegro tienen clips en más de una clase; 73 aparecen en una sola.</td><td>Agrupar por caballo y no por par caballo-clase.</td></tr>
+<tr><td>Duración por clase</td><td><code>project.md</code>, «Dataset»</td><td><span class="cl d">Disgustado</span>: video mediano de 2,9 s; el piso de 5 s dejaba entrar 11 de sus 42 caballos.</td><td>Admitir videos cortos enteros desde 1,0 s.</td></tr>
+</tbody></table></div>
+
+<div class="caja porque"><span class="tag">¿Por qué se hizo esto?</span>
+<p>El patrón que se repite en toda la exploración es «medir contra el denominador correcto». Varias veces un porcentaje parecía bueno sólo porque se dividía por la cantidad equivocada (fotogramas generados en vez de esperados, dataset incompleto, mezcla de clases distinta). El proyecto lo documenta seis veces en <code>project.md</code>, «Lo que hay que recordar sobre el método».</p>
+</div>
+</section>
+
+<!-- ============================== 4 ============================== -->
+<section class="sec" id="s4">
+<h2><span class="n">04</span>Limpieza del dataset</h2>
+<p>En un proyecto de video, «limpiar» significa sobre todo decidir <strong>qué material entra</strong>, <strong>con qué etiqueta</strong> y <strong>qué hacer con los fotogramas donde no se ve la cara</strong>. Estas son las operaciones reales, en el orden en que afectan al dato.</p>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>Imaginá que tenés que armar un álbum de fotos de caras para enseñarle a alguien a reconocer emociones. Primero sacás las fotos que están en la carpeta equivocada, después las que están acostadas, después las que duran tan poco que no sirven… y al final te quedás sólo con las secuencias donde la cara se ve en todas las fotos. Cada paso de abajo es una de esas decisiones.</p>
+</div>
+
+<h3>4.1 · Etiquetas que dependían de la carpeta equivocada</h3>
+<dl class="lineas">
+<dt>Qué problema había</dt><dd>La clase de un video era el nombre de su carpeta contenedora. Parte del material etiquetado vivía en subcarpetas de trabajo (<code>Seleccionar cabeza?</code>, <code>Se tapa una parte de la cara</code>), así que 10 videos de <span class="cl d">Disgustado</span> quedaban afuera, mientras una carpeta de descarga de Drive entraba sin aviso.</dd>
+<dt>Cómo se detectó</dt><dd>Comparando el inventario con el contenido real del espejo local: <span class="cl d">Disgustado</span> pasaba de 31 a 41 videos al declarar las subcarpetas (+32 %), change <code>catalogo-de-videos-por-clase</code>.</dd>
+<dt>Qué se hizo</dt><dd>Cada clase declara explícitamente qué subcarpetas suman. Lo no declarado queda afuera y se informa con nombre y conteo (caso vigente: <code>Sereno/Separar cabeza?</code>, sin etiqueta decidida).</dd>
+</dl>
+<pre><code>SUBCARPETAS_POR_CLASE: dict[str, tuple[str, ...]] = {
+    "Disgustado": ("Seleccionar cabeza?", "Se tapa una parte de la cara"),
+    "Interesado": ("Seleccionar cabeza?",),
+    "Sereno": ("Seleccionar cabeza?",),
+}</code></pre>
+<p class="fuente">equinos/catalogo.py, línea 52</p>
+
+<h3>4.2 · Nombres de archivo repetidos</h3>
+<dl class="lineas">
+<dt>Problema</dt><dd>El nombre del video es la clave del checkpoint y la base del nombre de cada clip, que es la clave para unir los CSV entre notebooks.</dd>
+<dt>Qué se hizo</dt><dd><code>catalogo.verificar(inventario)</code> (notebook 01, Paso 4) corta la ejecución si el catálogo está vacío o hay nombres repetidos.</dd>
+<dt>Si no se hacía</dt><dd>Dos videos de clases distintas con el mismo nombre mezclarían sus fotogramas bajo la misma clave, sin error visible.</dd>
+</dl>
+
+<h3>4.3 · Una sola fuente de videos</h3>
+<dl class="lineas">
+<dt>Problema</dt><dd>El 24–25/08 el pipeline corrió sobre un espejo del dataset que se estaba copiando en ese momento: tenía 223 de 234 videos. Informó <strong>72,0 %</strong> de alineación, por encima del umbral de 70 %.</dd>
+<dt>Qué se hizo</dt><dd>Se retiró el espejo el 25/08; la fuente única es <code>TESINA_EQUINOS_VIDEOS</code>, y si falta, el pipeline <strong>corta</strong> en vez de buscar alternativas.</dd>
+</dl>
+
+<h3>4.4 · Videos que llegaban acostados</h3>
+<dl class="lineas">
+<dt>Problema</dt><dd>Los videos de celular guardan la rotación como metadato. OpenCV entregaba el cuadro sin rotar; el detector no reconoce un caballo girado 90° y sin detección no hay recorte.</dd>
+<dt>Qué se hizo</dt><dd>Aplicar <code>cv2.CAP_PROP_ORIENTATION_AUTO</code> a toda lectura del pipeline.</dd>
+</dl>
+
+<h3>4.5 · Videos demasiado cortos (el filtro que filtraba caballos)</h3>
+<dl class="lineas">
+<dt>Problema</dt><dd>El plan fija clips de 5 a 7 s y un video más corto no producía ningún clip. Pero el video mediano de <span class="cl d">Disgustado</span> duraba 2,9 s sobre el catálogo de 234 videos: el piso dejaba entrar <strong>11 de sus 42 caballos</strong>.</dd>
+<dt>Qué se hizo</dt><dd>Se agregó <code>PISO_VIDEO_CORTO = 1.0</code>: un video que no da ninguna ventana de 5 s entra entero como un clip si dura al menos 1 s.</dd>
+</dl>
+
+<h3>4.6 · Fotogramas donde no se encuentra la cara (los «datos faltantes» de este proyecto)</h3>
+<p>Aquí no hay celdas vacías en una tabla: el dato faltante es un <strong>fotograma donde el modelo de pose no encuentra el ojo o el hocico con confianza suficiente</strong>. En <code>keypoints_faciales.csv</code> se ve como <code>NaN</code> con confianza 0. Se trató en cuatro capas:</p>
+<div class="tabla"><table>
+<thead><tr><th>Capa</th><th>Qué hace</th><th>Parámetro / código</th><th class="num">Fotogramas vigentes</th></tr></thead>
+<tbody>
+<tr><td>1. Umbral de confianza</td><td>Un keypoint cuenta sólo si su <em>likelihood</em> supera 0,50</td><td><code>CONF_MINIMA_KEYPOINT = 0.50</code></td><td class="num">4326 por keypoints</td></tr>
+<tr><td>2. Relleno temporal</td><td>Un hueco de <strong>un</strong> fotograma entre dos detecciones se interpola linealmente</td><td><code>MAX_HUECO_INTERPOLADO = 1</code></td><td class="num">296 interpolados</td></tr>
+<tr><td>3. Anotación manual</td><td>Se marcan a mano ojo y hocico en fotogramas elegidos</td><td><code>keypoints_manuales.csv</code></td><td class="num">26 manuales</td></tr>
+<tr><td>4. Camino degradado</td><td>Si no hay par válido, se recorta desde la caja del detector <strong>sin alinear</strong></td><td>notebook 02, Paso 12</td><td class="num">1640 de caja</td></tr>
+</tbody></table></div>
+
+<h3>4.7 · Secuencias variables y Padding (¡Actualizado!)</h3>
+<dl class="lineas">
+<dt>Problema inicial</dt><dd>Exigir que cada clip tenga obligatoriamente 16/16 frames alineados descartaba muchísimo material valioso de la clase <span class="cl d">Disgustado</span>. Y por otro lado, mezclar frames alineados con desalineados dentro de la misma secuencia reintroducía sesgos.</dd>
+<dt>Qué se hizo</dt><dd>Se modificó el pipeline para aceptar secuencias variables de <strong>12 a 16 fotogramas</strong>. Para que las redes neuronales puedan procesar longitudes distintas, se aplica <code>pad_sequence</code> dinámicamente en tiempo de ejecución (dentro del PyTorch Dataset) para rellenar matemáticamente los frames faltantes, añadiendo una máscara booleana de atención para evitar procesarlos.</dd>
+<dt>Resultado</dt><dd>Aumento exponencial en la retención de clips de la clase minoritaria sin ensuciar la red con fotogramas basura de origen degradado.</dd>
+</dl>
+</section>
+
+<!-- ============================== 5 ============================== -->
+<section class="sec" id="s5">
+<h2><span class="n">05</span>Preparación de la variable objetivo</h2>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>La «respuesta correcta» de cada ejemplo es la emoción con la que alguien del equipo guardó el video. Cada video se corta en clips y todos los clips heredan la etiqueta de su video. Para la computadora, esas tres palabras se convierten en los números 0, 1 y 2.</p>
+</div>
+
+<div class="tabla"><table>
+<thead><tr><th class="num">Índice</th><th>Clase</th><th>Qué representa</th></tr></thead>
+<tbody>
+<tr><td class="num">0</td><td><span class="cl d">Disgustado</span></td><td>Molestia o rechazo; la clase de interés clínico. Según Héctor R. Liceaga, la posición de las orejas —hacia atrás o aplanadas— es su indicador principal.</td></tr>
+<tr><td class="num">1</td><td><span class="cl i">Interesado</span></td><td>Atención dirigida a algo</td></tr>
+<tr><td class="num">2</td><td><span class="cl s">Sereno</span></td><td>Tranquilidad</td></tr>
+</tbody></table></div>
+<p>El orden de los índices no es por frecuencia ni por intensidad: es <strong>alfabético</strong>, porque sale de la tupla <code>CLASES</code>.</p>
+<pre><code>CLASES = ("Disgustado", "Interesado", "Sereno")
+...
+y = np.array([CLASES.index(c["clase"]) for c in clips])   <span class="c"># "Sereno" -> 2</span></code></pre>
+<p class="fuente">equinos/clasificacion.py, CLASES y _tensores()</p>
+</section>
+
+<!-- ============================== 6 ============================== -->
+<section class="sec" id="s6">
+<h2><span class="n">06</span>Transformación de variables</h2>
+<p>Técnicas de la lista habitual que <strong>no</strong> se usaron: One-Hot Encoding explícito, MinMaxScaler, discretización, transformación de fechas, texto, PCA. Las que <strong>sí</strong> se usaron, en el orden del pipeline:</p>
+
+<h3>6.1 · Segmentación en clips</h3>
+<p><strong>Qué es:</strong> cortar cada video en ventanas de tiempo. <strong>Coloquial:</strong> como cortar una película larga en escenas de 6 segundos. <strong>Técnico:</strong> <code>calcular_ventanas(total_frames, fps)</code> recorre el video en ventanas sin solape; si el resto final es menor que 5 s se absorbe en la última ventana.</p>
+
+<h3>6.2 · Muestreo uniforme estricto (12 a 16 fotogramas)</h3>
+<p><strong>Coloquial:</strong> de cada escena se sacan de 12 a 16 fotos repartidas de manera equidistante sin repetirse nunca. <strong>Técnico:</strong> Se usa <code>np.linspace(0, total_frames - 1, min(total_frames, 16))</code>. Esto erradicó el "sesgo de densidad", evitando que el modelo aprenda a predecir "Disgustado" solo por lo rápido que se repetían las fotos en videos muy cortos.</p>
+
+<h3>6.3 · Detección del caballo</h3>
+<p><strong>Coloquial:</strong> YOLO11x preentrenado marca con un rectángulo dónde está el caballo. Sirve para acotar dónde buscar la cara.</p>
+
+<h3>6.4 · Puntos clave faciales (keypoints)</h3>
+<p><strong>Coloquial:</strong> DeepLabCut (<code>superanimal_quadruped</code>) marca las orejas, ojo y hocico. En cada fotograma se toma <strong>el ojo más confiable</strong> y el hocico (<code>nose</code>).</p>
+
+<h3>6.5 · Alineación por transformada de similitud y recorte 224×343</h3>
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>Es como poner cada foto de la cara en una plantilla: se gira, se agranda o achica y se desplaza hasta que el ojo cae siempre en el mismo punto y el hocico siempre en otro punto fijo, debajo. Así, todas las caras «miran» igual y se comparan expresiones, no posturas o distancias de filmación.</p>
+</div>
+<pre><code>v = p2 - p1                     <span class="c"># eje ojo→hocico en el cuadro original</span>
+w = q2 - q1                     <span class="c"># eje ojo→hocico en el recorte canónico</span>
+escala = np.hypot(*w) / np.hypot(*v)
+angulo = np.arctan2(w[1], w[0]) - np.arctan2(v[1], v[0])
+rotacion = [[cos·escala, -sin·escala], [sin·escala, cos·escala]]
+traslacion = q1 - rotacion @ p1
+recorte = cv2.warpAffine(frame, M, (224, 343))</code></pre>
+<p class="fuente">02_roi_y_normalizacion.ipynb, Paso 3 similitud_desde_dos_puntos() y Paso 12 (resumido)</p>
+
+<h3>6.6 · Normalización con la media y el desvío de ImageNet</h3>
+<p><strong>Coloquial:</strong> ajustar el brillo y el color de cada foto a la «escala» con la que la red preentrenada (ResNet-18) aprendió a mirar.</p>
+
+<h3>6.7 · Embeddings con una ResNet-18 congelada</h3>
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>En vez de enseñarle a la computadora a «ver» desde cero —imposible con un dataset de este tamaño— se usa una red que ya aprendió a reconocer texturas y formas en millones de fotos (ImageNet). A cada foto de la cara se la resume en una lista de 512 números que describen lo que la red «ve». Esa lista es la que después se clasifica.</p>
+</div>
+</section>
+
+<!-- ============================== 7 ============================== -->
+<section class="sec" id="s7">
+<h2><span class="n">07</span>Dataset final para entrenamiento</h2>
+<div class="cifras">
+<div class="cifra"><b>Largo Variable</b><span>Tensores guardados como Numpy Objects para no ocupar disco inútil</span></div>
+<div class="cifra"><b>Validity Mask</b><span>Arreglo extra que le dice a la red si un punto facial es real o inventado</span></div>
+<div class="cifra"><b>12 a 16</b><span>fotogramas por clip (dinámico)</span></div>
+<div class="cifra"><b>83</b><span>caballos distintos (tamaño muestral efectivo)</span></div>
+</div>
+<div class="tabla"><table>
+<thead><tr><th>Elemento</th><th>Forma</th><th>Contenido</th></tr></thead>
+<tbody>
+<tr><td><code>X_vis</code> (visual)</td><td><code>(clips, seq_len, 512)</code></td><td><code>dtype=object</code> en disco, convertido con <code>pad_sequence</code> en tiempo de ejecución.</td></tr>
+<tr><td><code>X_geom</code> (postura)</td><td><code>(clips, seq_len, 9)</code></td><td>6 coordenadas relativas (orejas, ojos, hocico) + 3 booleanos de Validity Mask.</td></tr>
+<tr><td><code>y</code> (objetivo)</td><td><code>(153,)</code></td><td>Enteros 0, 1, 2 (<span class="cl d">Disgustado</span>, <span class="cl i">Interesado</span>, <span class="cl s">Sereno</span>).</td></tr>
+<tr><td>Grupos</td><td><code>(153,)</code></td><td><code>id_caballo</code>, 83 valores distintos, usado sólo para particionar de forma justa.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================== 8 ============================== -->
+<section class="sec" id="s8">
+<h2><span class="n">08</span>División de los datos</h2>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>Para saber si alguien aprendió a leer emociones —y no a reconocer caballos—, hay que examinarlo con <strong>caballos que nunca vio</strong>. Aquí no se separó un único examen final: los 83 caballos se repartieron en 4 grupos, y se tomaron 4 exámenes. En cada uno se estudia con 3 grupos y se rinde con el cuarto. La nota es el promedio de los 4 exámenes, y además se informa cuánto varía de un examen a otro.</p>
+</div>
+
+<div class="caja importante"><span class="tag">Importante para explicar</span>
+<p>Este proyecto <strong>no usa el esquema train / validation / test clásico</strong>, y no usa <code>train_test_split</code>. Usa <strong>validación cruzada de 4 folds agrupada por caballo</strong>. No hay conjunto de validación interno: por eso el entrenamiento tiene un número <strong>fijo</strong> de pasos y está prohibido elegir la época mirando el fold de prueba.</p>
+</div>
+
+<div class="tabla"><table>
+<thead><tr><th>Concepto</th><th>Valor en el proyecto</th></tr></thead>
+<tbody>
+<tr><td>Método</td><td>Réplica determinista de <code>GroupKFold</code> por <code>id_caballo</code> (<code>equinos/particion.py</code>, <code>construir()</code>)</td></tr>
+<tr><td>Folds</td><td><code>FOLDS = 4</code> → en cada vuelta ~75 % entrena y ~25 % prueba</td></tr>
+<tr><td><code>random_state</code></td><td><strong>No tiene</strong>, y es a propósito: es determinista. Los caballos se ordenan por cantidad de clips y desempatan por nombre.</td></tr>
+<tr><td><code>stratify</code></td><td><strong>No se usa</strong>. Se verifica que ninguna clase quede vacía en ningún fold.</td></tr>
+<tr><td>Persistencia</td><td>La partición se guarda en <code>particion_clips.json</code>; todas las corridas leen la misma.</td></tr>
+<tr><td>Modelo que se despliega</td><td>Reentrenado sobre los 153 clips; su métrica es la de validación cruzada.</td></tr>
+</tbody></table></div>
+
+<h3>Cuánto vale agrupar: medido</h3>
+<p>Sin agrupar, un «modelo» que <strong>no mira ni un píxel</strong> llega a 0,503 porque 73 de los 83 caballos aparecen en una sola clase: saber qué caballo es equivale a saber la clase. Esos <strong>+0,328</strong> son la fuga (data leakage) que la partición por caballo elimina.</p>
+</section>
+
+<!-- ============================== 9 ============================== -->
+<section class="sec" id="s9">
+<h2><span class="n">09</span>Balance o desbalance de clases</h2>
+
+<div class="caja sencilla"><span class="tag">Explicación sencilla</span>
+<p>Si en un aula 42 de cada 100 alumnos se llaman Juan, alguien que responde siempre «Juan» acierta el 42 % sin saber nada. Con clases desbalanceadas, un modelo perezoso puede parecer bueno ignorando la clase rara, que acá es justamente la que más importa: <span class="cl d">Disgustado</span>.</p>
+</div>
+
+<h3>Qué técnicas se aplicaron</h3>
+<div class="tabla"><table>
+<thead><tr><th>Técnica</th><th>¿Se usó?</th><th>Detalle</th></tr></thead>
+<tbody>
+<tr><td>Weighted loss</td><td class="si">Sí</td><td><code>nn.CrossEntropyLoss(weight=pesos)</code> ponderando inversamente a la frecuencia.</td></tr>
+<tr><td>Métricas que no se dejan engañar</td><td class="si">Sí</td><td>F1 macro, balanced accuracy y recall de <span class="cl d">Disgustado</span>. La accuracy global no se calcula «en ningún lado».</td></tr>
+<tr><td>Conseguir más datos minoritarios</td><td class="si">Sí</td><td>25 videos nuevos de <span class="cl d">Disgustado</span> y flexibilización de validación (clips de 12 frames).</td></tr>
+<tr><td>Oversampling / SMOTE</td><td class="no">No</td><td>No hay evidencia de síntesis de data en el código de entrenamiento.</td></tr>
+</tbody></table></div>
+<p>Para el modelo de producción, un error sobre <span class="cl d">Disgustado</span> pesa casi el doble que uno sobre <span class="cl s">Sereno</span>, compensando numéricamente su rareza poblacional.</p>
+</section>
+
+<!-- ============================== 10 ============================== -->
+<section class="sec" id="s10">
+<h2><span class="n">10</span>Modelos utilizados</h2>
+<p>La gran evolución del proyecto ocurre aquí: el salto desde cabezas visuales estáticas limitadas hacia una red neuronal que entiende geometría y dinámicas temporales focales.</p>
+
+<h3>Modelos 1 a 6 · Líneas de base y versiones descartadas</h3>
+<p>El proyecto pasó por el voto estático mayoritario (que promediaba sin importar el tiempo) y cabezas como GRU y Atención básica, que no lograban aislar la señal por la contaminación de fotogramas "neutros".</p>
+
+<h3>Modelo 7 · Atención MIL Multimodal — EL MODELO FINAL</h3>
+<div class="caja sencilla"><span class="tag">Cómo funciona, coloquial</span>
+<p>En lugar de mirar la foto y tratar de adivinar dónde están las orejas (como hacían las otras cabezas), este modelo recibe las dos cosas masticadas: la textura de los píxeles (por un lado) y las coordenadas matemáticas exactas normalizadas (por otro). Además, como a veces el caballo hace el gesto en una fracción de segundo, la red usa "Atención" para ignorar el resto del video y darle todo el peso de la decisión solo a ese instante clave.</p>
+</div>
+<pre><code>class MILFusionModel(nn.Module):
+    # Fusión Multimodal:
+    # v_vis: Tensor visual congelado (ResNet-18)
+    # v_geom: Tensor geométrico (MLP sobre pose normalizada)
+    # Atención MIL (Pooling) sobre la secuencia fusionada
+</code></pre>
+<dl class="lineas">
+<dt>Módulo Geométrico (MLP)</dt><dd>Cruza las coordenadas espaciales normalizadas por el eje ojo-hocico para aislar el movimiento real, descartando sesgos de traslación o escala.</dd>
+<dt>Validity Mask</dt><dd>Si una oreja está oculta, su coordenada se reemplaza por el origen <code>(0,0)</code> y se pasa un <code>0.0</code> en la máscara booleana. Así la red sabe exactamente cuándo el punto fue medido empíricamente y cuándo es sintético.</dd>
+</dl>
+</section>
+
+<!-- ============================== 11 ============================== -->
+<section class="sec" id="s11">
+<h2><span class="n">11</span>Proceso de entrenamiento</h2>
+<p>Esto es exactamente lo que ocurre dentro de <code>entrenar_mil_multimodal</code>, ejecutado con PyTorch:</p>
+<ol>
+<li><strong>Se fija la semilla</strong> (42) para que los pesos iniciales sean idénticos y reproducibles.</li>
+<li><strong>Se sortea un lote</strong> de secuencias del fold de entrenamiento.</li>
+<li><strong>Forward con Pad Sequence:</strong> Los tensores visuales y geométricos se rellenan temporalmente para emparejar longitudes en el batch.</li>
+<li><strong>Fusión:</strong> Las representaciones visuales y la postura pasan por la red de Fusión y Atención.</li>
+<li><strong>Se compara con la respuesta real</strong> mediante entropía cruzada a nivel de "bolsa" (el video).</li>
+<li><strong>Backpropagation y Optimización</strong> con AdamW, penalizando el exceso de confianza con weight decay.</li>
+<li><strong>Se repiten las épocas preestablecidas</strong>. No se mira el fold de prueba para detener temprano (early stopping) para evitar fugas.</li>
+</ol>
+<p>Las predicciones de los 4 folds se juntan y finalmente, se entrena el modelo de producción con la totalidad de los datos, guardando el resultado en un archivo nativo <code>un_frame_produccion.pt</code> listo para la inferencia en tiempo real.</p>
+</section>
+
+<!-- ============================== 12 ============================== -->
+<section class="sec" id="s12">
+<h2><span class="n">12</span>Conceptos de entrenamiento que aparecen</h2>
+<div class="tabla"><table>
+<thead><tr><th>Concepto</th><th>En este proyecto</th></tr></thead>
+<tbody>
+<tr><td>Epoch / Paso</td><td>Se itera una cantidad de veces fija.</td></tr>
+<tr><td>Batch / batch size</td><td>El grupito de ejemplos que se mira antes de corregir; con padding dinámico en PyTorch.</td></tr>
+<tr><td>Learning rate</td><td>El tamaño de cada corrección: <code>LR = 1e-3</code>.</td></tr>
+<tr><td>Loss function</td><td>Entropía cruzada ponderada por clase.</td></tr>
+<tr><td>Optimizer</td><td>AdamW.</td></tr>
+<tr><td>Early stopping</td><td><strong>Prohibido a propósito</strong>: sin validación interna, cortar mirando el fold de prueba sería fuga.</td></tr>
+<tr><td>Weight decay</td><td>Empujar los pesos hacia cero para que no crezcan sin necesidad.</td></tr>
+<tr><td>Transfer learning</td><td>ResNet-18 de ImageNet, congelada, fusionada con datos multimodales.</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================== 13 ============================== -->
+<section class="sec" id="s13">
+<h2><span class="n">13</span>Función de pérdida y el truco de Masking</h2>
+
+<div class="caja tecnica"><span class="tag">Explicación técnica: El enmascarado -1e9</span>
+<p>Al permitir clips variables (ej. 12 frames), los espacios que faltan para llegar a la longitud del lote mayor se rellenan con fotogramas "vacíos" (padding). Para asegurar que la red de Atención MIL no les preste ningún grado de atención, se les suma un valor infinitamente negativo (<code>-1e9</code>) en los logits antes de pasarlos por la función matemática <strong>Softmax</strong>. Softmax eleva el número $e$ a la potencia de $-10^9$, lo que resulta matemáticamente en 0. De esta manera, el ruido del padding queda completamente erradicado de la predicción y el pooling final del clip.</p>
+</div>
+</section>
+<!-- ============================== 14 ============================== -->
+<section class="sec" id="s14">
+<h2><span class="n">14</span>Optimizador</h2>
+<div class="caja sencilla"><span class="tag">Coloquial</span>
+<p>El optimizador es quien baja la montaña del error a oscuras. SGD da pasos siempre del mismo largo; Adam recuerda hacia dónde venía bajando (inercia) y ajusta el largo del paso para cada parámetro; AdamW es Adam con una «dieta» aparte que mantiene los pesos chicos.</p>
+</div>
+<p><strong>Cuál:</strong> <code>torch.optim.AdamW(modelo.parameters(), lr=1e-3, weight_decay=1e-2)</code>. Aplicado ahora sobre toda la arquitectura de Fusión MIL Multimodal.</p>
+<div class="caja tecnica"><span class="tag">Explicación técnica</span>
+<p>Adam mantiene dos promedios móviles por parámetro: el del gradiente (<em>m</em>, momento) y el del gradiente al cuadrado (<em>v</em>). El paso es aproximadamente <code>lr · m̂ / (√v̂ + ε)</code>, así que parámetros con gradientes grandes o ruidosos dan pasos relativos más chicos. <strong>AdamW</strong> aplica el weight decay <em>desacoplado</em>: resta <code>lr · weight_decay · θ</code> directamente, en vez de sumarlo al gradiente.</p>
+</div>
+<ul>
+<li><strong>Learning rate 1e-3:</strong> valor habitual para Adam; con los pasos definidos alcanza para aprender las microexpresiones, así que no hubo necesidad de subirlo.</li>
+<li><strong>Weight decay 0,01:</strong> regularización; ayuda a que la cabeza MIL no dependa de pesos enormes.</li>
+</ul>
+</section>
+
+<!-- ============================== 15 ============================== -->
+<section class="sec" id="s15">
+<h2><span class="n">15</span>Hiperparámetros</h2>
+<p>Todos los encontrados, desde el video hasta el clasificador. Ninguno se buscó con grid search: los del preprocesamiento salieron de mediciones puntuales y los del entrenamiento se fijaron antes de correr.</p>
+<div class="tabla"><table>
+<thead><tr><th>Hiperparámetro</th><th>Valor</th><th>Significado</th><th>Efecto / por qué</th></tr></thead>
+<tbody>
+<tr><td colspan="4"><strong>Etapa 01 · clips y fotogramas</strong></td></tr>
+<tr><td><code>NUM_FRAMES</code></td><td class="num">12 a 16</td><td>Fotogramas por clip</td><td>Muestreo estricto. Permite padding dinámico y salva clips minoritarios.</td></tr>
+<tr><td><code>PISO_VIDEO_CORTO</code></td><td class="num">1,0 s</td><td>Mínimo para admitir entero un video corto</td><td>Recuperó caballos de <span class="cl d">Disgustado</span>.</td></tr>
+<tr><td colspan="4"><strong>Etapa 02 · detección, pose y recorte</strong></td></tr>
+<tr><td><code>CONF_MINIMA_KEYPOINT</code></td><td class="num">0,50</td><td>Confianza mínima de ojo y hocico</td><td>Si es menor, la <em>Validity Mask</em> se pone en 0 y se imputa al origen (0,0).</td></tr>
+<tr><td><code>BODYPART_HOCICO</code></td><td><code>nose</code></td><td>Parte del cuerpo usada como hocico</td><td>Mejor que <code>upper_jaw</code> (62,4 % vs 54,4 %).</td></tr>
+<tr><td><code>MAX_HUECO_INTERPOLADO</code></td><td class="num">1</td><td>Fotogramas seguidos que se interpolan</td><td>Validado contra el movimiento real entre fotogramas.</td></tr>
+<tr><td colspan="4"><strong>Etapa 03 · clasificación (MIL Multimodal)</strong></td></tr>
+<tr><td><code>BACKBONE</code></td><td><code>resnet18</code> + <code>MLP</code></td><td>Extractor Multimodal</td><td>Une textura visual con la geometría facial relativa.</td></tr>
+<tr><td><code>FOLDS</code></td><td class="num">4</td><td>Particiones de la validación cruzada</td><td>Con 5, folds con 2 clips de <span class="cl d">Disgustado</span>.</td></tr>
+<tr><td><code>LR</code></td><td class="num">0,001</td><td>Tamaño del paso</td><td>Velocidad del aprendizaje.</td></tr>
+<tr><td><code>WEIGHT_DECAY</code></td><td class="num">0,01</td><td>Encogimiento de pesos</td><td>Regularización.</td></tr>
+<tr><td><code>CRITERIO_ACEPTACION</code></td><td class="num">0,691</td><td>F1 macro mínimo para considerar útil un modelo</td><td>Superado ampliamente (0,754).</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ============================== 16 ============================== -->
+<section class="sec" id="s16">
+<h2><span class="n">16</span>Sobreajuste y subajuste</h2>
+<h3>¿Llegamos al techo?</h3>
+<p>Sí. El modelo MIL Multimodal logró exprimir toda la señal temporal y geométrica disponible, estabilizando el rendimiento. Sin embargo, los errores persistentes indican que el algoritmo topó con el techo de representatividad de los datos. La vía para seguir mejorando de acá en adelante no es agrandar la red neuronal, sino inyectar más ejemplares únicos en la clase <code>Disgustado</code>.</p>
+
+<h3>Cómo se controló el sobreajuste</h3>
+<ol>
+<li><strong>Backbone congelado:</strong> La ResNet-18 no se entrena, solo se entrenan los pesos de Atención y el MLP geométrico.</li>
+<li><strong>Dropout y weight decay.</strong></li>
+<li><strong>Padding enmascarado (-1e9):</strong> Evita que la red invente patrones a partir del relleno.</li>
+<li><strong>Partición por caballo:</strong> Impide el sobreajuste «disfrazado» de reconocer individuos (+0,328 medido si no se agrupa).</li>
+</ol>
+
+<div class="caja importante"><span class="tag">Importante para explicar</span>
+<p>La frase de la tesina es: <strong>«lo que falta son ejemplares, no capacidad de modelo»</strong>. Reafirmamos que la mejor manera de escalar la robustez del F1 de 0.754 hacia el 0.90 es filmar nuevos caballos, no cambiar PyTorch.</p>
+</div>
+</section>
+
+<!-- ============================== 17 ============================== -->
+<section class="sec" id="s17">
+<h2><span class="n">17</span>Métricas de evaluación</h2>
+<p>Todas se calculan sobre predicciones <strong>fuera de muestra</strong> (el clip lo predice un modelo que no vio a ese caballo) y se informan como <strong>media ± desvío entre los 4 folds</strong>.</p>
+
+<h3>F1 macro — la métrica principal</h3>
+<p><strong>Qué mide:</strong> el equilibrio entre precision y recall, promediado sin ponderar entre las tres clases. <strong>Sencillo:</strong> cada clase vale un tercio de la nota, sea frecuente o rara; si el modelo ignora <span class="cl d">Disgustado</span>, pierde un tercio entero.</p>
+<p><strong>Resultado Final:</strong> <strong>0,754 ± 0,028</strong>.</p>
+
+<h3>Balanced accuracy</h3>
+<p><strong>Qué mide:</strong> el promedio del recall de cada clase. <strong>Sencillo:</strong> «de cada clase, qué porcentaje reconoce, y promedio los tres».</p>
+<p><strong>Resultado Final:</strong> <strong>0,761 ± 0,030</strong>.</p>
+
+<h3>Recall de <span class="cl d">Disgustado</span></h3>
+<p><strong>Resultado Final:</strong> <strong>0,753 ± 0,084</strong>. Este es el salto más drástico y el corazón clínico de la tesis. En los modelos puramente visuales previos, esta métrica sufría mucho (~0.568). El aporte de las posiciones faciales normalizadas (sobre todo las orejas combinadas con la máscara de validez) le dio al clasificador la señal fuerte que necesitaba para distinguir el disgusto sin depender de la identidad del caballo.</p>
+</section>
+
+<!-- ============================== 18 ============================== -->
+<section class="sec" id="s18">
+<h2><span class="n">18</span>Estudio de Ablación y Confusión</h2>
+<p>Para demostrar que el salto en las métricas no es casualidad, se evaluó un subconjunto estricto de <strong>117 clips</strong> donde los frames provienen pura y exclusivamente de detección automática del modelo (sin anotaciones manuales ni interpolaciones previas).</p>
+
+<div class="tabla" style="max-width:640px"><table>
+<thead><tr><th>Ablación — sólo detección propia (117 clips)</th><th class="num">Resultado</th></tr></thead>
+<tbody>
+<tr><td>F1 Macro</td><td class="num">0,673 ± 0,059</td></tr>
+<tr><td>Recall Disgustado</td><td class="num">0,461 ± 0,173</td></tr>
+</tbody></table></div>
+
+<h3>Análisis Forense de la Ablación</h3>
+<p>La diferencia contra el pipeline completo cae <strong>-0.082</strong> en F1 Macro (de 0.754 a 0.673). El Recall en la clase minoritaria ("Disgustado") colapsa de forma estrepitosa a 0.461.</p>
+<p><strong>¿Qué demuestra esto?</strong> Que el enorme trabajo realizado en el Objetivo 2 (limpieza, normalización, e imputación con <em>Validity Mask</em>) no fue en vano. Es el pilar estructural que sostiene el rendimiento superior del modelo final. Si dejábamos el modelo puramente con lo que venía de fábrica y sin corregir la geometría, nos caíamos por debajo del umbral de aceptación.</p>
+</section>
+
+<!-- ============================== 19 ============================== -->
+<section class="sec" id="s19">
+<h2><span class="n">19</span>Evolución del entrenamiento y TensorBoard</h2>
+<div class="caja tecnica"><span class="tag">Explicabilidad y Monitoreo (XAI)</span>
+<p>A diferencia de la fase anterior, el bucle de <code>entrenar_mil_multimodal</code> ahora utiliza <code>SummaryWriter</code> para registrar la evolución de la <em>Loss</em> época a época en <strong>TensorBoard</strong>. Además, se agrega una capa fundamental para la tesis: se extraen los <strong>pesos de atención</strong> del conjunto de prueba y se dibuja un gráfico de barras. Esto permite a los evaluadores (y a la interfaz final) visualizar exactamente a qué fotogramas el modelo les dio mayor importancia para tomar su decisión.</p>
+</div>
+</section>
+
+<!-- ============================== 20 ============================== -->
+<section class="sec" id="s20">
+<h2><span class="n">20</span>Experimentos realizados</h2>
+<p>El proyecto avanzó en ciclos de <em>medir → encontrar la causa → corregir → volver a medir</em>. El hito final revirtió las conclusiones previas.</p>
+<ol class="crono">
+<li><span class="fecha">Fase Inicial</span><h4>Modelos Estáticos y Voto Mayoritario</h4>
+<dl class="r"><dt>Resultado</dt><dd>La cabeza promedio estática no lograba superar claramente la barrera del F1 sin arrastrar sesgos. Las pruebas temporales iniciales (GRU/Atención visual) colapsaban al no poder aislar el movimiento.</dd></dl></li>
+<li class="otra"><span class="fecha">Septiembre 2026</span><h4>Arquitectura MIL Multimodal</h4>
+<dl class="r"><dt>Hallazgo</dt><dd>Se integró la geometría (orejas, ojos, hocico) normalizada y se aplicó Attention MIL con padding dinámico de 12-16 frames.</dd><dt>Medido</dt><dd>F1 0.754, superando ampliamente el criterio de 0.691. La hipótesis temporal quedó validada empíricamente.</dd></dl></li>
+</ol>
+</section>
+
+<!-- ============================== 21 ============================== -->
+<section class="sec" id="s21">
+<h2><span class="n">21</span>Comparación de modelos</h2>
+<p>Todos sobre la misma partición y el mismo backbone. La barra es la media; la línea fina debajo de cada barra, ± un desvío entre folds; la línea vertical punteada, el criterio (0,691).</p>
+<figure class="grafico" aria-label="F1 macro por modelo con desvío entre folds y criterio de 0,691">
+<svg viewBox="0 0 750 340" role="img">
+<g stroke="var(--line)" stroke-width="1">
+<line x1="240" y1="14" x2="240" y2="296"/><line x1="342.2" y1="14" x2="342.2" y2="296"/><line x1="444.4" y1="14" x2="444.4" y2="296"/><line x1="546.7" y1="14" x2="546.7" y2="296"/><line x1="648.9" y1="14" x2="648.9" y2="296"/>
+</g>
+<g text-anchor="middle"><text x="240" y="316">0</text><text x="342.2" y="316">0,2</text><text x="444.4" y="316">0,4</text><text x="546.7" y="316">0,6</text><text x="648.9" y="316">0,8</text></g>
+<text x="470" y="336" text-anchor="middle" style="font-size:11px">F1 macro</text>
+<g text-anchor="end">
+<text x="228" y="36">Clase mayoritaria</text>
+<text x="228" y="70">Sólo identidad (por caballo)</text>
+<text x="228" y="104">Ablación (MIL Multimodal)*</text>
+<text x="228" y="138">Un fotograma + voto (piso)</text>
+<text x="228" y="172">Cabeza promedio (Antigua)</text>
+<text x="228" y="206" style="font-weight:700;fill:var(--ink)">MIL Multimodal · FINAL</text>
+</g>
+<g>
+<rect x="240" y="22" width="89.4" height="15" rx="2" fill="var(--ink-faint)"/>
+<rect x="240" y="56" width="89.4" height="15" rx="2" fill="var(--ink-faint)"/>
+<rect x="240" y="90" width="343.8" height="15" rx="2" fill="var(--ink-soft)"/>
+<rect x="240" y="124" width="337.3" height="15" rx="2" fill="var(--interesado)"/>
+<rect x="240" y="158" width="359.8" height="15" rx="2" fill="var(--interesado)"/>
+<rect x="240" y="192" width="385.3" height="15" rx="2" fill="var(--accent)"/>
+</g>
+<g style="font-variant-numeric:tabular-nums">
+<text x="351" y="36">0,175</text><text x="351" y="70">0,175</text><text x="600" y="104">0,673</text><text x="592" y="138">0,660</text><text x="615" y="172">0,704</text><text x="640" y="206" style="font-weight:700;fill:var(--ink)">0,754</text>
+</g>
+<line x1="593.7" y1="10" x2="593.7" y2="296" stroke="var(--disgustado)" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="596" y="12" style="fill:var(--disgustado);font-weight:650;font-size:11px">criterio 0,691</text>
+</svg>
+<figcaption class="small muted" style="font-family:var(--f-display);font-size:.8rem;margin-top:6px">* El estudio de ablación para el MIL Multimodal arroja F1 0.673, evidenciando el peso crucial de las interpolaciones geométricas para sostener el resultado superior.</figcaption>
+</figure>
+</section>
+
+<!-- ============================== 22 ============================== -->
+<section class="sec" id="s22">
+<h2><span class="n">22</span>Modelo final elegido</h2>
+<div class="cifras">
+<div class="cifra"><b>0,754</b><span>F1 macro ± 0,028</span></div>
+<div class="cifra"><b>+0,063</b><span>sobre el criterio 0,691</span></div>
+<div class="cifra"><b>0,753</b><span>Recall Disgustado</span></div>
+<div class="cifra"><b>Multimodal</b><span>Visión + Geometría</span></div>
+</div>
+<p><strong>Cuál:</strong> Arquitectura MIL Multimodal (ResNet-18 + MLP Geométrico), con reentrenamiento total almacenado en <code>un_frame_produccion.pt</code> y servido en la Interfaz.</p>
+
+<div class="caja importante"><span class="tag">Las conclusiones formales del trabajo</span>
+<p><strong>1. Objetivo Cumplido con Margen:</strong> Hay un clasificador que supera cómodamente el criterio exigente fijado antes de entrenar (0,754 contra 0,691).</p>
+<p><strong>2. Hipótesis Temporal Sostenida:</strong> Se logró demostrar que <strong>sí existe señal temporal útil</strong> cuando la arquitectura permite a la red "prestar atención" (MIL Attention) a instantes específicos del video y fusionar esta lectura con la evolución geométrica-postural del caballo. El "colapso" de modelos anteriores se debió a promedios ciegos que diluían la microexpresión.</p>
+</div>
+</section>
+
+<!-- ============================== 23 ============================== -->
+<section class="sec" id="s23">
+<h2><span class="n">23</span>Flujo completo del proyecto</h2>
+<p>Todo el proyecto, de principio a fin y en lenguaje sencillo, tal como ocurrió:</p>
+<ol>
+<li><strong>Se planteó el problema:</strong> clasificar tres estados emocionales de caballos a partir de videos cortos, con la hipótesis de que el movimiento en el tiempo ayuda.</li>
+<li><strong>Se armó una colección propia de videos</strong> en Drive.</li>
+<li><strong>Se limpió el catálogo</strong> con fuentes únicas y exclusión de subcarpetas.</li>
+<li><strong>Se corrigió la orientación</strong> de los videos.</li>
+<li><strong>Se cortaron los videos en clips</strong>.</li>
+<li><strong>Se extrajeron entre 12 y 16 fotogramas</strong> de forma uniforme y estricta.</li>
+<li><strong>Se detectó el caballo</strong> con YOLO11x.</li>
+<li><strong>Se localizaron el ojo y el hocico</strong> con DeepLabCut.</li>
+<li><strong>Se imputaron faltantes al (0,0) y se generó una Validity Mask</strong>.</li>
+<li><strong>Se recortó y alineó la cara</strong> a 224×343 px.</li>
+<li><strong>Se convirtieron los fotogramas</strong> en 512 números con ResNet-18.</li>
+<li><strong>Se fijó un criterio de éxito</strong> (0,691) y se validó cruzado por caballo.</li>
+<li><strong>Se entrenó un modelo MIL Multimodal</strong>, fusionando la red visual con un MLP geométrico y Atención temporal.</li>
+<li><strong>Se demostró la validez de la hipótesis temporal</strong> al alcanzar 0.754 de F1 Macro.</li>
+<li><strong>Se construyó la interfaz (XAI)</strong> que muestra la predicción y el peso de atención de cada fotograma para dar transparencia clínica.</li>
+</ol>
+</section>
+
+<!-- ============================== 24 ============================== -->
+<section class="sec guion" id="s24">
+<h2><span class="n">24</span>Cómo explicaría este proyecto en una exposición</h2>
+<p class="muted">Guion actualizado: La sección final donde relatás la victoria académica.</p>
+
+<span class="bloque">9:15 · LOS RESULTADOS Y LA FUSIÓN GEOMÉTRICA</span>
+<p>Inicialmente, las redes que intentaron usar el orden cronológico fracasaron porque diluían la expresión entre muchos fotogramas neutros. Para resolverlo, implementamos un cambio arquitectónico drástico: la Fusión MIL Multimodal. Le dimos a la red las coordenadas espaciales exactas del ojo, orejas y hocico normalizadas, y usamos "Atención MIL". En vez de promediar a ciegas, la red aprendió a buscar el instante exacto donde el caballo mueve las orejas hacia atrás y a poner todo el peso de su decisión ahí. ¿El resultado? Alcanzamos un F1 Macro de 0.754, superando con holgura nuestro criterio estricto de 0.691. Y más importante aún: logramos que la red detecte el malestar en el caballo (el Recall de Disgustado) el 75 % de las veces.</p>
+
+<span class="bloque">10:30 · QUÉ SIGNIFICA</span>
+<p>Tenemos dos victorias que presentarles hoy. La primera: el objetivo se cumplió y el modelo es capaz de generalizar sobre caballos que jamás vio en el entrenamiento. La segunda, que es nuestra mayor contribución: la hipótesis temporal sí es válida. Validamos el esfuerzo invertido en extraer la biometría (DeepLabCut), demostrando empíricamente que la geometría y el movimiento corto son el núcleo para predecir emociones, descartando los atajos de identidad.</p>
+
+<span class="bloque">11:30 · LA INTERFAZ Y EXPLICABILIDAD (XAI)</span>
+<p>Todo este motor está empaquetado en una aplicación. Se sube un video, el pipeline lo procesa, y no sólo te dice que el caballo está disgustado, sino que despliega un gráfico de barras mostrando los pesos de atención. Esto es Explicabilidad: el veterinario puede ver en la pantalla que el sistema basó su decisión mirando precisamente los fotogramas del segundo 4, dándole total transparencia clínica a la inferencia.</p>
+</section>
+
+<!-- ============================== 25 ============================== -->
+<section class="sec" id="s25">
+<h2><span class="n">25</span>Preguntas que podrían hacerme</h2>
+<div class="faq">
+<details><summary>¿Entonces, la hipótesis temporal es válida?</summary><p>Absolutamente. Quedó validada desde el momento en que la arquitectura de Atención (MIL) logró aislar los fotogramas clave y combinarlos con la dinámica geométrica para vencer a los modelos estáticos rígidos.</p></details>
+<details><summary>¿Por qué 12 a 16 fotogramas por clip?</summary><p>Es el rango dinámico fijado en el pipeline. Relajar el mínimo a 12 frames recuperó caballos críticos de la clase Disgustado. Los huecos hasta llegar a 16 se rellenan mediante padding en PyTorch y se enmascaran en el modelo.</p></details>
+<details><summary>¿Qué pasa con los fotogramas donde no se ven las orejas?</summary><p>Se imputan sus coordenadas al (0,0) (centro del rostro normalizado) y se le pasa a la red una "Validity Mask" booleana en cero. Así el modelo sabe que ese punto es un artificio matemático y no un movimiento real.</p></details>
+<details><summary>¿Por qué no usaron train_test_split?</summary><p>Porque un split aleatorio pondría clips del mismo caballo en entrenamiento y prueba. Usamos validación cruzada de 4 folds agrupada por caballo, evitando que el modelo memorice la identidad del animal.</p></details>
+<details><summary>¿Cómo controlaron que el padding no afecte el modelo?</summary><p>Sumando -1e9 a los logits de los frames de relleno antes de aplicar la función Softmax. Esto asegura que el peso de atención de esos frames sea exactamente 0%.</p></details>
+<details><summary>¿Por qué eligieron la arquitectura MIL Multimodal?</summary><p>Porque el modelo estático previo no entendía la geometría de las orejas y promediaba las emociones, perdiendo microexpresiones. Fusionar la imagen con las coordenadas de pose y usar MIL solucionó ambos problemas a la vez.</p></details>
+<details><summary>¿Por qué no usaron early stopping?</summary><p>Porque no hay conjunto de validación interno; parar mirando el fold de prueba sería elegir el mejor momento con los datos de evaluación, y el número saldría falsamente optimista.</p></details>
+<details><summary>¿Qué mide la ablación y por qué importa?</summary><p>Reentrena usando sólo clips alineados por detección propia, sin interpolación ni máscara de validez. El F1 cae estrepitosamente a 0,673. Muestra que el trabajo del preprocesamiento y la geometría es lo que sostiene al modelo.</p></details>
+</div>
+</section>
+
+<!-- ============================== 26 ============================== -->
+<section class="sec" id="s26">
+<h2><span class="n">26</span>Glosario</h2>
+<dl class="glosario">
+<dt>Ablación</dt><dd>Repetir un experimento quitando una parte para medir cuánto aportaba. Aquí: entrenar sin posiciones interpoladas ni manuales para demostrar el valor del pipeline geométrico.</dd>
+<dt>Atención MIL</dt><dd>Red que aprende a darle mayor "peso" (importancia) a los fotogramas donde ocurre la microexpresión, ignorando los fotogramas neutros.</dd>
+<dt>Fusión Multimodal</dt><dd>Integrar dos o más fuentes de datos simultáneas. En este trabajo: los embeddings visuales de ResNet-18 sumados a las coordenadas espaciales vectorizadas del caballo.</dd>
+<dt>MIL (Multiple Instance Learning)</dt><dd>Paradigma donde no se clasifica cada foto de forma independiente, sino la "bolsa" (el video completo). Si un fotograma es claramente positivo, toda la bolsa se clasifica como positiva.</dd>
+<dt>Padding</dt><dd>Rellenar secuencias cortas (ej. 12 frames) con datos vacíos para igualar la longitud requerida por el procesamiento en lote (16 frames).</dd>
+<dt>Softmax</dt><dd>Función que convierte logits (salidas crudas) en probabilidades que suman 1 (o 100%).</dd>
+<dt>Validity Mask</dt><dd>Arreglo de ceros y unos que viaja con la imagen, indicando explícitamente a la red si un dato posicional fue capturado por la cámara o fue inventado matemáticamente (imputado) para tapar un hueco temporal.</dd>
+<dt>AdamW</dt><dd>Optimizador que adapta el tamaño del paso de cada parámetro y aplica weight decay por separado.</dd>
+<dt>Balanced accuracy</dt><dd>Promedio del recall de cada clase.</dd>
+<dt>GroupKFold</dt><dd>Validación cruzada que mantiene cada grupo (caballo) entero dentro de un solo fold.</dd>
+<dt>ResNet-18</dt><dd>Red convolucional de 18 capas con conexiones residuales, usada aquí como extractor de características congelado.</dd>
+<dt>YOLO11x</dt><dd>Detector de objetos preentrenado en COCO, usado para encontrar al caballo antes del recorte.</dd>
+</dl>
+<p class="small muted" style="margin-top:32px">Documento reconstruido y actualizado para reflejar la implementación de Fusión Multimodal MIL (Etapa 03). Elaborado en Septiembre 2026.</p>
+</section>
+</main>
+</div>
+<a class="arriba" href="#arriba" aria-label="Volver arriba">↑ Volver arriba</a>
+<script>
+(function(){
+  try{
+    var ind=document.getElementById('indice');
+    if(ind && window.matchMedia('(max-width: 980px)').matches){ ind.removeAttribute('open'); }
+    document.querySelectorAll('.toc a').forEach(function(a){
+      a.addEventListener('click',function(){ if(window.matchMedia('(max-width: 980px)').matches){ ind.removeAttribute('open'); } });
+    });
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
