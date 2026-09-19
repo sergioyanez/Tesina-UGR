@@ -151,6 +151,49 @@ def construir(clips: list[dict], folds: int = FOLDS) -> list[dict]:
     return [dict(c, fold=fold_de_caballo[c["id_caballo"]]) for c in clips]
 
 
+def dividir_por_ejemplar(clips: list[dict], fraccion_validacion: float = 0.25) -> tuple[list, list]:
+    """Parte un conjunto de clips en entrenamiento y validación SIN que un ejemplar cruce.
+
+    Es el corte interno del fold: `evaluar` ya aisló un fold de test por ejemplar, y acá se vuelve
+    a cortar lo que queda para poder elegir la época, el dropout y cualquier otra decisión sin
+    mirar el test ni una vez. Un ejemplar que aparezca de los dos lados de ESTE corte no infla la
+    métrica final —el test sigue limpio— pero sí infla la validación, y con ella se elige mal la
+    época: el modelo parece seguir mejorando porque está reconociendo al caballo.
+
+    El reparto reusa el criterio de `construir`: ejemplares ordenados por cantidad de clips y
+    asignados al lado que menos tiene. Determinista, sin sorteo, así que dos corridas del mismo
+    conjunto dan el mismo corte y las comparaciones entre configuraciones son limpias.
+    """
+    if not 0.0 < fraccion_validacion < 1.0:
+        raise ValueError(f"La fracción de validación tiene que estar entre 0 y 1: "
+                         f"{fraccion_validacion}")
+
+    clips_por_caballo: dict[str, list[dict]] = defaultdict(list)
+    for c in clips:
+        clips_por_caballo[c["id_caballo"]].append(c)
+
+    objetivo = len(clips) * fraccion_validacion
+    orden = sorted(clips_por_caballo, key=lambda k: (-len(clips_por_caballo[k]), k))
+
+    validacion_ids: set[str] = set()
+    acumulado = 0
+    for caballo in orden:
+        if acumulado >= objetivo:
+            break
+        validacion_ids.add(caballo)
+        acumulado += len(clips_por_caballo[caballo])
+
+    entrenamiento = [c for c in clips if c["id_caballo"] not in validacion_ids]
+    validacion = [c for c in clips if c["id_caballo"] in validacion_ids]
+
+    cruce = {c["id_caballo"] for c in entrenamiento} & {c["id_caballo"] for c in validacion}
+    assert not cruce, f"fuga de ejemplar entre train interno y validación: {sorted(cruce)}"
+    assert entrenamiento and validacion, (
+        f"un lado del corte interno quedó vacío: {len(entrenamiento)} train, "
+        f"{len(validacion)} validación, sobre {len(clips_por_caballo)} ejemplares")
+    return entrenamiento, validacion
+
+
 def verificar(particionados: list[dict], folds: int = FOLDS) -> dict:
     """Comprueba lo que, si falla, no da error sino una métrica falsa.
 

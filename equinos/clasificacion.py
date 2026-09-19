@@ -272,8 +272,18 @@ def collate_fn(batch):
     return v_vis_pad, v_geom_pad, attn_mask, lengths, labels
 
 class MILFusionModel(nn.Module):
-    def __init__(self, vis_dim=512, geom_dim=9, geom_embed_dim=128, num_classes=3):
+    """Atención sobre instancias (frames) y un clasificador sobre la bolsa (el clip).
+
+    `dropout` se aplica sobre la representación de la bolsa, justo antes de clasificar, y NO
+    sobre las instancias: apagar frames sueltos durante el entrenamiento cambia lo que la cabeza
+    de atención puede aprender a ponderar, que es el objeto del modelo. Con 0.0 la red es
+    exactamente la de antes, así que el valor por defecto conserva el comportamiento previo y la
+    comparación entre 0.0, 0.2 y 0.3 se decide con la validación interna.
+    """
+
+    def __init__(self, vis_dim=512, geom_dim=9, geom_embed_dim=128, num_classes=3, dropout=0.0):
         super().__init__()
+        self.dropout_p = float(dropout)
         self.geom_mlp = nn.Sequential(
             nn.Linear(geom_dim, 64),
             nn.ReLU(),
@@ -287,8 +297,10 @@ class MILFusionModel(nn.Module):
             nn.Linear(128, 1, bias=False)
         )
         self.classifier = nn.Sequential(
+            nn.Dropout(self.dropout_p),
             nn.Linear(fusion_dim, 64),
             nn.ReLU(),
+            nn.Dropout(self.dropout_p),
             nn.Linear(64, num_classes)
         )
 
@@ -315,78 +327,157 @@ class MILFusionModel(nn.Module):
         fusion = torch.cat([v_vis, self.geom_mlp(v_geom)], dim=-1)
         return self.classifier(fusion)
 
-def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas, guardar_en=None):
-    from torch.utils.tensorboard import SummaryWriter
-    import time
-    import matplotlib.pyplot as plt
+def pesos_de_clase(clases_del_conjunto, clases_del_modelo, estrategia="inversa"):
+    """Peso por clase para la loss. `inversa` es frecuencia inversa; `raiz`, su raíz cuadrada.
 
-    torch.manual_seed(SEMILLA)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    ds_ent = MultimodalEquineDataset(entrenamiento, vectores, indice, pose_filas)
-    ds_pru = MultimodalEquineDataset(prueba, vectores, indice, pose_filas)
-    
-    # Calculate class weights for CrossEntropyLoss
-    clases = [c["clase"] for c in entrenamiento]
+    La frecuencia inversa le da a `Disgustado` ~3x el peso de las otras, y eso compra recall
+    pagando precisión: el modelo dice `Disgustado` más veces de las que la clase aparece. `raiz`
+    atenúa esa compensación sin desactivarla. **Cuál conviene se decide con la validación interna
+    y nunca mirando el test**, que es justamente la comparación que el punto 15 del pedido pide.
+    """
     from collections import Counter
-    conteos = Counter(clases)
-    pesos_clase = []
-    for c in ds_ent.clases:
-        pesos_clase.append(len(clases) / (len(ds_ent.clases) * max(1, conteos[c])))
-    weight_tensor = torch.tensor(pesos_clase, dtype=torch.float32).to(device)
-    
-    dl_ent = DataLoader(ds_ent, batch_size=32, shuffle=True, collate_fn=collate_fn)
+
+    conteos = Counter(clases_del_conjunto)
+    total, n_clases = len(clases_del_conjunto), len(clases_del_modelo)
+    crudos = [total / (n_clases * max(1, conteos[c])) for c in clases_del_modelo]
+    if estrategia == "inversa":
+        return crudos
+    if estrategia == "raiz":
+        return [w ** 0.5 for w in crudos]
+    raise ValueError(f"Estrategia de pesos desconocida: {estrategia!r}")
+
+
+def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas, guardar_en=None,
+                            dropout=0.0, max_epocas=100, paciencia=10, estrategia_pesos="inversa",
+                            fraccion_validacion=0.25, semilla=SEMILLA, verbose=False):
+    """Entrena el MIL con validación interna y early stopping. **El test no se mira nunca acá.**
+
+    `entrenamiento` es el `train_val` del fold externo; `prueba` es su test. Lo primero que hace
+    es volver a cortar `entrenamiento` por ejemplar en train interno y validación interna, y toda
+    decisión —qué época conservar, cuándo frenar— se toma contra esa validación. `prueba` se usa
+    una sola vez, al final, con el mejor checkpoint ya cargado.
+
+    Por qué importa tanto: la versión anterior entrenaba 50 épocas fijas sin evaluar nada. No es
+    que eligiera mal la época, es que no la elegía, y nadie podía saber si sobreajustaba o si le
+    faltaba entrenar. Elegirla mirando el test hubiera sido peor: el número final habría dejado
+    de ser una estimación fuera de muestra sin que ningún assert lo detectara.
+
+    Devuelve `(predichas, extra)` donde `extra` trae la mejor época, el F1 de validación y las
+    curvas, para que el informe pueda mostrar si 50 épocas era poco, mucho o razonable.
+    """
+    import random
+
+    import numpy as np
+
+    from equinos import particion as _particion
+
+    torch.manual_seed(semilla)
+    random.seed(semilla)
+    np.random.seed(semilla)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(semilla)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # --- el corte interno, por ejemplar: ningún caballo de validación entrena ------------------
+    train_interno, validacion = _particion.dividir_por_ejemplar(entrenamiento, fraccion_validacion)
+
+    caballos_test = {c["id_caballo"] for c in prueba}
+    for nombre, conjunto in (("train interno", train_interno), ("validación", validacion)):
+        cruce = {c["id_caballo"] for c in conjunto} & caballos_test
+        assert not cruce, f"fuga de ejemplar entre {nombre} y test: {sorted(cruce)}"
+
+    ds_ent = MultimodalEquineDataset(train_interno, vectores, indice, pose_filas)
+    ds_val = MultimodalEquineDataset(validacion, vectores, indice, pose_filas)
+    ds_pru = MultimodalEquineDataset(prueba, vectores, indice, pose_filas)
+
+    generador = torch.Generator()
+    generador.manual_seed(semilla)
+    dl_ent = DataLoader(ds_ent, batch_size=32, shuffle=True, collate_fn=collate_fn,
+                        generator=generador)
+    dl_val = DataLoader(ds_val, batch_size=32, shuffle=False, collate_fn=collate_fn)
     dl_pru = DataLoader(ds_pru, batch_size=32, shuffle=False, collate_fn=collate_fn)
-    
-    model = MILFusionModel().to(device)
+
+    # Los pesos salen del train interno y no del conjunto entero: son parte de lo que se aprende,
+    # y calcularlos sobre la validación le daría a la red información de un conjunto que se usa
+    # para decidir.
+    pesos = pesos_de_clase([c["clase"] for c in train_interno], ds_ent.clases, estrategia_pesos)
+    weight_tensor = torch.tensor(pesos, dtype=torch.float32).to(device)
+
+    model = MILFusionModel(dropout=dropout).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.CrossEntropyLoss(weight=weight_tensor)
-    
-    # Setup TensorBoard
-    log_dir = f"runs/mil_multimodal_{int(time.time())}"
-    writer = SummaryWriter(log_dir=log_dir)
-    
-    for epoch in range(50):
+
+    def predecir(cargador):
+        model.eval()
+        etiquetas, salidas, perdida, n = [], [], 0.0, 0
+        with torch.no_grad():
+            for v_vis, v_geom, attn_mask, _, labels in cargador:
+                logits = model(v_vis.to(device), v_geom.to(device), attn_mask.to(device))
+                perdida += criterion(logits, labels.to(device)).item() * v_vis.size(0)
+                n += v_vis.size(0)
+                salidas.extend(ds_ent.clases[p] for p in torch.argmax(logits, dim=1).cpu().numpy())
+                etiquetas.extend(ds_ent.clases[e] for e in labels.numpy())
+        return salidas, etiquetas, (perdida / n if n else float("nan"))
+
+    mejor = {"f1": -1.0, "epoca": -1, "estado": None}
+    sin_mejorar = 0
+    curva = []
+
+    for epoca in range(1, max_epocas + 1):
         model.train()
-        train_loss = 0.0
+        perdida_ent, n = 0.0, 0
         for v_vis, v_geom, attn_mask, _, labels in dl_ent:
             optimizer.zero_grad()
             logits = model(v_vis.to(device), v_geom.to(device), attn_mask.to(device))
-            loss = criterion(logits, labels.to(device))
-            loss.backward()
+            perdida = criterion(logits, labels.to(device))
+            perdida.backward()
             optimizer.step()
-            train_loss += loss.item() * v_vis.size(0)
-            
-        train_loss /= len(ds_ent)
-        writer.add_scalar('Loss/train', train_loss, epoch)
-            
-    model.eval()
-    predichas = []
-    with torch.no_grad():
-        for i, (v_vis, v_geom, attn_mask, lengths, _) in enumerate(dl_pru):
-            logits, attn_weights = model(v_vis.to(device), v_geom.to(device), attn_mask.to(device), return_attn=True)
-            preds = torch.argmax(logits, dim=1)
-            predichas.extend([ds_ent.clases[p] for p in preds.cpu().numpy()])
-            
-            # Log attention weights for the first batch
-            if i == 0:
-                fig, ax = plt.subplots(figsize=(10, 4))
-                sample_idx = 0
-                seq_len = lengths[sample_idx].item()
-                weights = attn_weights[sample_idx, :seq_len].cpu().numpy()
-                ax.bar(range(seq_len), weights)
-                ax.set_title(f"Pesos de Atención - Clip Validación")
-                ax.set_xlabel("Frame")
-                ax.set_ylabel("Atención")
-                writer.add_figure('Attention/val_sample', fig, global_step=0)
-                plt.close(fig)
-                
-    writer.close()
+            perdida_ent += perdida.item() * v_vis.size(0)
+            n += v_vis.size(0)
+        perdida_ent = perdida_ent / n if n else float("nan")
+
+        predichas_val, reales_val, perdida_val = predecir(dl_val)
+        f1_val = f1_macro(reales_val, predichas_val)
+        curva.append({"epoca": epoca, "loss_train": round(perdida_ent, 5),
+                      "loss_val": round(perdida_val, 5), "f1_val": round(f1_val, 5)})
+
+        if f1_val > mejor["f1"]:
+            mejor = {"f1": f1_val, "epoca": epoca,
+                     "estado": {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}}
+            sin_mejorar = 0
+        else:
+            sin_mejorar += 1
+            if sin_mejorar >= paciencia:
+                break
+
+        if verbose:
+            print(f"    época {epoca:>3}  train {perdida_ent:.4f}  val {perdida_val:.4f}  "
+                  f"F1 val {f1_val:.3f}{'  *' if mejor['epoca'] == epoca else ''}", flush=True)
+
+    # --- recién ahora el test, una sola vez, con el mejor checkpoint ---------------------------
+    if mejor["estado"] is not None:
+        model.load_state_dict(mejor["estado"])
+    predichas, _, _ = predecir(dl_pru)
+
     if guardar_en is not None:
         guardar_en.parent.mkdir(parents=True, exist_ok=True)
-        torch.save(model.state_dict(), guardar_en.with_suffix('.pt'))
-        
-    return predichas, {"sin_ver": 0}
+        torch.save(model.state_dict(), guardar_en.with_suffix(".pt"))
+
+    return predichas, {
+        "sin_ver": 0,
+        "mejor_epoca": mejor["epoca"],
+        "f1_validacion": round(mejor["f1"], 5),
+        "epocas_corridas": len(curva),
+        "clips_train_interno": len(train_interno),
+        "clips_validacion": len(validacion),
+        "caballos_train_interno": len({c["id_caballo"] for c in train_interno}),
+        "caballos_validacion": len({c["id_caballo"] for c in validacion}),
+        "caballos_test": len(caballos_test),
+        "dropout": dropout,
+        "estrategia_pesos": estrategia_pesos,
+        "curva": curva,
+    }
 
 
 # --- evaluación -----------------------------------------------------------------------------
@@ -405,12 +496,17 @@ def evaluar(modelo, particiones, etiqueta="", pesos_en=None, **kwargs):
                                   guardar_en=(pesos_en(i) if pesos_en else None), **kwargs)
         reales = [c["clase"] for c in prueba]
         sin_ver += extra.get("sin_ver", 0)
-        por_fold.append({
+        registro = {
             "fold": i, "n": len(prueba),
             "f1_macro": f1_macro(reales, predichas),
             "balanced_accuracy": balanced_accuracy(reales, predichas),
             "recall_disgustado": recall_de(reales, predichas, "Disgustado"),
-        })
+        }
+        # Lo que el modelo quiera informar de su propio entrenamiento —la mejor época, el F1 de
+        # validación, el tamaño de cada corte— viaja hasta el informe sin que `evaluar` tenga que
+        # conocerlo. Las líneas de base triviales no informan nada y el registro queda igual.
+        registro.update({k: v for k, v in extra.items() if k != "sin_ver"})
+        por_fold.append(registro)
         fuera_de_muestra.extend(
             {"clip": c["clip"], "id_caballo": c["id_caballo"], "real": c["clase"], "predicha": p}
             for c, p in zip(prueba, predichas))
@@ -556,7 +652,8 @@ def ruta_produccion():
     return rutas.carpeta("modelos") / "objetivo3" / ARCHIVO_PRODUCCION
 
 
-def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=None, verbose=True):
+def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=None,
+                        epocas=None, dropout=0.0, estrategia_pesos="inversa", verbose=True):
     """Entrena sobre TODOS los clips íntegros y persiste el modelo que va a usar la interfaz.
 
     **Su métrica no se mide acá.** Es la de validación cruzada, y no se vuelve a calcular sobre
@@ -576,19 +673,30 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
     ds = MultimodalEquineDataset(clips, vectores, indice, pose_filas)
 
     clases_lista = [c["clase"] for c in clips]
-    conteos = Counter(clases_lista)
-    pesos_clase = []
-    for c in ds.clases:
-        pesos_clase.append(len(clases_lista) / (len(ds.clases) * max(1, conteos[c])))
-    weight_tensor = torch.tensor(pesos_clase, dtype=torch.float32).to(device)
+    weight_tensor = torch.tensor(
+        pesos_de_clase(clases_lista, ds.clases, estrategia_pesos),
+        dtype=torch.float32).to(device)
 
     dl = DataLoader(ds, batch_size=32, shuffle=True, collate_fn=collate_fn)
 
-    modelo = MILFusionModel().to(device)
+    modelo = MILFusionModel(dropout=dropout).to(device)
     optimizer = torch.optim.Adam(modelo.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.CrossEntropyLoss(weight=weight_tensor)
 
-    for epoch in range(50):
+    # Cuántas épocas. Acá NO se puede hacer early stopping: el modelo de producción entrena con
+    # TODO el material, así que no queda nada afuera contra lo que frenar, y apartar un conjunto
+    # sólo para eso desperdiciaría clips en el modelo que se despliega. Se usa la época que la
+    # validación cruzada eligió en promedio, que se midió con validación interna en cada fold y
+    # es la única estimación honesta disponible de cuánto conviene entrenar este modelo con estos
+    # datos. Redondeada hacia arriba porque acá hay ~33 % más de material que en cada fold.
+    if epocas is None:
+        raise ValueError(
+            "Hay que decir cuántas épocas entrenar. Sale de la media de `mejor_epoca` de la "
+            "validación cruzada (`evaluar(...)['por_fold']`), que es la única estimación medida "
+            "de cuánto conviene entrenar. Un número elegido a mano volvería a ser el problema de "
+            "las 50 épocas fijas.")
+
+    for epoch in range(epocas):
         modelo.train()
         for v_vis, v_geom, attn_mask, _, labels in dl:
             optimizer.zero_grad()
@@ -607,12 +715,18 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
         "ejemplares": len({c["id_caballo"] for c in clips}),
         "clases": ds.clases,
         "semilla": SEMILLA,
+        "epocas": epocas,
+        "dropout": dropout,
+        "estrategia_pesos": estrategia_pesos,
+        "criterio_de_epocas": (
+            "media de la mejor época de la validación cruzada, elegida en cada fold con "
+            "validación interna por ejemplar y early stopping"),
         "huella_caracteristicas": _huella_caracteristicas(),
         "metrica_validacion_cruzada": metrica_validacion,
         "advertencia": (
             "La métrica de este modelo es la de validación cruzada, no una calculada sobre el "
-            "conjunto con el que se entrenó. No alcanza el criterio declarado de "
-            f"{CRITERIO_ACEPTACION}."),
+            "conjunto con el que se entrenó. Informar una exactitud medida sobre los datos de "
+            "entrenamiento sería informar cuánto memorizó."),
     }
     (destino.parent / ARCHIVO_PROCEDENCIA).write_text(
         json.dumps(procedencia, ensure_ascii=False, indent=1), encoding="utf-8")
