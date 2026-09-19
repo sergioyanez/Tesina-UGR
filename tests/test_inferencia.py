@@ -3,8 +3,7 @@
 Lo que se vigila acá no son excepciones. Son dos cosas que salen mal en silencio:
 
   - **que el sistema prediga cuando no debería.** El modelo consume clips íntegros; sobre un clip
-    a medio alinear devolvería una etiqueta cuya confiabilidad nadie midió. Con el 38 % de clips
-    íntegros medido, negarse es el caso frecuente y no el raro;
+    a medio alinear devolvería una etiqueta cuya confiabilidad nadie midió;
   - **que la inferencia use umbrales distintos de los del preprocesamiento evaluado.** Si divergen,
     las entradas son de otra distribución y la confiabilidad informada deja de aplicar sin que
     nada falle.
@@ -42,19 +41,58 @@ PRECISIONES = {
 }
 
 
-def modelo_falso(clase_ganadora):
-    """Un clasificador lineal de juguete que siempre gana con `clase_ganadora`."""
-    coef = np.zeros((3, 4))
-    coef[CLASES.index(clase_ganadora)] = 1.0
-    intercepto = np.zeros(3)
-    return coef, intercepto, list(CLASES), (np.zeros(4), np.ones(4))
+def modelo_falso(clase_ganadora, margen=4.0):
+    """Un MIL de juguete que siempre gana con `clase_ganadora`.
+
+    Cumple el contrato que `predecir_desde_caracteristicas` usa —`forward(..., return_attn)` y
+    `logits_por_instancia`— sin depender de pesos entrenados ni de GPU. Lo que se prueba acá es
+    el contrato de la inferencia, no lo que el modelo aprendió.
+    """
+    import torch
+    import torch.nn as nn
+
+    class MILDeJuguete(nn.Module):
+        def __init__(self):
+            super().__init__()
+            # Un parámetro aunque no se use: `predecir_desde_caracteristicas` averigua el
+            # dispositivo con `next(modelo.parameters())`, y un módulo sin parámetros lo rompe.
+            self.marca = nn.Parameter(torch.zeros(1))
+
+        def forward(self, v_vis, v_geom, attn_mask, return_attn=False):
+            lotes, largo = v_vis.shape[0], v_vis.shape[1]
+            logits = torch.zeros(lotes, len(CLASES))
+            logits[:, CLASES.index(clase_ganadora)] = margen
+            if return_attn:
+                return logits, torch.full((lotes, largo), 1.0 / largo)
+            return logits
+
+        def logits_por_instancia(self, v_vis, v_geom):
+            lotes, largo = v_vis.shape[0], v_vis.shape[1]
+            salida = torch.zeros(lotes, largo, len(CLASES))
+            salida[:, :, CLASES.index(clase_ganadora)] = margen
+            return salida
+
+    return MILDeJuguete().eval(), list(CLASES)
+
+
+def pose_falsa(cuantos):
+    """Pose mínima con `orden` renumerado a la posición en la secuencia, como espera el modelo."""
+    filas = []
+    for orden in range(cuantos):
+        for bodypart, x, y in (("left_eye", 10.0, 10.0), ("nose", 10.0, 30.0),
+                               ("left_earbase", 5.0, 5.0)):
+            filas.append({"clip": "prueba.mp4", "orden": orden, "bodypart": bodypart,
+                          "x": x, "y": y, "confianza": 0.9})
+    return filas
 
 
 print("=== negarse cuando no hay 16 frames alineados ===")
 
-for cuantos in (0, 1, 8, 15, 17):
-    r = inf.predecir_desde_caracteristicas(np.ones((cuantos, 4)), PRECISIONES,
-                                           modelo_falso("Sereno"))
+# 15 y 17 también: el criterio es EXACTAMENTE 16, igual que en `particion.tabla_clips`.
+for cuantos in (0, 1, 8, 12, 15, 17):
+    r = inf.predecir_desde_caracteristicas(
+        np.ones((cuantos, 4), dtype=np.float32), pose_falsa(cuantos),
+        PRECISIONES, modelo_falso("Sereno"))
     check(f"con {cuantos} frames se niega", not r.hay_prediccion, f"devolvió {type(r).__name__}")
     if not r.hay_prediccion:
         check(f"  y el motivo es ALINEACION_INSUFICIENTE ({cuantos})",
@@ -62,20 +100,25 @@ for cuantos in (0, 1, 8, 15, 17):
         check(f"  y dice cuántos alineó ({cuantos})", str(cuantos) in r.detalle, r.detalle)
 
 check("la negativa lleva la cuenta de frames alineados",
-      inf.predecir_desde_caracteristicas(np.ones((9, 4)), PRECISIONES,
-                                         modelo_falso("Sereno")).frames_alineados == 9)
+      inf.predecir_desde_caracteristicas(
+          np.ones((9, 4), dtype=np.float32), pose_falsa(9),
+          PRECISIONES, modelo_falso("Sereno")).frames_alineados == 9)
 
 
 print("\n=== la predicción trae SIEMPRE la confiabilidad de su clase ===")
 
-vectores = np.ones((16, 4))
-r = inf.predecir_desde_caracteristicas(vectores, PRECISIONES, modelo_falso("Disgustado"))
+vectores = np.ones((16, 4), dtype=np.float32)
+POSE = pose_falsa(16)
+r = inf.predecir_desde_caracteristicas(vectores, POSE, PRECISIONES, modelo_falso("Disgustado"))
 check("con 16 frames predice", r.hay_prediccion)
 check("la clase es la que gana el voto", r.clase == "Disgustado", r.clase)
 check("trae la precisión de esa clase", abs(r.precision - 7 / 21) < 1e-12)
 check("trae el numerador y el denominador", (r.acertadas, r.veces_que_lo_dijo) == (7, 21))
 check("trae las TRES probabilidades", set(r.probabilidades) == set(CLASES), r.probabilidades)
-check("las probabilidades suman 1", abs(sum(r.probabilidades.values()) - 1) < 1e-9)
+# 1e-6 y no 1e-9: el softmax del MIL corre en `float32` y la suma cierra en 0,99999993. La
+# tolerancia de 1e-9 venía del clasificador lineal anterior, que trabajaba en `float64`.
+check("las probabilidades suman 1", abs(sum(r.probabilidades.values()) - 1) < 1e-6,
+      (r.probabilidades, sum(r.probabilidades.values())))
 check("informa 16 frames alineados", r.frames_alineados == 16)
 
 texto = r.texto_confiabilidad
@@ -84,10 +127,12 @@ check("el texto dice que no alcanzó el criterio", "NO alcanzó el criterio" in 
 check("el texto dice que no es diagnóstico", "NO es un diagnóstico veterinario" in texto)
 
 # La clase de menor precisión es la que más importa que traiga su número.
-peor = inf.predecir_desde_caracteristicas(vectores, PRECISIONES, modelo_falso("Disgustado"))
+peor = inf.predecir_desde_caracteristicas(vectores, POSE, PRECISIONES,
+                                         modelo_falso("Disgustado"))
 check("la clase de PEOR precisión igual trae su confiabilidad", peor.precision < 0.4)
 
-otra = inf.predecir_desde_caracteristicas(vectores, PRECISIONES, modelo_falso("Interesado"))
+otra = inf.predecir_desde_caracteristicas(vectores, POSE, PRECISIONES,
+                                         modelo_falso("Interesado"))
 check("y cambia con la clase predicha", abs(otra.precision - 49 / 62) < 1e-12)
 
 
@@ -95,12 +140,14 @@ print("\n=== el contrato de las dos salidas ===")
 
 check("Prediccion.hay_prediccion es True", r.hay_prediccion is True)
 check("Negativa.hay_prediccion es False",
-      inf.predecir_desde_caracteristicas(np.ones((3, 4)), PRECISIONES,
-                                         modelo_falso("Sereno")).hay_prediccion is False)
+      inf.predecir_desde_caracteristicas(
+          np.ones((3, 4), dtype=np.float32), pose_falsa(3),
+          PRECISIONES, modelo_falso("Sereno")).hay_prediccion is False)
 check("todos los motivos tienen texto", all(inf.MOTIVOS.values()))
 check("los motivos cubren las causas distinguidas",
       set(inf.MOTIVOS) == {"SIN_VIDEO", "VIDEO_CORTO", "VIDEO_LARGO", "SIN_DETECCION",
-                           "SIN_KEYPOINTS", "ALINEACION_INSUFICIENTE"}, sorted(inf.MOTIVOS))
+                           "SIN_KEYPOINTS", "ALINEACION_INSUFICIENTE", "VENTANA_CORTA"},
+      sorted(inf.MOTIVOS))
 check("hay un motivo para el video demasiado largo, que es un caso propio",
       "VIDEO_LARGO" in inf.MOTIVOS)
 check("el límite de duración es explícito y no está enterrado en el código",

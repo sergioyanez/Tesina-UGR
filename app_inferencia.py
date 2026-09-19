@@ -67,11 +67,14 @@ with st.expander("Antes de subir: qué esperar"):
 - **Duración:** una toma de **5 a 7 segundos** (máximo {inferencia.DURACION_MAXIMA_SEG:.0f} s).
   Es lo que el modelo vio al entrenarse; sobre un video largo mediría otra cosa.
 - **Formatos:** {", ".join(FORMATOS)}.
-- **Tarda alrededor de 35 segundos** con GPU: 15 de detección y 20 de estimación de pose. La
-  clasificación en sí es instantánea; lo lento es el preprocesamiento.
-- **Es probable que el sistema no pueda responder.** Necesita 16 fotogramas donde se vean el ojo
-  y el hocico con claridad. Sobre el propio conjunto de datos del trabajo, sólo el **38 %** de las
-  tomas lo consiguió. Que se niegue es un resultado normal, no un error del video.
+- **Tarda entre 1 y 3 minutos** con GPU, y el costo crece con la duración del video: la pose se
+  estima sobre TODOS los fotogramas, que es lo que permite elegir el mejor tramo en vez de
+  muestrear a ciegas. Medido en una RTX 3070: 82 s para una toma de 7 s, 147 s para una de 13 s.
+  La clasificación en sí es instantánea; lo lento es el preprocesamiento.
+- **El sistema puede negarse a responder.** Necesita un tramo continuo del video —de hasta
+  {secuencia.VENTANA_MAXIMA_SEG:.0f} s— donde el ojo y el hocico se midan con claridad
+  en 16 fotogramas. Sobre el propio conjunto de datos del trabajo lo consigue el **91 %** de las
+  tomas. Que se niegue es un resultado normal, no un error del video.
 """
     )
 
@@ -104,7 +107,7 @@ if archivo is not None:
             st.warning(f"### No se puede clasificar esta toma\n\n{resultado.detalle}")
             st.markdown(
                 "**Esto es un resultado esperable, no una falla.** El modelo sólo acepta tomas "
-                "donde pueda alinear los 16 fotogramas por el eje ojo-hocico; si no puede, "
+                "donde pueda medir el ojo y el hocico durante un tramo continuo; si no puede, "
                 "prefiere no responder antes que dar una etiqueta cuya confiabilidad nadie midió."
             )
             if resultado.frames_alineados:

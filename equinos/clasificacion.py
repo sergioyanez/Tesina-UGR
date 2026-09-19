@@ -177,6 +177,32 @@ class MultimodalEquineDataset(Dataset):
             self.pose_por_clip[f['clip']][int(f['orden'])].append(f)
         self.clases = ["Disgustado", "Interesado", "Sereno"]
         self.clase_a_idx = {c: i for i, c in enumerate(self.clases)}
+        self._verificar_ordenes(clips)
+
+    # `orden` significa POSICIÓN EN LA SECUENCIA (0..15), no índice de frame del video. La
+    # distinción cuesta un bug que no falla: si se pasa una pose indexada por frame de video,
+    # `pose_por_clip[clip][orden]` devuelve la geometría de los frames 0..15 mientras el canal
+    # visual usa los que la ventana eligió, y el modelo entrena con los dos canales mirando
+    # momentos distintos del clip. Ya pasó una vez; por eso se verifica en vez de confiar.
+    def _verificar_ordenes(self, clips):
+        from equinos import secuencia
+
+        sospechosos = []
+        for c in clips[:64]:                     # una muestra alcanza: el error es sistemático
+            ordenes = self.pose_por_clip.get(c["clip"])
+            if not ordenes:
+                continue
+            if max(ordenes) >= secuencia.FRAMES_POR_CLIP:
+                sospechosos.append((c["clip"], max(ordenes)))
+        if sospechosos:
+            clip, maximo = sospechosos[0]
+            raise ValueError(
+                f"La pose está indexada por frame de video y no por posición en la secuencia: "
+                f"{clip} llega a orden {maximo} y la secuencia tiene "
+                f"{secuencia.FRAMES_POR_CLIP} posiciones ({len(sospechosos)} clips así en la "
+                f"muestra). Hay que pasar `pose_seleccionada_v2.csv`, que produce "
+                f"`equinos.dataset`, y no `pose_todos_los_frames.csv`, que es la salida cruda de "
+                f"la pasada de GPU.")
 
     def __len__(self):
         return len(self.clips)

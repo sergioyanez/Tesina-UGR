@@ -42,8 +42,15 @@ DIMENSIONES = 512
 MEDIA_IMAGENET = (0.485, 0.456, 0.406)
 DESVIO_IMAGENET = (0.229, 0.224, 0.225)
 
-ARCHIVO_CACHE = "caracteristicas_backbone.npz"
-ARCHIVO_HUELLA = "caracteristicas_backbone.json"
+# De dónde salen los recortes y su índice. Van juntos a propósito: leer el CSV de una corrida y
+# los JPEG de otra produce vectores de frames que no son los que el CSV dice, sin que nada falle.
+# `dataset_frames_alineados.csv` y `frames_alineados/` son los de la corrida vieja —muestreo de 16
+# posiciones fijas— y se conservan para poder reproducir sus números.
+ARCHIVO_FRAMES = "dataset_frames_alineados_v2.csv"
+CARPETA_FRAMES = "frames_alineados_v2"
+
+ARCHIVO_CACHE = "caracteristicas_backbone_v2.npz"
+ARCHIVO_HUELLA = "caracteristicas_backbone_v2.json"
 
 ARCHIVO_AUMENTADAS = "caracteristicas_aumentadas.npz"
 ARCHIVO_AUMENTADAS_HUELLA = "caracteristicas_aumentadas.json"
@@ -67,7 +74,7 @@ def huella(clips: list[dict]) -> str:
     podría ser idéntico. Por eso se guarda además la fecha de modificación del CSV del dataset,
     que sí se reescribe cuando se re-derivan los recortes.
     """
-    csv_dataset = rutas.carpeta("resultados") / "dataset_frames_alineados.csv"
+    csv_dataset = rutas.carpeta("resultados") / ARCHIVO_FRAMES
     partes = [BACKBONE, PESOS, str(DIMENSIONES),
               str(int(csv_dataset.stat().st_mtime)) if csv_dataset.exists() else "sin-csv"]
     partes += [c["clip"] for c in clips]
@@ -127,11 +134,11 @@ def extraer(clips: list[dict] | None = None, lote: int = 8, verbose: bool = True
 
     dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     extractor = _cargar_backbone(dispositivo)
-    base = rutas.dir_trabajo("frames_alineados")
+    base = rutas.dir_trabajo(CARPETA_FRAMES)
 
     # Rutas de los frames de cada clip, en el orden en que el modelo los va a consumir.
     import csv as _csv
-    ruta_csv = rutas.carpeta("resultados") / "dataset_frames_alineados.csv"
+    ruta_csv = rutas.carpeta("resultados") / ARCHIVO_FRAMES
     with ruta_csv.open(encoding="utf-8", errors="replace") as archivo:
         filas = [f for f in _csv.DictReader(archivo)]
     por_clip: dict[str, list] = {}
@@ -213,11 +220,11 @@ def extraer_aumentadas(vistas: int = 20, semilla: int = 42, clips=None, verbose:
 
     dispositivo = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     extractor = _cargar_backbone(dispositivo)
-    base = rutas.dir_trabajo("frames_alineados")
+    base = rutas.dir_trabajo(CARPETA_FRAMES)
     generador = torch.Generator().manual_seed(semilla)
 
     import csv as _csv
-    with (rutas.carpeta("resultados") / "dataset_frames_alineados.csv").open(
+    with (rutas.carpeta("resultados") / ARCHIVO_FRAMES).open(
             encoding="utf-8", errors="replace") as archivo:
         filas = list(_csv.DictReader(archivo))
     por_clip: dict[str, list] = {}

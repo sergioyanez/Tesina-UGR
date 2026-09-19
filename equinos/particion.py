@@ -43,11 +43,17 @@ ARCHIVO_PARTICION = "particion_clips.json"
 ORIGENES_DETECTADOS = ("keypoints",)
 
 
-def _leer_frames() -> list[dict]:
-    ruta = rutas.carpeta("resultados") / "dataset_frames_alineados.csv"
+# El dataset vigente. `dataset_frames_alineados.csv` es el de la corrida vieja —muestreo de 16
+# posiciones fijas— y se conserva para poder reproducir sus números; el v2 sale de la selección
+# por ventana de `equinos.secuencia`. Cuál se lee es explícito y no depende de qué archivo exista.
+ARCHIVO_FRAMES = "dataset_frames_alineados_v2.csv"
+
+
+def _leer_frames(archivo: str | None = None) -> list[dict]:
+    ruta = rutas.carpeta("resultados") / (archivo or ARCHIVO_FRAMES)
     if not ruta.exists():
         raise FileNotFoundError(
-            f"No existe {ruta}. La produce la etapa roi_normalizacion.")
+            f"No existe {ruta}. La produce `python3 -m equinos.dataset`.")
     with ruta.open(encoding="utf-8", errors="replace") as archivo:
         return list(csv.DictReader(archivo))
 
@@ -56,7 +62,7 @@ def _es_si(valor) -> bool:
     return str(valor).strip().lower() in ("true", "1", "sí", "si")
 
 
-def tabla_clips(solo_detectados: bool = False) -> list[dict]:
+def tabla_clips(solo_detectados: bool = False, archivo: str | None = None) -> list[dict]:
     """Un registro por clip íntegro, con lo que hace falta para particionar y evaluar.
 
     `solo_detectados` deja únicamente los clips cuyos 16 frames se alinearon por detección propia,
@@ -65,13 +71,18 @@ def tabla_clips(solo_detectados: bool = False) -> list[dict]:
     posiciones estimadas.
     """
     por_clip: dict[str, list[dict]] = defaultdict(list)
-    for fila in _leer_frames():
+    for fila in _leer_frames(archivo):
         por_clip[fila["clip"]].append(fila)
 
     clips = []
     for clip, filas in por_clip.items():
         alineados = [f for f in filas if _es_si(f["alineado"])]
-        if not (12 <= len(alineados) <= FRAMES_POR_CLIP):
+        # Los 16, no "al menos 12". El 12..16 que estuvo vigente admitía clips donde hasta 4
+        # frames eran recortes de CAJA sin alinear, y `caracteristicas.extraer` no distingue: el
+        # backbone comía dos geometrías dentro de la misma secuencia. Con la selección por
+        # ventana dejó de haber disyuntiva —los 16 salen de mediciones reales—, así que se vuelve
+        # al criterio que el docstring y `tests/test_particion.py` siempre declararon.
+        if len(alineados) != FRAMES_POR_CLIP or len(filas) != FRAMES_POR_CLIP:
             continue
         origenes = {f["origen_alineacion"] for f in alineados}
         if solo_detectados and not origenes <= set(ORIGENES_DETECTADOS):

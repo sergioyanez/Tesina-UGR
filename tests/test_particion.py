@@ -140,14 +140,20 @@ agregar("completo", "Sereno", "01", 16)
 agregar("casi", "Sereno", "02", 15)                      # 15 de 16: NO entra
 agregar("interpolado", "Disgustado", "03", 16, "interpolada")
 agregar("manual", "Disgustado", "04", 16, "manual")
+agregar("corto", "Sereno", "05", 12)                     # 12 de 16: tampoco entra
 
-pa._leer_frames = lambda: FRAMES                          # noqa: SLF001
+pa._leer_frames = lambda archivo=None: FRAMES              # noqa: SLF001
 
 todos = pa.tabla_clips()
 check("un clip con los 16 frames alineados entra",
       "completo" in [c["clip"] for c in todos])
 check("un clip con 15 de 16 NO entra — mezclaría dos geometrías en una muestra",
       "casi" not in [c["clip"] for c in todos], [c["clip"] for c in todos])
+# El criterio estuvo en `12 <= n <= 16` por un tiempo, y eso dejaba entrar clips con hasta 4
+# recortes de CAJA sin alinear. `caracteristicas.extraer` no filtra por `alineado`, así que el
+# backbone comía dos geometrías dentro de la misma secuencia sin que nada lo marcara.
+check("un clip con 12 de 16 tampoco entra",
+      "corto" not in [c["clip"] for c in todos], [c["clip"] for c in todos])
 check("los clips rescatados por interpolación entran", "interpolado" in [c["clip"] for c in todos])
 
 detectados = pa.tabla_clips(solo_detectados=True)

@@ -84,6 +84,7 @@ MOTIVOS = {
     "SIN_KEYPOINTS": "Se encontró al animal, pero no sus keypoints faciales con confianza "
                      "suficiente.",
     "ALINEACION_INSUFICIENTE": "No se pudieron alinear los 16 fotogramas que el modelo necesita.",
+    "VENTANA_CORTA": "No hay un tramo continuo del video con la cara medida el tiempo suficiente.",
 }
 
 
@@ -144,7 +145,10 @@ def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
     import torch
     import torch.nn.functional as F
 
-    if not (12 <= len(vectores) <= FRAMES_POR_CLIP):
+    # Exactamente 16, no "al menos 12". Es el mismo criterio que `particion.tabla_clips` aplica
+    # al conjunto de entrenamiento: una secuencia más corta entra igual al modelo —el padding de
+    # `collate_fn` la acepta— y devuelve una etiqueta cuya confiabilidad nadie midió.
+    if len(vectores) != FRAMES_POR_CLIP:
         return Negativa("ALINEACION_INSUFICIENTE",
                         MOTIVOS["ALINEACION_INSUFICIENTE"]
                         + f" Se alinearon {len(vectores)} de {FRAMES_POR_CLIP}.",
@@ -202,37 +206,43 @@ def _sin_progreso(etapa: str, detalle: str = "") -> None:
 def preparar_clip(ruta_video, progreso=None, parametros=None):
     """Video → 16 recortes alineados, o una `Negativa` con el motivo.
 
-    Reutiliza el detector, el modelo de pose, la selección de keypoints y el encuadre tal como
-    están declarados en la etapa 02. Cuesta ~35 s por clip en GPU: 15 del detector y 20 de la
-    pose. `progreso(etapa, detalle)` se llama al entrar en cada una.
+    **No decide nada por su cuenta.** Qué frames entran y cómo se alinean lo resuelve
+    `equinos.alineado.preparar_secuencia`, que es exactamente la función que usa la generación del
+    dataset. Acá sólo queda el pegamento imperativo: abrir el video, correr la pose, leer los
+    frames elegidos y aplicar las transformadas.
+
+    Antes esto era una segunda implementación del preprocesamiento, y había divergido: muestreaba
+    16 posiciones fijas sin mirar la validez, gateaba la pose detrás de YOLO, y no tenía ni el
+    rescate por interpolación ni el recorte por caja que la etapa 02 sí aplicaba. El efecto era
+    una interfaz más estricta que el pipeline que fabricó su conjunto de entrenamiento: rechazaba
+    videos que el dataset habría aceptado, informando una confiabilidad medida sobre otra
+    distribución. Nada de eso fallaba.
+
+    Devuelve `(recortes, filas_pose)` donde `filas_pose` ya viene con `orden` renumerado a la
+    posición en la secuencia, que es lo que `MultimodalEquineDataset` espera.
     """
     import cv2
-    import numpy as np
+
+    from equinos import alineado, secuencia
 
     avisar = progreso or _sin_progreso
     p = parametros or parametros_etapa02()
-    geo_funcs = geometria_etapa02()
-    campo, ancho = campo_de_vision(p)
-
-    from equinos import encuadre
-
-    destino = encuadre.destino(campo, ancho)
 
     avisar("leer", "abriendo el video")
     captura = cv2.VideoCapture(str(ruta_video))
     total = int(captura.get(cv2.CAP_PROP_FRAME_COUNT))
-    if total <= 0:
-        captura.release()
-        return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
-    if total < 12:
-        captura.release()
-        return Negativa("VIDEO_CORTO",
-                        MOTIVOS["VIDEO_CORTO"] + f" Tiene {total} fotogramas (mínimo 12).", 0)
-
     fps = captura.get(cv2.CAP_PROP_FPS) or 30.0
+    captura.release()
+
+    if total <= 0:
+        return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
+    if total < secuencia.MINIMO_FRAMES:
+        return Negativa("VIDEO_CORTO",
+                        MOTIVOS["VIDEO_CORTO"] + f" Tiene {total} fotogramas (mínimo "
+                        f"{secuencia.MINIMO_FRAMES}).", 0)
+
     duracion = total / fps if fps > 0 else 0.0
     if duracion > DURACION_MAXIMA_SEG:
-        captura.release()
         return Negativa(
             "VIDEO_LARGO",
             MOTIVOS["VIDEO_LARGO"]
@@ -240,85 +250,55 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
             "Recortá el momento de interés a una toma de 5 a 7 segundos.",
             0)
 
-    num_a_extraer = min(total, FRAMES_POR_CLIP)
-    indices = np.linspace(0, total - 1, num_a_extraer).astype(int)
-    frames = []
-    for i in indices:
-        captura.set(cv2.CAP_PROP_POS_FRAMES, int(i))
-        ok, imagen = captura.read()
-        frames.append(imagen if ok else None)
-    captura.release()
-    if all(f is None for f in frames):
-        return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
-
-    avisar("detectar", f"buscando al equino en {FRAMES_POR_CLIP} fotogramas (~15 s)")
-    cajas = _detectar(frames, p)
-    if not any(c is not None for c in cajas):
+    # La pose corre sobre el video ENTERO y se conserva entera. Antes se la gateaba detrás de una
+    # detección de YOLO sobre los 16 frames muestreados: si el detector fallaba en esos 16, el
+    # video se rechazaba sin haberle dado a DeepLabCut —que trae su propio detector— la
+    # oportunidad de encontrar la cara. La etapa 02 nunca hizo ese gateo.
+    avisar("pose", f"estimando keypoints en {total} fotogramas")
+    filas_pose = _pose_completa(ruta_video, total, p)
+    if not filas_pose:
         return Negativa("SIN_DETECCION", MOTIVOS["SIN_DETECCION"], 0)
 
-    avisar("pose", "estimando keypoints faciales (~20 s)")
-    pares, filas_pose = _keypoints(ruta_video, frames, indices, p)
-    validos = sum(1 for par in pares if par is not None)
-    if validos == 0:
-        return Negativa("SIN_KEYPOINTS", MOTIVOS["SIN_KEYPOINTS"], 0)
+    avisar("alinear", "eligiendo la ventana y alineando")
+    prep = alineado.preparar_secuencia(filas_pose, total=total, fps=fps, p=p,
+                                       minimo=secuencia.FRAMES_POR_CLIP)
+    if not prep.hay_secuencia:
+        return Negativa(
+            prep.motivo,
+            MOTIVOS.get(prep.motivo, MOTIVOS["ALINEACION_INSUFICIENTE"])
+            + f" Se midió el par ojo-hocico en {prep.validos} de {total} fotogramas, pero no hay "
+            f"ninguna ventana con {secuencia.FRAMES_POR_CLIP} mediciones seguidas dentro de "
+            f"{secuencia.VENTANA_MAXIMA_SEG:.0f} s.",
+            prep.validos)
 
-    avisar("alinear", "recortando y alineando")
-    recortes = []
-    for imagen, par in zip(frames, pares):
-        if imagen is None or par is None:
-            continue
-        matriz = geo_funcs["similitud_desde_dos_puntos"](
-            par[0], par[1], destino["dest_ojo"], destino["dest_hocico"])
-        if matriz is None:
-            continue
-        recortes.append(cv2.warpAffine(imagen, matriz, (destino["ancho"], destino["alto"]),
-                                       borderMode=cv2.BORDER_REPLICATE))
+    por_orden: dict[int, list] = {}
+    for fila in filas_pose:
+        por_orden.setdefault(int(fila["orden"]), []).append(fila)
 
-    if not (12 <= len(recortes) <= FRAMES_POR_CLIP):
+    captura = cv2.VideoCapture(str(ruta_video))
+    recortes, pose_secuencia = [], []
+    for posicion, (orden, matriz) in enumerate(zip(prep.ordenes, prep.matrices)):
+        captura.set(cv2.CAP_PROP_POS_FRAMES, int(orden))
+        ok, imagen = captura.read()
+        if not ok or imagen is None:
+            continue
+        recortes.append(alineado.recortar(imagen, matriz, prep.destino))
+        # `orden` renumerado a la posición en la secuencia: es lo que el modelo espera, y pasarle
+        # el índice del frame del video hace que el canal geométrico lea otros fotogramas.
+        pose_secuencia.extend(dict(f, orden=posicion) for f in por_orden.get(orden, ()))
+    captura.release()
+
+    if len(recortes) != secuencia.FRAMES_POR_CLIP:
         return Negativa(
             "ALINEACION_INSUFICIENTE",
-            MOTIVOS["ALINEACION_INSUFICIENTE"] + f" Se alinearon {len(recortes)} de "
-            f"{FRAMES_POR_CLIP}. Es el resultado más frecuente: sobre el conjunto propio sólo "
-            "el 38 % de los clips llegó a los 16.",
+            MOTIVOS["ALINEACION_INSUFICIENTE"]
+            + f" Se pudieron leer {len(recortes)} de {secuencia.FRAMES_POR_CLIP} fotogramas.",
             len(recortes))
-    return recortes, filas_pose
+    return recortes, pose_secuencia
 
 
-def _detectar(frames, parametros):
-    """Detector de equinos, con el mismo umbral que declara la etapa 02."""
-    import numpy as np
-    from ultralytics import YOLO
-
-    detector = YOLO("yolo11x.pt")
-    clase_equino = next((i for i, n in detector.names.items()
-                         if n.lower() in ("horse", "caballo")), None)
-    if clase_equino is None:
-        raise RuntimeError("El detector no expone una clase de equino.")
-
-    cajas = []
-    for imagen in frames:
-        if imagen is None:
-            cajas.append(None)
-            continue
-        resultado = detector.predict(imagen, classes=[clase_equino],
-                                     conf=parametros["CONF_MINIMA_DETECCION"], verbose=False)[0]
-        detecciones = resultado.boxes
-        if detecciones is None or len(detecciones) == 0:
-            cajas.append(None)
-            continue
-        confianzas = detecciones.conf.cpu().numpy()
-        cajas.append(tuple(detecciones.xyxy.cpu().numpy()[int(np.argmax(confianzas))].tolist()))
-    return cajas
-
-
-def _keypoints(ruta_video, frames, indices, parametros):
-    """Par ojo-hocico por frame, con el modelo y los criterios de la etapa 02.
-
-    Devuelve `None` en los frames donde el par no supera el umbral de confianza. NO rellena ni
-    interpola: el relleno temporal tiene un tope validado y relajarlo acá para que entren más
-    videos sería inventar posiciones que nadie midió, justo cuando el resultado se le muestra a
-    una persona.
-    """
+def _pose_completa(ruta_video, total, parametros):
+    """La pose de TODOS los frames del video, en formato largo. Una sola pasada de DeepLabCut."""
     import contextlib
     import io
 
@@ -327,7 +307,7 @@ def _keypoints(ruta_video, frames, indices, parametros):
     from equinos import pose as sel_pose
 
     ruta_video = str(ruta_video)
-    with contextlib.redirect_stdout(io.StringIO()):
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
         resultado = deeplabcut.video_inference_superanimal(
             [ruta_video],
             superanimal_name="superanimal_quadruped",
@@ -337,31 +317,10 @@ def _keypoints(ruta_video, frames, indices, parametros):
     _limpiar_auxiliares(ruta_video)
 
     if not isinstance(resultado, dict) or not resultado:
-        return [None] * len(indices), []
+        return []
     tabla = next(iter(resultado.values()))
-
-    # A formato largo con `equinos.pose`, que es donde vive la decisión de qué individuo seguir.
-    filas = sel_pose.a_formato_largo(
-        tabla, list(enumerate(indices)), Path(ruta_video).name)
-
-    if not filas:
-        return [None] * len(indices), []
-
-    pares = sel_pose.seleccionar_par(filas, bodypart_hocico=parametros["BODYPART_HOCICO"])
-    umbral = parametros["CONF_MINIMA_KEYPOINT"]
-    por_orden = {int(p["orden"]): p for p in pares}
-
-    salida = []
-    for orden in range(len(indices)):
-        p = por_orden.get(orden)
-        if (p is None or p.get("x_ojo") in (None, "") or p.get("x_hocico") in (None, "")
-                or float(p.get("conf_ojo") or 0) < umbral
-                or float(p.get("conf_hocico") or 0) < umbral):
-            salida.append(None)
-            continue
-        salida.append(((float(p["x_ojo"]), float(p["y_ojo"])),
-                       (float(p["x_hocico"]), float(p["y_hocico"]))))
-    return salida, filas
+    return sel_pose.a_formato_largo(
+        tabla, list(enumerate(range(total))), Path(ruta_video).name)
 
 
 def _limpiar_auxiliares(ruta_video):
