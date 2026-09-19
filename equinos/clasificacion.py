@@ -589,7 +589,11 @@ def ruta_pesos(fold):
 
 # --- confiabilidad que se le muestra al usuario ----------------------------------------------
 
-ARCHIVO_EVALUACION = "objetivo3_evaluacion.json"
+# La evaluación VIGENTE, de la que sale la confiabilidad que ve el usuario. `objetivo3_evaluacion.json`
+# es la histórica —modelo de promedio, muestreo de 16 posiciones fijas, 153 clips— y se conserva
+# para poder reproducir sus números, pero NO describe al modelo desplegado y por eso no se lee.
+ARCHIVO_EVALUACION = "objetivo3_evaluacion_v2.json"
+ARCHIVO_EVALUACION_HISTORICO = "objetivo3_evaluacion.json"
 
 
 def precision_por_clase(predicciones=None):
@@ -633,23 +637,47 @@ def texto_de_confiabilidad(clase, precisiones=None):
     """
     precisiones = precisiones or precision_por_clase()
     p = precisiones[clase]
+    resumen = metricas_globales()
     return (
         f"Cuando este modelo predijo «{clase}», acertó {p['acertadas']} de "
         f"{p['veces_que_lo_dijo']} veces ({p['precision']:.0%}) en validación cruzada.\n"
-        f"El modelo alcanzó el criterio declarado para considerarse útil "
-        f"(F1 macro 0,754 contra 0,691 exigido).\n"
+        f"F1 macro {resumen['f1_macro']:.3f} sobre {resumen['clips']} clips de "
+        f"{resumen['ejemplares']} caballos, medido fuera de muestra.\n"
         f"Este resultado NO es un diagnóstico veterinario."
     )
 
 
+def metricas_globales(ruta=None) -> dict:
+    """Las métricas de la evaluación vigente, leídas del archivo. **Nunca escritas a mano.**
+
+    El texto que acompañaba a cada predicción tenía el F1 escrito en el código: `0,754`, que era
+    el número de OTRO modelo medido en OTRA corrida sobre otro conjunto. La interfaz informaba
+    una métrica que no correspondía a nada de lo que estaba ejecutando, y no había forma de que
+    eso fallara. Leerlo del mismo archivo del que salen las precisiones por clase es lo que
+    garantiza que los dos números hablen del mismo modelo.
+    """
+    import json
+
+    ruta = ruta or (rutas.carpeta("resultados") / ARCHIVO_EVALUACION)
+    if not ruta.exists():
+        raise FileNotFoundError(
+            f"No existe {ruta}. La produce la evaluación del objetivo 3; sin ella no hay de "
+            "dónde sacar las métricas que la interfaz tiene que mostrar.")
+    datos = json.loads(ruta.read_text(encoding="utf-8"))
+    return datos["resumen"]
+
+
 # --- modelo de producción -------------------------------------------------------------------
 
-ARCHIVO_PRODUCCION = "un_frame_produccion.pt"
-ARCHIVO_PROCEDENCIA = "un_frame_produccion.json"
+# El nombre `un_frame_*` venía del modelo de un frame con voto y quedó heredado cuando el MIL
+# pasó a producción: los pesos que la interfaz cargaba se llamaban como otro modelo. Se corrige
+# acá, porque un artefacto mal nombrado es una pista falsa el día que algo no cierre.
+ARCHIVO_PRODUCCION = "mil_multimodal_produccion.pt"
+ARCHIVO_PROCEDENCIA = "mil_multimodal_produccion.json"
 
 
 def ruta_produccion():
-    return rutas.carpeta("modelos") / "objetivo3" / ARCHIVO_PRODUCCION
+    return rutas.carpeta("modelos") / "objetivo3_v2" / ARCHIVO_PRODUCCION
 
 
 def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=None,

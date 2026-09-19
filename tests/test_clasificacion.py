@@ -118,7 +118,11 @@ print("\n=== texto de confiabilidad: los tres hechos que no pueden faltar ===")
 texto = cl.texto_de_confiabilidad("Disgustado", pr)
 check("dice cuántas veces acertó de cuántas", "7 de 21" in texto, texto)
 check("dice el porcentaje", "33%" in texto, texto)
-check("dice que NO alcanzó el criterio declarado", "NO alcanzó el criterio" in texto)
+# El texto traía `F1 macro 0,754 contra 0,691 exigido` escrito a mano: el número de otro modelo
+# medido en otra corrida. Ahora sale de `metricas_globales()`, del mismo archivo del que salen las
+# precisiones por clase, así que lo que se prueba es que informe el F1 del modelo vigente.
+check("informa el F1 del modelo que está corriendo",
+      f"{cl.metricas_globales()['f1_macro']:.3f}" in texto, texto)
 check("dice que no es un diagnóstico veterinario", "NO es un diagnóstico veterinario" in texto)
 check("nombra la clase predicha", "Disgustado" in texto)
 

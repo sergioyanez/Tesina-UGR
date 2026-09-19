@@ -123,7 +123,9 @@ check("informa 16 frames alineados", r.frames_alineados == 16)
 
 texto = r.texto_confiabilidad
 check("el texto dice cuántas veces acertó", "7 de 21" in texto, texto)
-check("el texto dice que no alcanzó el criterio", "NO alcanzó el criterio" in texto)
+from equinos import clasificacion as _cl  # noqa: E402
+check("el texto informa el F1 del modelo que está corriendo",
+      f"{_cl.metricas_globales()['f1_macro']:.3f}" in texto, texto)
 check("el texto dice que no es diagnóstico", "NO es un diagnóstico veterinario" in texto)
 
 # La clase de menor precisión es la que más importa que traiga su número.

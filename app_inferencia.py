@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from equinos import clasificacion, inferencia, rutas
+from equinos import clasificacion, inferencia, rutas, secuencia
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
@@ -29,11 +29,13 @@ COLOR_POR_CLASE = {"Sereno": "#2a9d8f", "Interesado": "#e9c46a", "Disgustado": "
 CLASES = list(clasificacion.CLASES)
 COLORES_CLASE = [COLOR_POR_CLASE[c] for c in CLASES]
 
+# La etapa `detectar` desapareció: la inferencia ya no corre YOLO sobre 16 fotogramas muestreados
+# antes de la pose. Ese gateo rechazaba videos donde el detector propio de DeepLabCut sí habría
+# encontrado la cara, y la generación del dataset nunca lo hizo.
 ETAPAS = {
     "leer": "Leyendo el video",
-    "detectar": "Buscando al equino (~15 s)",
-    "pose": "Estimando keypoints faciales (~20 s)",
-    "alinear": "Recortando y alineando la cara",
+    "pose": "Estimando keypoints en todos los fotogramas (es lo que más tarda)",
+    "alinear": "Eligiendo el mejor tramo y alineando la cara",
     "caracteristicas": "Extrayendo características",
     "predecir": "Clasificando",
 }
@@ -47,13 +49,29 @@ def _precisiones():
     return clasificacion.precision_por_clase()
 
 
+@st.cache_resource
+def _metricas():
+    """Las métricas del modelo que esta app está ejecutando. **Ningún número escrito a mano.**
+
+    La versión anterior tenía `F1 macro 0,754 sobre 0,691 exigido` en el texto, y ese 0,754 era
+    de otro modelo medido en otra máquina sobre otro conjunto: la pantalla informaba una métrica
+    que no correspondía a nada de lo que estaba corriendo. Leerlo del mismo archivo del que salen
+    las precisiones por clase es lo que garantiza que hablen del mismo modelo.
+    """
+    rutas.inicializar(verbose=False)
+    return clasificacion.metricas_globales()
+
+
 st.title("Detección de expresiones faciales en equinos")
 
 # --- Alcance, visible sin buscarlo (tarea 5.5) -------------------------------------------------
+_m = _metricas()
 st.error(
     "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
-    "trabajo de tesina. El modelo **alcanzó el criterio que se declaró para considerarlo "
-    "útil** (F1 macro 0,754 sobre 0,691 exigido)."
+    f"trabajo de tesina. El modelo acierta **{_m['accuracy']:.0%} de las veces** "
+    f"(F1 macro {_m['f1_macro']:.3f}), medido sobre {_m['clips']} tomas de "
+    f"{_m['ejemplares']} caballos que no usó para entrenarse, y su acierto depende mucho de la "
+    "clase: consultá el detalle que acompaña a cada resultado."
 )
 
 st.markdown(
