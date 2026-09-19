@@ -1,7 +1,7 @@
 # Revisión técnica y reconstrucción del pipeline MIL
 
 **Fecha:** 18 de septiembre de 2026
-**Rama:** `feat/arquitectura-multimodal-mil`
+**Rama:** `feat2/otro-camino`
 **Arquitectura:** Multimodal MIL (`MILFusionModel`), sin cambios estructurales
 
 ---
@@ -380,15 +380,54 @@ pasa de entrenar con 114 clips a hacerlo con 84.
 
 ---
 
-## 7. Hallazgo: el canal geométrico no aporta
+## 7. Ablación del canal geométrico: dos experimentos que parecen contradecirse
 
-El bug descrito en 2.7 funcionó como una ablación accidental. Con el canal geométrico leyendo
+### Primer experimento: la ablación accidental
+
+El bug descrito en 2.7 funcionó como una ablación no planificada. Con el canal geométrico leyendo
 fotogramas equivocados el F1 fue **0,730**; corregido y con la misma configuración, **0,734**.
 Cuatro milésimas, muy dentro del ±0,07 entre folds.
 
-Es decir: **el componente multimodal del MIL no está aportando señal medible**. El modelo funciona
-esencialmente con el canal visual. No se modificó la arquitectura porque excede lo pedido, pero es
-la primera pregunta que conviene atacar.
+La lectura inmediata fue que el componente multimodal no aportaba señal medible, y sobre esa
+lectura se recomendó retirarlo.
+
+### Segundo experimento: retirarlo de verdad
+
+Se implementó el MIL visual puro —sin `geom_mlp`, con la atención y el clasificador operando
+directamente sobre las 512 dimensiones del backbone— y se volvieron a elegir dropout y estrategia
+de pesos con validación interna, porque la red había cambiado y la elección anterior no aplicaba.
+
+| Modelo | F1 macro | Accuracy | Precision `Disgustado` | `Sereno` → `Disgustado` |
+|---|---:|---:|---:|---:|
+| **Multimodal** | **0,740** | **0,744** | **0,740** | **20 (14,5 %)** |
+| Visual puro | 0,686 | 0,702 | 0,612 | 32 (23,2 %) |
+
+En validación interna, que es la métrica con la que se decide: 0,686 contra 0,712 del multimodal.
+
+### Por qué no se contradicen
+
+**Los dos experimentos miden preguntas distintas.**
+
+El primero mide *¿importa que la geometría sea la correcta?* Con el bug, `geom_mlp` **seguía
+existiendo** y aportando sus 128 dimensiones a la fusión sobre la que opera la atención; lo que
+cambiaba era de qué momento del clip venían esas coordenadas. Respuesta: no demasiado.
+
+El segundo mide *¿importa el canal?* Respuesta: **sí**. Retirarlo cuesta 0,054 de F1, derrumba la
+precisión de `Disgustado` de 74 % a 61 % y devuelve la confusión `Sereno → Disgustado` al 23,2 %,
+exactamente donde estaba antes de esta revisión.
+
+Confundir las dos preguntas llevó a recomendar el retiro del canal. **La medición lo refutó y el
+canal se conservó.** Queda documentado como ejemplo de por qué una ablación tiene que *quitar* la
+parte y no corromperle la entrada: una entrada corrupta sigue ocupando capacidad y sigue
+participando del aprendizaje.
+
+### Qué sí se puede afirmar
+
+Que el canal geométrico aporta a la discriminación `Sereno` / `Disgustado`, que es justamente
+donde el modelo más falla. Lo que **no** se puede afirmar con estos experimentos es *cuánto* de
+esa contribución es información geométrica y cuánto es simplemente capacidad adicional: la
+diferencia entre las dos hipótesis requeriría comparar contra un canal de ruido de la misma
+dimensión, que no se corrió.
 
 ---
 
@@ -456,14 +495,16 @@ la comparación no es válida y no debe presentarse como tal.
 **6. ¿Se redujo la confusión `Sereno` → `Disgustado`?** De 23,4 % a 14,5 %. Sigue siendo el error
 dominante: 20 de los 25 falsos `Disgustado`.
 
-**7. ¿Cuál es el cuello de botella ahora?** El canal geométrico no aporta (sección 7), así que todo
-el peso lo lleva un ResNet18 congelado con pesos de ImageNet. Con 359 clips y 133 caballos el
-conjunto ya es cuatro veces el que justificó congelarlo.
+**7. ¿Cuál es el cuello de botella ahora?** La confusión `Sereno` → `Disgustado`, que concentra 20
+de los 25 falsos `Disgustado`. Y por detrás, el tamaño de la muestra: 133 caballos. El canal
+geométrico sí aporta (sección 7), así que la vía más prometedora es enriquecerlo antes que tocar
+el backbone.
 
 **8. ¿Qué haría después?**
 
-- **Revisar el canal geométrico antes que nada.** Tres keypoints normalizados contra la escala
-  ojo-hocico pueden ser demasiado poco; la pose de superanimal_quadruped expone 39.
+- **Enriquecer el canal geométrico antes que nada.** La ablación de la sección 7 mostró que aporta,
+  y hoy usa tres keypoints —ojo, hocico, oreja— normalizados contra la escala ojo-hocico, de los 39
+  que expone `superanimal_quadruped`. Es la palanca con mejor relación entre evidencia y costo.
 - **Descongelar el backbone,** o hacer fine-tuning de sus últimas capas. Con 359 clips es
   defendible; con 141 no lo era.
 - **Validación cruzada anidada en vez de corte interno simple.** Con 7 caballos en validación
