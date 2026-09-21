@@ -44,7 +44,7 @@ OREJAS = ("left_earbase", "left_earend", "right_earbase", "right_earend")
 
 # Confianza mínima para creerle a un keypoint de oreja. Mismo umbral que usa la etapa 02 para el
 # par facial: no hay motivo para exigirle más ni menos a un keypoint que al otro.
-CONF_MINIMA_KEYPOINT = 0.50
+CONF_MINIMA_KEYPOINT = 0.55
 
 # Lado del muestreo del recorte para estimar el relleno. Mismo criterio que
 # `reporte.calidad_recortes`: se lleva cada punto de la rejilla al origen con la transformada

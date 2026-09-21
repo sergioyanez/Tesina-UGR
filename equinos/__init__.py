@@ -23,11 +23,3 @@ Módulos:
     inferencia       de un video a una predicción, o a una negativa explicada
     reporte     lectura de los resultados del preprocesamiento facial
 """
-
-from equinos import (cache, caracteristicas, catalogo, checkpoint, clasificacion,
-                     encuadre, entorno, etapas, inferencia, particion, pose,
-                     reporte, rutas)
-
-__all__ = ["rutas", "catalogo", "checkpoint", "cache", "encuadre", "entorno", "etapas",
-           "caracteristicas", "clasificacion", "inferencia",
-           "particion", "pose", "reporte"]
