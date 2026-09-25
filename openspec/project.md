@@ -43,8 +43,8 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
-| 3. Clasificación orientada a video | 🟡 Modelo entrenado y evaluado; **la hipótesis no queda sostenida** y el criterio declarado no se cumple (0,626 contra 0,691). Falta el notebook de la etapa. Ver abajo |
-| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit funcionando (`./correr_local.sh interfaz`). **Responde en el 42 % de los videos** y se niega con motivo en el resto. Falta la prueba con una persona ajena (tarea 6.2) |
+| 3. Clasificación orientada a video | 🟡 **Modelo vigente: MIL multimodal, F1 macro 0,740 ± 0,052** (359 clips, 133 caballos; `objetivo3_evaluacion_v2.json`). Supera a los metadatos de filmación (0,618) pero **empata con un promedio estático lineal (0,741)**: el aporte de la arquitectura y del orden temporal no está demostrado. Sobreajuste moderado. Ver «Estado al 25/09/2026» |
+| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo el MIL vigente (`mil_multimodal_produccion.pt`), con la preparación compartida con el entrenamiento. La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
 
 ### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
 
@@ -411,6 +411,35 @@ Dos consecuencias que condicionan el objetivo 3:
    Es la primera vía a explorar antes de decidir anotación manual.
 
 ## Punto de partida de la próxima sesión
+
+### Estado al 25/09/2026 — lo más reciente
+
+Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/mejoras-prioridad-alta`. Cierra las
+mejoras de prioridad alta de la auditoría del 25/09 (`material para presentar/2da entrega/
+condiciones_cumplidas.pdf`):
+
+- **Líneas de base del conjunto vigente** (`scripts/evaluar_lineas_de_base.py` →
+  `objetivo3_lineas_de_base.json`). El promedio lineal de las características de los 16 frames da
+  0,741 ± 0,020 contra 0,740 ± 0,052 del MIL: diferencia −0,004, IC95 por caballo
+  [−0,066; +0,058]. Los metadatos de filmación solos dan 0,618; sin los rasgos delatores el MIL
+  conserva 0,705.
+- **Criterio de aceptación re-declarado** con la misma regla sobre el conjunto vigente: 0,761. El
+  MIL cumple el declarado (0,691) y no el re-declarado. Se re-declaró después de medir, y así consta.
+- **Sobreajuste registrado** en cada época: F1 train 0,979, validación 0,712, test 0,740
+  (`docs/analisis_sobreajuste.md`).
+- **Procedencia del modelo desplegado** corregida (huella de las características `_v2`).
+- **Notebooks 03 y 04** reescritos y re-ejecutados para el modelo vigente; figuras 5 y 6 nuevas.
+- **Registro de experimentos** (`docs/registro_de_experimentos.md`): los resultados de canal
+  geométrico, CV anidada y *fine-tuning* salen de ramas laterales no fusionadas.
+- **Protocolo de etiquetado** (`docs/protocolo_de_etiquetado.md`): lo verificable está escrito; quién
+  etiquetó y con qué criterio **queda a completar por los autores**.
+
+La re-ejecución de `scripts/evaluar_v2.py` reprodujo bit a bit predicciones y pesos.
+
+**Próxima decisión, de los autores:** con el MIL empatado con el promedio estático, ¿se defiende el
+MIL o se adopta el promedio por parsimonia? El change deja las dos medidas, no toma la decisión.
+
+### Estado al 25/08/2026 — historia anterior
 
 Estado al cierre del **25/08/2026**. Rama `ejecucion-local-gpu`, **sin pushear** por decisión de
 Sergio: vive sólo en la máquina local.

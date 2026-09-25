@@ -429,6 +429,13 @@ esa contribución es información geométrica y cuánto es simplemente capacidad
 diferencia entre las dos hipótesis requeriría comparar contra un canal de ruido de la misma
 dimensión, que no se corrió.
 
+> **Actualización del 25/09/2026.** El control de ruido se corrió después, en la rama
+> `feat/enriquecer-canal-geometrico` (`docs/registro_de_experimentos.md`): con 9 dimensiones de ruido
+> el F1 es 0,680 ± 0,102, así que el canal real le gana por +0,059. Pero la línea de base visual
+> estática —el promedio de las 512 características de los 16 frames con una regresión logística,
+> **sin** canal geométrico ni atención— da 0,741 ± 0,020 (`objetivo3_lineas_de_base.json`). El canal
+> ayuda **dentro** del MIL; no está demostrado que el MIL con canal supere a un promedio simple.
+
 ---
 
 ## 8. Reproducibilidad

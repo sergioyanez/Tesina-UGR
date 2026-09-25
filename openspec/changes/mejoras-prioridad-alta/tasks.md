@@ -24,8 +24,8 @@
 
 ## 5. Documentación
 
-- [ ] 5.1 `docs/registro_de_experimentos.md`
-- [ ] 5.2 `docs/protocolo_de_etiquetado.md`
-- [ ] 5.3 `docs/analisis_sobreajuste.md`
-- [ ] 5.4 Actualizar `README.md` y `openspec/project.md`
-- [ ] 5.5 `openspec validate mejoras-prioridad-alta`
+- [x] 5.1 `docs/registro_de_experimentos.md`
+- [x] 5.2 `docs/protocolo_de_etiquetado.md`
+- [x] 5.3 `docs/analisis_sobreajuste.md`
+- [x] 5.4 Actualizar `README.md` y `openspec/project.md`
+- [x] 5.5 `openspec validate mejoras-prioridad-alta`
