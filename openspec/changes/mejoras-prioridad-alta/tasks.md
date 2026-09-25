@@ -19,8 +19,8 @@
 ## 4. Figuras y notebook 03
 
 - [x] 4.1 `04_figuras_tesis.ipynb`: figura 4 desde la evaluación vigente y figura 5 (curvas y gap)
-- [ ] 4.2 Reescribir `03_clasificacion.ipynb` para el protocolo vigente, con las líneas de base nuevas
-- [ ] 4.3 Re-ejecutar los notebooks 03 y 04 y revisar que texto y salidas coincidan
+- [x] 4.2 Reescribir `03_clasificacion.ipynb` para el protocolo vigente, con las líneas de base nuevas
+- [x] 4.3 Re-ejecutar los notebooks 03 y 04 y revisar que texto y salidas coincidan
 
 ## 5. Documentación
 
