@@ -7,9 +7,9 @@
 
 ## 2. Registro del sobreajuste
 
-- [ ] 2.1 Agregar a la curva de `entrenar_mil_multimodal` pérdida, F1 y accuracy del train interno sin dropout
-- [ ] 2.2 Agregar al resumen de `scripts/evaluar_v2.py` el F1 de train por fold y los gaps
-- [ ] 2.3 Prueba: registrar el train no cambia predicciones
+- [x] 2.1 Agregar a la curva de `entrenar_mil_multimodal` pérdida, F1 y accuracy del train interno sin dropout
+- [x] 2.2 Agregar al resumen de `scripts/evaluar_v2.py` el F1 de train por fold y los gaps
+- [x] 2.3 Prueba: registrar el train no cambia predicciones
 
 ## 3. Trazabilidad del modelo desplegado
 
