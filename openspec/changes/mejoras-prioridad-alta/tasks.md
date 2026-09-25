@@ -1,9 +1,9 @@
 ## 1. Líneas de base y control de confusores
 
-- [ ] 1.1 Crear `equinos/lineas_de_base.py`: mayoritaria, aleatorio estratificado, visual estática (1 frame y media de 16), geometría sola, metadatos de filmación, duración sola, bootstrap por caballo y evaluación por subconjunto
-- [ ] 1.2 Crear `tests/test_lineas_de_base.py` (bootstrap pareado, agrupamiento por caballo, que no haya fuga de estandarización)
-- [ ] 1.3 Crear `scripts/evaluar_lineas_de_base.py` y persistir `objetivo3_lineas_de_base.json`
-- [ ] 1.4 Correrlo y verificar que reproduce las cifras de la auditoría
+- [x] 1.1 Crear `equinos/lineas_de_base.py`: mayoritaria, aleatorio estratificado, visual estática (1 frame y media de 16), geometría sola, metadatos de filmación, duración sola, bootstrap por caballo y evaluación por subconjunto
+- [x] 1.2 Crear `tests/test_lineas_de_base.py` (bootstrap pareado, agrupamiento por caballo, que no haya fuga de estandarización)
+- [x] 1.3 Crear `scripts/evaluar_lineas_de_base.py` y persistir `objetivo3_lineas_de_base.json`
+- [x] 1.4 Correrlo y verificar que reproduce las cifras de la auditoría
 
 ## 2. Registro del sobreajuste
 

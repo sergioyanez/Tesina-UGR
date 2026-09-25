@@ -20,6 +20,7 @@ Módulos:
     particion   clips íntegros que entran al modelo y su partición por ejemplar
     caracteristicas  vectores por frame del backbone congelado, y su caché
     clasificacion    métricas, líneas de base y modelo final del objetivo 3
+    lineas_de_base   líneas de base del conjunto vigente, confusor de filmación y bootstrap por caballo
     inferencia       de un video a una predicción, o a una negativa explicada
     reporte     lectura de los resultados del preprocesamiento facial
 """
