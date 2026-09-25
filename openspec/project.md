@@ -436,8 +436,9 @@ condiciones_cumplidas.pdf`):
 
 La re-ejecución de `scripts/evaluar_v2.py` reprodujo bit a bit predicciones y pesos.
 
-**Próxima decisión, de los autores:** con el MIL empatado con el promedio estático, ¿se defiende el
-MIL o se adopta el promedio por parsimonia? El change deja las dos medidas, no toma la decisión.
+**Decisiones del 25/09:** se **conserva el MIL** (revisable; D7 del `design.md` del change), el
+*fine-tuning* queda descartado, y el etiquetado lo hizo un profesional veterinario al que se le
+envió el formulario de `docs/protocolo_de_etiquetado.md` §3 — **respuesta pendiente**.
 
 ### Estado al 25/08/2026 — historia anterior
 

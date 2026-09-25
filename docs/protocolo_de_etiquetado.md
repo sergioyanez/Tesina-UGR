@@ -3,7 +3,12 @@
 Cómo se asignó la clase —`Disgustado`, `Interesado` o `Sereno`— a cada video del dataset.
 
 Este documento separa **lo que el código y los datos permiten afirmar** de **lo que sólo los
-autores pueden declarar**. La segunda parte está sin completar a propósito: no hay en el
+autores pueden declarar**.
+
+> **Estado al 25/09/2026.** Según los autores, las etiquetas las asignó **un profesional
+> veterinario**. Se le envió la tabla de la sección 3 para que documente su criterio; **la respuesta
+> está pendiente**. Hasta recibirla, la sección 3 sigue sin completar y la sección 4 vale tal como
+> está, salvo por la autoría, que ya puede declararse. La segunda parte está sin completar a propósito: no hay en el
 repositorio ningún registro de quién etiquetó ni con qué criterio, y escribirlo sin esa fuente
 sería inventarlo. Hasta que se complete, la ausencia de protocolo es una **limitación declarada**
 del trabajo (sección 4), y así debe figurar en la tesis.
@@ -65,7 +70,7 @@ modelo y cuánto es ambigüedad de la etiqueta.
 
 | Pregunta | Respuesta |
 |---|---|
-| ¿Quién asignó las etiquetas? (nombre y rol; formación en etología o veterinaria) | **[COMPLETAR]** |
+| ¿Quién asignó las etiquetas? (nombre y rol; formación en etología o veterinaria) | Un profesional veterinario (según los autores). **[COMPLETAR nombre y formación]** |
 | ¿Hubo un criterio escrito? ¿Qué rasgos definen cada clase? (orejas, ojos, ollares, boca, postura) | **[COMPLETAR]** |
 | ¿Se usaron unidades de acción de EquiFACS (Wathan et al., 2015) u otra referencia? | **[COMPLETAR]** |
 | ¿Se etiquetó mirando el video completo, un tramo, o el contexto de filmación? | **[COMPLETAR]** |
@@ -77,9 +82,8 @@ modelo y cuánto es ambigüedad de la etiqueta.
 
 Mientras la sección 3 no esté completa, la tesis debería decir, en sustancia:
 
-> Las etiquetas fueron asignadas por video a partir de la organización en carpetas del material,
-> sin un protocolo escrito basado en unidades de acción faciales y sin medir el acuerdo entre
-> anotadores. En consecuencia, el modelo aprende a reproducir las etiquetas de este conjunto, y no
+> Las etiquetas fueron asignadas por video por un profesional veterinario, sin un protocolo escrito
+> basado en unidades de acción faciales y sin medir el acuerdo entre anotadores. En consecuencia, el modelo aprende a reproducir las etiquetas de este conjunto, y no
 > puede afirmarse que mida estados emocionales en un sentido etológico; tampoco se conoce el techo
 > de rendimiento que impone la ambigüedad de las etiquetas.
 

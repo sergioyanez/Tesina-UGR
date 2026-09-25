@@ -41,7 +41,7 @@ conservan como evidencia.
 | `objetivo3_nested_anidado_baseline_evaluacion.json` | ídem | `--modo anidado --k 4` | 0,784 ± 0,036 | **No se adopta**: el desvío de la época elegida sube de 8,4 a 23,7 (la curva promediada es una meseta) |
 | `objetivo3_nested_simple_ruido_evaluacion.json` | ídem | `--modo simple --canal ruido` | 0,680 ± 0,072 | Control |
 | `objetivo3_nested_anidado_ruido_evaluacion.json` | ídem | `--modo anidado --canal ruido` | 0,737 ± 0,053 | Control |
-| `objetivo3_finetuning_evaluacion.json` | `feat/finetuning-visual` · `c6d6f80`, `544d323` (22/09) | `scripts/evaluar_finetuning.py` | 0,747 ± 0,057 | **No se adopta** («NO LA HAY», commit `544d323`) |
+| `objetivo3_finetuning_evaluacion.json` | `feat/finetuning-visual` · `c6d6f80`, `544d323` (22/09) | `scripts/evaluar_finetuning.py` | 0,747 ± 0,057 | **No se adopta** («NO LA HAY», commit `544d323`). Descartado como línea de trabajo el 25/09 |
 
 ### Advertencias sobre estos experimentos
 

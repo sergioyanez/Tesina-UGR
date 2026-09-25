@@ -80,6 +80,26 @@ igual una prueba que lo controle.
 `_huella_caracteristicas` lee `caracteristicas.ARCHIVO_HUELLA`. El nombre literal fue lo que
 envejeció en silencio cuando la caché pasó a `_v2`.
 
+### D7. Se conserva el MIL como modelo de la tesis (decisión de los autores, 25/09/2026)
+
+Medido el empate con el promedio estático (0,740 ± 0,052 contra 0,741 ± 0,020, diferencia −0,004,
+IC95 [−0,066; +0,058]), los autores deciden **conservar el MIL multimodal**, que es el modelo con que
+se hizo el último entrenamiento y el que sirve la interfaz. La decisión es revisable.
+
+Lo que la decisión **no** puede afirmar: que el MIL sea mejor que el promedio. Lo que sí puede
+sostenerse: rinde lo mismo sobre caballos no vistos; supera a los metadatos de filmación
+(+0,121, IC95 [+0,031; +0,209]) y, a diferencia del promedio, conserva más rendimiento sin los
+rasgos delatores (0,705 contra 0,671, con sólo 28 `Disgustado`, así que es indicio y no prueba); y
+entrega pesos de atención por frame que la interfaz muestra. El costo, a declarar: más varianza
+entre folds (0,052 contra 0,020) y sobreajuste del train.
+
+**Descartado:** adoptar el promedio por parsimonia. Es la alternativa defendible si el tribunal
+pregunta; queda medida en `objetivo3_lineas_de_base.json` para poder cambiar sin re-trabajo.
+
+**Descartado también:** el *fine-tuning* del backbone (rama `feat/finetuning-visual`, 0,747 ±
+0,057 con el protocolo de 4 folds). No mejora de forma distinguible y multiplica los parámetros
+entrenables. Queda como experimento documentado, no como línea de trabajo.
+
 ## Risks / Trade-offs
 
 - [El re-entrenamiento de producción no es bit a bit idéntico en otra GPU] → se compara el hash
