@@ -779,7 +779,7 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
         "criterio_de_epocas": (
             "media de la mejor época de la validación cruzada, elegida en cada fold con "
             "validación interna por ejemplar y early stopping"),
-        "huella_caracteristicas": _huella_caracteristicas(),
+        "huella_caracteristicas": _huella_caracteristicas(clips),
         "metrica_validacion_cruzada": metrica_validacion,
         "advertencia": (
             "La métrica de este modelo es la de validación cruzada, no una calculada sobre el "
@@ -797,14 +797,30 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
     return modelo, procedencia
 
 
-def _huella_caracteristicas():
-    """De qué corrida del preprocesamiento salen las características que entrenaron el modelo."""
+def _huella_caracteristicas(clips=None):
+    """De qué corrida del preprocesamiento salen las características que entrenaron el modelo.
+
+    Se lee del archivo que nombra `caracteristicas.ARCHIVO_HUELLA`, el mismo que usa la caché
+    vigente. Antes se leía un nombre literal, `caracteristicas_backbone.json`, que quedó apuntando
+    a la caché de 153 clips cuando la vigente pasó a `_v2`: la procedencia del modelo desplegado
+    registraba las características de otro conjunto, sin que nada fallara.
+
+    Con `clips`, verifica además que la caché corresponda a esos clips: registrar la huella de una
+    caché que no es la que entrenó sería el mismo error por otro camino.
+    """
     import json
 
-    ruta = rutas.carpeta("resultados") / "caracteristicas_backbone.json"
+    from equinos import caracteristicas
+
+    ruta = rutas.carpeta("resultados") / caracteristicas.ARCHIVO_HUELLA
     if not ruta.exists():
         return None
-    return json.loads(ruta.read_text(encoding="utf-8")).get("huella")
+    registrada = json.loads(ruta.read_text(encoding="utf-8")).get("huella")
+    if clips is not None and registrada != caracteristicas.huella(clips):
+        raise ValueError(
+            f"La caché de características ({ruta.name}, huella {registrada}) no corresponde a los "
+            f"{len(clips)} clips con que se entrena. Volver a extraer antes de entrenar.")
+    return registrada
 
 
 def cargar_produccion():

@@ -159,6 +159,31 @@ check("los folds ingenuos NO respetan el ejemplar (por eso no se usan)",
       len(cl.folds_ingenuos(clips, n=2)) == 2)
 
 
+print("\n=== procedencia del modelo desplegado ===")
+# Se lee la huella de la caché VIGENTE. Con el nombre literal viejo, la procedencia registraba la
+# de 153 clips mientras el modelo se entrenaba con 359, y nada fallaba.
+import json  # noqa: E402
+import tempfile  # noqa: E402
+
+from equinos import caracteristicas, rutas  # noqa: E402
+
+with tempfile.TemporaryDirectory() as tmp:
+    carpeta_original = rutas.carpeta
+    rutas.carpeta = lambda nombre: Path(tmp)
+    try:
+        (Path(tmp) / "caracteristicas_backbone.json").write_text(json.dumps({"huella": "vieja"}))
+        (Path(tmp) / caracteristicas.ARCHIVO_HUELLA).write_text(json.dumps({"huella": "vigente"}))
+        check("la huella sale del archivo de la caché vigente",
+              cl._huella_caracteristicas() == "vigente", f"dio {cl._huella_caracteristicas()}")
+        try:
+            cl._huella_caracteristicas([{"clip": "a.mp4"}])
+            check("una caché que no corresponde a los clips se rechaza", False)
+        except ValueError:
+            check("una caché que no corresponde a los clips se rechaza", True)
+    finally:
+        rutas.carpeta = carpeta_original
+
+
 print("\n" + "=" * 52)
 if fallos:
     print(f"FALLARON {len(fallos)}: {fallos}")

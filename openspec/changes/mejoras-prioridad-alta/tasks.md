@@ -13,8 +13,8 @@
 
 ## 3. Trazabilidad del modelo desplegado
 
-- [ ] 3.1 `_huella_caracteristicas` lee `caracteristicas.ARCHIVO_HUELLA`; prueba asociada
-- [ ] 3.2 Re-ejecutar `scripts/evaluar_v2.py`; verificar predicciones idénticas y comparar el hash de los pesos de producción
+- [x] 3.1 `_huella_caracteristicas` lee `caracteristicas.ARCHIVO_HUELLA`; prueba asociada
+- [x] 3.2 Re-ejecutar `scripts/evaluar_v2.py`; verificar predicciones idénticas y comparar el hash de los pesos de producción
 
 ## 4. Figuras y notebook 03
 
