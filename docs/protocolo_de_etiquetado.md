@@ -155,12 +155,6 @@ R15 queda atendida en lo documental.
 - **El recorte por tramos sostiene el supuesto** de que la expresión dura toda la toma y puede
   heredarse a los clips.
 
-**Pendientes que abre el formulario.**
-
-- **Caballos atados.** Se declaran excluidos, pero el criterio de `Interesado` menciona la esclerótica
-  visible «especialmente en animales atados». Conviene preguntarle si hay videos de animales atados
-  en el dataset.
-
 `Separar cabeza?` ya no existe ni en Drive ni en la copia local (verificado el 07/10/2026): el
 catálogo no excluye nada, así que no queda material fuera por esa carpeta.
 

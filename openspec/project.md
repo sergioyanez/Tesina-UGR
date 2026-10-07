@@ -425,8 +425,12 @@ hipódromo → `Interesado`, manada → `Disgustado`).
 `Separar cabeza?` ya no existe en Drive ni en local: no hay nada que incorporar. La copia local
 coincide con Drive.
 
-**Pendientes:** (1) preguntar por caballos atados (excluidos, pero el criterio de `Interesado` los
-menciona); (2) fusionar la rama a `main` y archivar el change; (3) `test_equivalencia.py`.
+`test_equivalencia.py` vuelve a pasar: la «limpieza» `db2dd6d` (21/09) había subido
+`CONF_MINIMA_KEYPOINT` de 0,50 a 0,55 en el notebook 02, `encuadre.py` e `interpolacion.py`, y la
+interfaz preprocesaba distinto de como se construyó el dataset. Se restituyó 0,50, el valor con que
+se entrenó el modelo vigente.
+
+**Pendiente:** fusionar la rama a `main` y archivar el change.
 
 ### Estado al 25/09/2026
 
