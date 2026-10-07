@@ -30,7 +30,8 @@
 6. **Eslabón entrenamiento–inferencia**: clips recodificados `mp4v` contra video original (cambia 7 % de las predicciones en la muestra medida) y orientación de video no tratada en la inferencia; la confiabilidad mostrada no necesariamente aplica a videos nuevos: en la prueba de extremo a extremo la interfaz coincidió con la etiqueta en 8 de 16 videos del propio dataset, con el modelo ya entrenado sobre ellos.
 7. **Sobreajuste moderado**: F1 train 0,98; probabilidades sobreconfiadas (ECE 0,081; confianza 0,824 frente a acierto 0,744).
 8. **Sin validación externa ni con usuarios**; un solo establecimiento regional; 133 caballos.
-9. **Deuda de trazabilidad y documentación**: ramas sin fusionar, huella dependiente de `mtime`, tres archivos con cifras viejas, configuración escrita en los scripts, partición descrita como «réplica de `GroupKFold`» sin serlo exactamente.
+9. **El canal geométrico del MIL es casi vacío**: las 9 variables llevan un solo grado de libertad (inclinación de la cabeza) y sus máscaras de validez valen 1 siempre (se calculan con confianza > 0 y no ≥ 0,50) (§17.4).
+10. **Deuda de trazabilidad y documentación**: ramas sin fusionar, huella dependiente de `mtime`, tres archivos con cifras viejas, configuración escrita en los scripts, partición descrita como «réplica de `GroupKFold`» sin serlo exactamente.
 
 ## 16.4 Mejoras recomendadas
 
@@ -44,6 +45,9 @@
 | A4 | **Repetir la validación cruzada** con ≥ 5 particiones y semillas y reportar la media de repeticiones con IC (`scripts/a15_particiones_alternativas.py` ya lo hace) | Bajo | La variabilidad por partición/semilla (±0,015) es del orden de las diferencias que se discuten |
 | A5 | **Reemplazar la validación interna** por una muestra aleatoria de caballos estratificada por clase, o por una CV interna, y comprobar la época y el F1 | Medio | Hoy son los 7 caballos con más clips |
 | A6 | **Declarar en el informe las limitaciones de etiquetado** (un observador no ciego, criterio contextual, techo desconocido) y las de captura (un establecimiento regional, un filmador) | Texto | El protocolo ya las documenta; falta que lleguen al informe |
+| A7 | **Incorporar SimBA-RF como modelo complementario** (liviano, sin GPU salvo DLC, interpretable) y como línea de base geométrica fuerte; no sustituir al MIL ni presentar su ventaja como definitiva | Bajo | 0,841 ± 0,003 frente a 0,740; limpio no concluyente (cap. 17) |
+| A8 | **Controlar sesión y filmación** en ambos modelos (residualizar duración/resolución, estratificar, partición por sesión) y reportar el piso deconfundido (0,777 para SimBA-RF) | Medio | Las features codifican duración (R² 0,53) y resolución (AUC 0,73); el MIL comparte el confusor |
+| A9 | **Arreglar la validez de las 9 geométricas**: máscaras con `confianza ≥ 0,50`, rotar al eje de la cabeza, ampliar a orejas/boca (o reemplazarlas por las features del cap. 17) | Bajo | Hoy llevan un solo grado de libertad y máscaras constantes |
 
 **Prioridad MEDIA**
 
@@ -84,4 +88,4 @@
 
 **Conclusión.** El proyecto construyó un clasificador de tres clases con una metodología de separación por individuo sólida, verificada y reproducible. La estimación 0,74 de F1 macro es **creíble para caballos nuevos de esta población y este tipo de captura**, con un tope de incertidumbre de ±0,06 (IC) y ±0,015 (semillas). No está demostrado que la arquitectura profunda, la atención, el canal geométrico o el orden temporal aporten sobre un promedio lineal de las características de varios frames; el contexto de captura contiene una parte de la señal; y la utilidad para expertos, la validez externa y el techo impuesto por las etiquetas siguen sin conocerse.
 
-{{SIMBA_IMPLICANCIA_VEREDICTO}}
+**Efecto del experimento SimBA sobre el veredicto.** Un Random Forest sobre 160 features de pose «tipo SimBA» (código propio) obtiene 0,841 ± 0,003 frente al 0,740 del MIL, y 0,750 frente a 0,705 en el subconjunto limpio (no concluyente). El resultado **matiza** la conclusión anterior: la señal discriminativa está en la geometría facial (cara 0,848, orejas 0,784, cuello 0,461) y no depende de una red visual profunda; pero **comparte el confusor de filmación** (R² 0,53 con la log-duración; piso deconfundido 0,777), de modo que ni el 0,74 ni el 0,84 son estimaciones libres de contexto. La confiabilidad estadística y la de generalización siguen en los niveles indicados.

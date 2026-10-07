@@ -311,6 +311,137 @@ def t_inferencia_resumen():
               [fila("Con rotación declarada (90°)", r["rotados"]), fila("Sin rotación", r["sin_rotacion"]), fila("**Total**", r)])
 
 
+# ----------------------------------------------------------------- SimBA
+SB = WT / "experimentos" / "simba" / "resultados"
+
+
+def JS(n):
+    return leer_json(SB / n)
+
+
+def t_simba_tres_enfoques():
+    e = JS("evaluacion.json")["modelos"]
+    v = leer_json(WT / "experimentos" / "simba" / "verificacion" / "verificacion.json")
+    def r(k):
+        o = e[k]["original"]
+        return f"{f(o['f1_macro_media'])} ± {f(o['f1_macro_desvio'])}"
+    fil = [("**MIL multimodal (vigente)**", "Imagen (ResNet-18 congelada, 512/frame) + 9 variables geométricas, 16 frames", "132 355 parámetros entrenables (+ 11,2 M congelados); GPU para extraer características", "Baja: atención por frame, sin significado de rasgo", r("E_MIL_multimodal|vigente")),
+           ("Baseline estático (LogReg)", "Media de las 512 características de los 16 frames", "1 539 parámetros; requiere la ResNet-18", "Media: coeficientes sobre características visuales sin nombre", r("C_visual_media|LR")),
+           ("**Random Forest sobre 160 features «tipo SimBA» (código propio)**", "Solo landmarks de DLC: orejas, ojos, boca, cabeza-cuello; estáticas (130), dinámicas (21) y disponibilidad (9)", "500 árboles (≈ 26 000 nodos); 3,3 s de ajuste en total, sin GPU (además de DLC)", "Media-alta: cada feature tiene nombre geométrico; SHAP", f"**{f(v['6_semillas']['media_5'])} ± {f(v['6_semillas']['desvio_5'])}** (media de 5 semillas; DE entre semillas). Semilla 0: {r('B_simba_propio|RF')} (DE entre folds)")]
+    return md(["Modelo", "Información que usa", "Complejidad", "Interpretabilidad", "F1 macro ± desvío"], fil)
+
+
+def t_simba_por_fold():
+    e = JS("evaluacion.json")["modelos"]
+    ks = [("SimBA-RF (semilla 0)", "B_simba_propio|RF"), ("MIL vigente", "E_MIL_multimodal|vigente"), ("Baseline estático", "C_visual_media|LR")]
+    fil = []
+    for k in range(4):
+        fil.append((k, *[f(e[kk]["original"]["f1_macro_por_fold"][k]) for _, kk in ks]))
+    fil.append(("**Media ± DE**", *[f"{f(e[kk]['original']['f1_macro_media'])} ± {f(e[kk]['original']['f1_macro_desvio'])}" for _, kk in ks]))
+    fil.append(("Accuracy", *[f(e[kk]["original"]["accuracy"]) for _, kk in ks]))
+    t1 = md(["Fold", *[n for n, _ in ks]], fil)
+    pc = []
+    rf = e["B_simba_propio|RF"]["original"]["por_clase"]; mil = J("metricas.json")["global"]["por_clase"]
+    for c in CLASES:
+        pc.append((c, f(rf[c]["precision"]), f(rf[c]["recall"]), f(rf[c]["f1"]), f(mil[c]["precision"]), f(mil[c]["recall"]), f(mil[c]["f1"]), rf[c]["soporte"]))
+    return t1 + "\n\n" + md(["Clase", "RF P", "RF R", "RF F1", "MIL P", "MIL R", "MIL F1", "Soporte"], pc)
+
+
+NOMBRES_ABL = [("K1_control_filmacion|LR", "K1 Control de filmación (7 variables: duración, fps, resolución, ventana, escala, dt) — post hoc"),
+               ("A_geom9_actual|RF", "A. 9 geométricas vigentes (RF)"), ("A_geom9_actual|LR", "A. 9 geométricas vigentes (LogReg)"),
+               ("B_simba_propio|RF", "B. 160 features tipo SimBA propias (RF)"), ("B_simba_propio|LR", "B. ídem (LogReg)"),
+               ("B_simba_propio_estatico|RF", "B-a. Solo estáticas (130)"), ("B_simba_propio_dinamico|RF", "B-b. Solo dinámicas (21)"),
+               ("B_simba_propio_sin_dinamica_de_cabeza|RF", "B-c. Sin dinámica de cabeza (151) — post hoc"), ("B_simba_propio_sin_disponibilidad|RF", "B-d. Sin disponibilidad (151)"),
+               ("B2_simba_real_movimiento|LR", "B2. SimBA real, solo movimiento (174; LogReg)"), ("C_visual_media|LR", "C. Baseline estático (LogReg)"),
+               ("D_visual_mas_geom9|LR", "D. Visual + 9 geométricas (LogReg)"), ("E_MIL_multimodal|vigente", "E. MIL vigente"), ("F_simba_propio_mas_visual|RF", "F. SimBA propio + visual (RF)")]
+
+
+def t_simba_ablacion():
+    e = JS("evaluacion.json")["modelos"]
+    fil = []
+    for k, n in NOMBRES_ABL:
+        m = e[k]; o = m["original"]; l = m.get("limpio_evaluado_en_subconjunto", {})
+        fil.append((n, m.get("n_features") or "—", f"{f(o['f1_macro_media'])} ± {f(o['f1_macro_desvio'])}", f(l.get("f1_macro_media")) if l else "—", f(l.get("f1_macro_agrupado")) if l else "—"))
+    return md(["Variante", "Features", "F1 macro original (media ± DE)", "Limpio: media de folds", "Limpio: agrupado"], fil)
+
+
+def t_simba_orig_limpio():
+    e = JS("evaluacion.json"); v = leer_json(WT / "experimentos" / "simba" / "verificacion" / "verificacion.json")
+    M = e["modelos"]; R = e["reentrenado_en_limpio"]
+    def row(n, k, rk):
+        o = M[k]["original"]; l = M[k]["limpio_evaluado_en_subconjunto"]
+        return (n, f"{f(o['f1_macro_media'])} ± {f(o['f1_macro_desvio'])}", f(l["f1_macro_media"]), f(l["f1_macro_agrupado"]), f(R[rk]["f1_macro_agrupado"]) if rk else "no reentrenado")
+    fil = [row("Baseline estático (LogReg)", "C_visual_media|LR", "C_visual_media|LR"), row("SimBA-RF propio (semilla 0)", "B_simba_propio|RF", "B_simba_propio|RF"), row("MIL vigente", "E_MIL_multimodal|vigente", None)]
+    t = md(["Modelo", "Original (359 clips)", "Limpio: media de folds (236 clips)", "Limpio: agrupado", "Entrenado y evaluado solo en limpio (agrupado)"], fil)
+    t2 = md(["Control sobre SimBA-RF (verificación adversarial)", "F1 macro"], [
+        ("Media de 5 semillas (1–5)", f"{f(v['6_semillas']['media_5'])} ± {f(v['6_semillas']['desvio_5'])}"),
+        ("Residualizando las features por duración, fps, resolución y proporción (por fold)", f(v["3c2_residualizado_por_fold"]["f1_media"])),
+        ("Clips de duración < 5 s (95 clips; 71 son `Disgustado`)", f(v["3c_estratos_base"]["dur<5"]["f1_agrupado"])),
+        ("Clips de duración ≥ 5 s (264 clips)", f(v["3c_estratos_base"]["dur>=5"]["f1_agrupado"])),
+        ("Solo metadatos de filmación (verificación)", f(v["3d_metadatos_solos"]["f1_media"])),
+        ("Features + metadatos", f(v["3d_features_mas_metadatos"]["f1_media"])),
+        ("Solo disponibilidad de keypoints", f(v["3b3_solo_disponibilidad"]["f1_media"])),
+        ("Etiquetas permutadas (control negativo, 3 repeticiones)", " / ".join(f(x, 2) for x in v["control_negativo_etiquetas_permutadas_F1"])),
+        ("Predecir log-duración desde las 160 features (R²)", f(v["3e_predecir_filmacion"]["R2_log_duracion"], 2)),
+        ("Predecir resolución 1080×1920 desde las 160 features (AUC)", f(v["3e_predecir_filmacion"]["AUC_resolucion_1080x1920"], 2))])
+    return t + "\n\n" + t2
+
+
+def t_simba_diferencias():
+    b = JS("evaluacion.json")["bootstrap_por_caballo"]
+    fil = []
+    for conj in ("original", "limpio"):
+        for k in ("MIL", "Baseline"):
+            d = b[conj]["modelos"][k]["diferencia_referencia_menos_este"]
+            fil.append((conj.capitalize(), f"SimBA-RF − {k}", f"{d['media']:+.3f}".replace(".", ","), f"[{d['ic95'][0]:+.3f}; {d['ic95'][1]:+.3f}]".replace(".", ","), "no" if d["incluye_cero"] is False else "sí (no concluyente)"))
+    return md(["Conjunto", "Diferencia (F1 agrupado, semilla 0)", "Media", "IC 95 % (bootstrap por caballo)", "¿Incluye 0?"], fil) + "\n\n*Verificación independiente (sklearn, 133 caballos): +0,111 [0,045; 0,186].*"
+
+
+def t_simba_gaps():
+    g = JS("evaluacion.json")["gaps_sobreajuste"]; mil = J("early_stopping_sobreajuste.json")["medias"]
+    fil = []
+    for k, n in (("B_simba_propio|RF", "SimBA-RF"), ("B_simba_propio|LR", "SimBA LogReg"), ("A_geom9_actual|RF", "9 geométricas (RF)"), ("C_visual_media|LR", "Baseline estático (LogReg)")):
+        w = g[k]; fil.append((n, f(w["f1_train_completo_medio"]), f(w["f1_validacion_interna_medio"]), f(w["gap_train_validacion_medio"]), f(w["gap_train_test_medio"])))
+    fil.append(("MIL vigente", f(mil["f1_train"]), f(mil["f1_validacion"]), f(mil["gap_train_val_f1"]), f(mil["gap_train_test_f1"])))
+    return md(["Modelo", "F1 train", "F1 validación interna", "Gap train−validación", "Gap train−test"], fil)
+
+
+def t_simba_shap_global():
+    s = JS("shap.json")
+    fil = [(x["rank"], f"`{x['feature']}`", f(x["media_abs_shap"], 4), x["grupo"]) for x in s["importancia_global_top20"]]
+    return md(["#", "Feature (agregado por clip)", "Media del valor absoluto de SHAP (prob.)", "Grupo"], fil)
+
+
+def t_simba_shap_clase():
+    s = JS("shap.json")["importancia_por_clase_top20"]
+    fil = []
+    for c in CLASES:
+        fil.append((c, "; ".join(f"`{x['feature']}` ({f(x['spearman_valor_vs_shap'],2)})" for x in s[c][:5])))
+    fam = JS("shap.json")["aporte_por_familia_anatomica_fraccion"]
+    return md(["Clase", "Top 5 por media del valor absoluto de SHAP (entre paréntesis, Spearman valor–SHAP: el signo indica la dirección)"], fil) + "\n\n" + md(["Familia anatómica", "Fracción del valor absoluto de SHAP total"], [(k, f(100 * v, 1) + " %") for k, v in fam.items()])
+
+
+def t_simba_inventario():
+    inv = JS("inventario_anatomico.json")["features_candidatas"]
+    fil = [(x["feature"], x["clasificacion"], x["motivo"][:150]) for x in inv]
+    return md(["Aspecto facial", "Clasificación", "Motivo"], fil)
+
+
+def t_simba_disponibilidad():
+    d = JS("inventario_anatomico.json")["disponibilidad_por_bodypart"]
+    ks = ["nose", "upper_jaw", "lower_jaw", "mouth_end_right", "mouth_end_left", "right_eye", "left_eye", "right_earbase", "right_earend", "left_earbase", "left_earend", "neck_base", "neck_end"]
+    return md(["Landmark", "% de frames con confianza ≥ 0,50", "% de clips con algún frame ≥ 0,50"], [(k, f(100 * d[k]["frames_conf_ge_0.50"], 1) + " %", f(100 * d[k]["clips_con_algun_frame_ge_0.50"], 1) + " %") for k in ks if k in d])
+
+
+def t_simba_parsimonia():
+    p = JS("evaluacion.json")["parsimonia_medida"]; m = JS("parsimonia_mil.json")
+    fil = [("MIL vigente", f"{m['parametros_entrenables_MIL']:,}".replace(",", " ") + " entrenables (+ 11 176 512 congelados)", f"{f(m['entrenamiento_fold0_s'],0)} s (fold 0, GPU, desde características cacheadas, 1 corrida)", f"{f(m['inferencia_ms_por_clip_cpu_desde_caracteristicas_cacheadas'],2)} ms (CPU, sin extraer ResNet)", "Sí (extracción de características)", "Baja"),
+           ("Baseline estático (LogReg)", "1 539", f"{f(p['C_visual_media|LR']['fit_s_total_4_folds'],2)} s (4 folds, total)", f"{f(p['C_visual_media|LR']['inferencia_ms_por_clip'],3)} ms", "Sí (ResNet-18)", "Media"),
+           ("SimBA-RF (160 features)", f"500 árboles; ≈ {p['B_simba_propio|RF']['nodos_totales_por_fold'][0]:,} nodos".replace(",", " "), f"{f(p['B_simba_propio|RF']['fit_s_total_4_folds'],1)} s (4 folds, total)", f"{f(p['B_simba_propio|RF']['inferencia_ms_por_clip'],2)} ms", "No (solo DeepLabCut)", "Media-alta"),
+           ("SimBA LogReg", "483", f"{f(p['B_simba_propio|LR']['fit_s_total_4_folds'],2)} s", f"{f(p['B_simba_propio|LR']['inferencia_ms_por_clip'],3)} ms", "No (solo DeepLabCut)", "Alta")]
+    return md(["Modelo", "Tamaño", "Entrenamiento", "Inferencia por clip", "¿Necesita red visual?", "Interpretabilidad"], fil) + "\n\n*No medido: el costo de DeepLabCut (≈ 1 h para todo el dataset según `equinos/pose.py`), común a ambos enfoques, ni el de la ResNet-18.*"
+
+
 TABLAS = {k[2:]: v for k, v in globals().items() if k.startswith("t_") and callable(v)}
 
 
