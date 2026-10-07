@@ -134,7 +134,8 @@ case "${1:-jupyter}" in
         ;;
     interfaz)
         # La interfaz del objetivo 4. Corre en esta máquina porque arrastra la cadena entera de
-        # inferencia —YOLO y DeepLabCut— y sin GPU los 35 s por clip se vuelven varios minutos.
+        # inferencia —DeepLabCut sobre todos los fotogramas— y sin GPU los 35 s por clip se
+        # vuelven varios minutos.
         echo "Abriendo la interfaz. Ctrl+C para cerrarla."
         exec "$BIN_DIR/streamlit" run app_inferencia.py
         ;;

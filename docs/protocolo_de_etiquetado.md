@@ -171,14 +171,15 @@ catálogo no excluye nada, así que no queda material fuera por esa carpeta.
 > contextos de filmación distintos (box de hipódromo para `Interesado`, interacción en manada para
 > `Disgustado`), lo que el modelo puede aprovechar como pista.
 
-## 5. Verificación propuesta (no realizada)
+## 5. Acuerdo entre observadores: no se medirá
 
-El piloto mide el acuerdo sobre imágenes; falta medirlo sobre este dataset, sin re-etiquetar todo:
+Decisión del 07/10/2026: el trabajo se entrega con **un único observador**, Bárbara Zimmermann. No
+hay un segundo experto disponible antes de la entrega del 29/10/2026 para re-etiquetar a ciegas una
+muestra del dataset, así que el acuerdo sobre este conjunto queda sin medir y el kappa del piloto es
+la única evidencia de confiabilidad del criterio.
 
-1. Tomar una muestra estratificada por clase de unos 60 clips, incluidos los de los caballos que el
-   modelo falla siempre.
-2. Que una segunda persona —idealmente del grupo del piloto— los etiquete **a ciegas** (sin ver la
-   carpeta ni la predicción) con el criterio de la sección 3.
-3. Informar el kappa de Cohen contra la etiqueta original.
-
-Ese kappa dice cuánto del 0,74 es el techo de las etiquetas y cuánto es margen del modelo.
+La tesis lo declara como limitación (sección 4) y lo propone como trabajo futuro: que una segunda
+persona etiquete a ciegas una muestra estratificada de unos 60 clips —incluidos los de los caballos
+que el modelo falla siempre— con el criterio de la sección 3, y se informe el kappa de Cohen contra
+la etiqueta original. Ese kappa diría cuánto del 0,74 es el techo de las etiquetas y cuánto es
+margen del modelo.
