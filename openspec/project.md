@@ -430,11 +430,11 @@ coincide con Drive.
 interfaz preprocesaba distinto de como se construyó el dataset. Se restituyó 0,50, el valor con que
 se entrenó el modelo vigente.
 
-**Pendiente:** fusionar la rama a `main` y archivar el change.
+La rama se fusionó a `main` y el change quedó archivado como `2026-10-07-mejoras-prioridad-alta`.
 
 ### Estado al 25/09/2026
 
-Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/mejoras-prioridad-alta`. Cierra las
+Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/archive/2026-10-07-mejoras-prioridad-alta`. Cierra las
 mejoras de prioridad alta de la auditoría del 25/09 (`material para presentar/2da entrega/
 condiciones_cumplidas.pdf`):
 
