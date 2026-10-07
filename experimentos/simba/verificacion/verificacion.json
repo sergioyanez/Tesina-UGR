@@ -1,0 +1,421 @@
+{
+ "1_particion": {
+  "asserts_ok": true,
+  "caballos": 133,
+  "videos": 244,
+  "nombres_normalizados_con_varios_ids": {
+   "": {
+    "ids": [
+     "108",
+     "121",
+     "123",
+     "153",
+     "154",
+     "155",
+     "156",
+     "167",
+     "168",
+     "169",
+     "171",
+     "172",
+     "173",
+     "174",
+     "175",
+     "176",
+     "178",
+     "179",
+     "180",
+     "200",
+     "201",
+     "202",
+     "203",
+     "204",
+     "205",
+     "207",
+     "208",
+     "209",
+     "210",
+     "211",
+     "212",
+     "213",
+     "215",
+     "216",
+     "217",
+     "218",
+     "219",
+     "220",
+     "221",
+     "222",
+     "223",
+     "224",
+     "225",
+     "227",
+     "228",
+     "229",
+     "230",
+     "231",
+     "232",
+     "233",
+     "235",
+     "236",
+     "237",
+     "238",
+     "239",
+     "240",
+     "241",
+     "242",
+     "243",
+     "244",
+     "245",
+     "246",
+     "247",
+     "248",
+     "249",
+     "250",
+     "251",
+     "27",
+     "300",
+     "301",
+     "302",
+     "303",
+     "53",
+     "54",
+     "55",
+     "56",
+     "57",
+     "58",
+     "900",
+     "901",
+     "902",
+     "903",
+     "904",
+     "905",
+     "906",
+     "907",
+     "908",
+     "909",
+     "910",
+     "911",
+     "912",
+     "913",
+     "914",
+     "915",
+     "916",
+     "918",
+     "919",
+     "920"
+    ],
+    "folds": [
+     0,
+     1,
+     2,
+     3
+    ]
+   },
+   "v1.avi": {
+    "ids": [
+     "509",
+     "515"
+    ],
+    "folds": [
+     0,
+     1
+    ]
+   }
+  },
+  "n_nombres_sospechosos": 2,
+  "nn_otro_caballo_distancia_min": 2.734849429133481,
+  "nn_dist_mediana": 7.821542754999192,
+  "nn_mismo_fold_otro_caballo_frac": 0.25069637883008355,
+  "nn_misma_clase_frac_otro_fold": 0.7434944237918215
+ },
+ "base_reproducida": {
+  "f1_media": 0.8505560641065232,
+  "f1_desvio": 0.0497811413812,
+  "f1_agrupado": 0.8512802541295935
+ },
+ "6_semillas": {
+  "semillas_1a5": [
+   0.8392865320387446,
+   0.8423732675139879,
+   0.8364388571359752,
+   0.8419616985981669,
+   0.8442920519103077
+  ],
+  "media_5": 0.8408704814394363,
+  "desvio_5": 0.0030538686543256795,
+  "semilla0": 0.8505560641065232
+ },
+ "2_preproc": {
+  "nota": "features por clip sin estadística global; imputación mediana dentro del pipeline por fold; RF sin búsqueda de hiperparámetros; umbral CONF_MIN=0.5 fijo a priori. Controles empíricos: ver 3 y 6.",
+  "frac_nan": 0.14185236768802229
+ },
+ "3_columnas_no_reconocidas": [],
+ "3a_solo_estaticas_sin_disp": {
+  "f1_media": 0.8257334502596371,
+  "f1_desvio": 0.07049526183757023,
+  "f1_agrupado": 0.8277003994395299
+ },
+ "3b_sin_disp_ni_dinamicas (=3a)": {
+  "f1_media": 0.8257334502596371,
+  "f1_desvio": 0.07049526183757023,
+  "f1_agrupado": 0.8277003994395299
+ },
+ "3b2_sin_disponibilidad": {
+  "f1_media": 0.8480484348665858,
+  "f1_desvio": 0.058221370676873364,
+  "f1_agrupado": 0.8484247311011927
+ },
+ "3b3_solo_disponibilidad": {
+  "f1_media": 0.48980695150833886,
+  "f1_desvio": 0.005186321507446446,
+  "f1_agrupado": 0.4898641279023485
+ },
+ "3b4_solo_dinamicas": {
+  "f1_media": 0.7263141041673559,
+  "f1_desvio": 0.036311869348912736,
+  "f1_agrupado": 0.7260988911201398
+ },
+ "3c_estratos_base": {
+  "1080x1920": {
+   "n": 322,
+   "clases": {
+    "Disgustado": 93,
+    "Interesado": 91,
+    "Sereno": 138
+   },
+   "f1_agrupado": 0.8402357431125621,
+   "f1_media_folds": 0.8333637119581032
+  },
+  "otra_resolucion": {
+   "n": 37,
+   "clases": {
+    "Disgustado": 10,
+    "Interesado": 27,
+    "Sereno": 0
+   },
+   "f1_agrupado": 0.6001796945193172,
+   "f1_media_folds": 0.8953373015873016
+  },
+  "dur>=5": {
+   "n": 264,
+   "clases": {
+    "Disgustado": 32,
+    "Interesado": 104,
+    "Sereno": 128
+   },
+   "f1_agrupado": 0.7649664750957853,
+   "f1_media_folds": 0.7563618094503479
+  },
+  "dur<5": {
+   "n": 95,
+   "clases": {
+    "Disgustado": 71,
+    "Interesado": 14,
+    "Sereno": 10
+   },
+   "f1_agrupado": 0.8773946360153256,
+   "f1_media_folds": 0.8436943185750688
+  },
+  "limpio": {
+   "n": 236,
+   "clases": {
+    "Disgustado": 28,
+    "Interesado": 80,
+    "Sereno": 128
+   },
+   "f1_agrupado": 0.7500843983602604,
+   "f1_media_folds": 0.7233755837037175
+  }
+ },
+ "3c2_residualizado_por_fold": {
+  "f1_media": 0.7774294825038265,
+  "f1_agrupado": 0.7772581735430033
+ },
+ "3c3_RF_entrenado_y_evaluado_en_limpio": 0.6775131666411003,
+ "3d_metadatos_solos": {
+  "f1_media": 0.5741301949381757,
+  "f1_desvio": 0.050952139213479714,
+  "f1_agrupado": 0.588322075320244
+ },
+ "3d_features_mas_metadatos": {
+  "f1_media": 0.842019760920044,
+  "f1_desvio": 0.05804786198129677,
+  "f1_agrupado": 0.8422933600168413
+ },
+ "3e_predecir_filmacion": {
+  "R2_log_duracion": 0.5274049208696828,
+  "R2_fps": -0.10617191688048311,
+  "AUC_resolucion_1080x1920": 0.7313244921940574,
+  "frac_1080x1920": 0.8969359331476323,
+  "AUC_baseline_clase_mayoritaria_trivial": 0.5
+ },
+ "3e_estaticas_solas": {
+  "R2_log_duracion": 0.08126210629134267,
+  "AUC_resolucion": 0.7478176934698673
+ },
+ "3_asociacion_clase_filmacion": {
+  "Disgustado": {
+   "frac_1080x1920": 0.9029126213592233,
+   "dur_mediana": 3.2333333333333334,
+   "n": 103
+  },
+  "Interesado": {
+   "frac_1080x1920": 0.7711864406779662,
+   "dur_mediana": 6.006,
+   "n": 118
+  },
+  "Sereno": {
+   "frac_1080x1920": 1.0,
+   "dur_mediana": 6.005999684227146,
+   "n": 138
+  }
+ },
+ "3_span_seg_mediana_por_clase": {
+  "Disgustado": 2.867,
+  "Interesado": 5.906,
+  "Sereno": 5.9295
+ },
+ "4_cara_solo_orejas_ojos_boca": {
+  "f1_media": 0.8480410159725389,
+  "f1_desvio": 0.06502877284911045,
+  "f1_agrupado": 0.8489003657484426,
+  "n": 122
+ },
+ "4_cara_estatica": {
+  "f1_media": 0.8281722233478178,
+  "f1_desvio": 0.04910566521343051,
+  "f1_agrupado": 0.8303184745837019,
+  "n": 110
+ },
+ "4_orejas": {
+  "f1_media": 0.7835181203485236,
+  "f1_desvio": 0.05822159090306301,
+  "f1_agrupado": 0.7854130796474106
+ },
+ "4_boca": {
+  "f1_media": 0.6477531020418501,
+  "f1_desvio": 0.038337863333850225,
+  "f1_agrupado": 0.6496150729586124
+ },
+ "4_cabeza_postura_y_cuello": {
+  "f1_media": 0.7933168955939429,
+  "f1_desvio": 0.04550000391341687,
+  "f1_agrupado": 0.7912615872478597,
+  "n": 29
+ },
+ "4_cabeza_postura_estatica_y_cuello_estatico": {
+  "f1_media": 0.712466689432227,
+  "f1_desvio": 0.04713104688245524,
+  "f1_agrupado": 0.7095465382996209,
+  "n": 20
+ },
+ "4_cuello": {
+  "f1_media": 0.46053657521842234,
+  "f1_desvio": 0.051452897448246444,
+  "f1_agrupado": 0.46508629843955607
+ },
+ "5_comparabilidad": {
+  "n_clips": 359,
+  "etiquetas_iguales_a_MIL": true,
+  "F1_MIL_recomputado_con_misma_funcion": 0.7396195634909437,
+  "F1_MIL_por_fold_artefacto": [
+   0.7183115546052111,
+   0.7686909581646422,
+   0.6769450949778819,
+   0.7945306462160396
+  ],
+  "F1_MIL_por_fold_recomputado": [
+   0.7183115546052111,
+   0.7686909581646422,
+   0.6769450949778819,
+   0.7945306462160396
+  ],
+  "F1_RF_por_fold": [
+   0.7766921457848676,
+   0.8651215992679407,
+   0.8781676413255362,
+   0.8822428700477482
+  ],
+  "claves_ev_por_fold": [
+   "fold",
+   "n",
+   "f1_macro",
+   "balanced_accuracy",
+   "recall_disgustado",
+   "mejor_epoca",
+   "f1_validacion",
+   "f1_train",
+   "epocas_corridas",
+   "clips_train_interno",
+   "clips_validacion",
+   "caballos_train_interno",
+   "caballos_validacion",
+   "caballos_test",
+   "dropout",
+   "estrategia_pesos",
+   "curva"
+  ]
+ },
+ "5_por_clase": {
+  "RF": {
+   "Disgustado": {
+    "precision": 0.839622641509434,
+    "recall": 0.8640776699029126,
+    "f1": 0.8516746411483254,
+    "soporte": 103
+   },
+   "Interesado": {
+    "precision": 0.8571428571428571,
+    "recall": 0.8135593220338984,
+    "f1": 0.8347826086956522,
+    "soporte": 118
+   },
+   "Sereno": {
+    "precision": 0.8581560283687943,
+    "recall": 0.8768115942028986,
+    "f1": 0.8673835125448028,
+    "soporte": 138
+   }
+  },
+  "MIL": {
+   "Disgustado": {
+    "precision": 0.7395833333333334,
+    "recall": 0.6893203883495146,
+    "f1": 0.7135678391959799,
+    "soporte": 103
+   },
+   "Interesado": {
+    "precision": 0.7642276422764228,
+    "recall": 0.7966101694915254,
+    "f1": 0.7800829875518673,
+    "soporte": 118
+   },
+   "Sereno": {
+    "precision": 0.7285714285714285,
+    "recall": 0.7391304347826086,
+    "f1": 0.7338129496402879,
+    "soporte": 138
+   }
+  }
+ },
+ "7_bootstrap_independiente": {
+  "media": 0.11118863852552653,
+  "ic95": [
+   0.044936088973478006,
+   0.18575669899410394
+  ],
+  "p_dif<=0": 0.0
+ },
+ "7_bootstrap_clips_contraste": {
+  "ic95": [
+   0.054641902378251415,
+   0.16514969686165057
+  ]
+ },
+ "control_negativo_etiquetas_permutadas_F1": [
+  0.28979905940873785,
+  0.31812877128872813,
+  0.3231450672960833
+ ]
+}
