@@ -42,7 +42,7 @@ from equinos import rutas
 
 # Mismo valor que `CONF_MINIMA_KEYPOINT` en la celda de parámetros del notebook 02. Un frame es
 # "detectado" cuando el ojo Y el hocico lo superan: alinear necesita el par completo.
-CONF_MINIMA_KEYPOINT = 0.55
+CONF_MINIMA_KEYPOINT = 0.50
 
 # Geometría del recorte. La separación canónica ojo-hocico es la escala contra la que se lee el
 # error: el desplazamiento en píxeles DENTRO del recorte es lo que ve el modelo.
