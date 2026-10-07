@@ -1,0 +1,12 @@
+{
+ "parametros_entrenables_MIL": 132355,
+ "parametros_backbone_ResNet18_congelado_no_entrenable": 11176512,
+ "nota_backbone": "la caché de características usa ResNet-18 ImageNet congelada; extraerla cuesta una pasada GPU por frame y NO está incluida en la inferencia/entrenamiento aquí medidos",
+ "pesos_fold0_cargados": true,
+ "inferencia_ms_por_clip_cpu_desde_caracteristicas_cacheadas": 0.19924736667841594,
+ "inferencia_ms_por_clip_cuda_desde_caracteristicas_cacheadas": 0.31591246667327744,
+ "entrenamiento_fold0_s": 28.08181995399991,
+ "entrenamiento_fold0_epocas": 38,
+ "entrenamiento_fold0_dispositivo": "cuda",
+ "entrenamiento_nota": "una sola corrida (no repetida), RTX 3070, desde características cacheadas; sin extracción visual"
+}
