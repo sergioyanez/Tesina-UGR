@@ -1,0 +1,364 @@
+{
+ "embudo": {
+  "videos_inventariados": 274,
+  "caballos_en_videos": 138,
+  "videos_sin_clips": 9,
+  "videos_sin_clips_detalle": [
+   "043-vid-20230630-141255137_MFpskv6a.mp4",
+   "208_20260818-151433_Nr89wsP0.mp4",
+   "232_20260818-115055_HzLpFNz8.mp4",
+   "233_20260818-114756_mfvmliza.mp4",
+   "707_2026-08-26-15-35-33_1PkxWvqv.mkv",
+   "707_2026-08-26-15-35-33_8yzMLAWJ.mkv",
+   "712_2026-08-27-11-05-10_sDx4PXS7.mkv",
+   "900_20260702-090731_S1WPfySm.mp4",
+   "908_20260702-141053_vEGyNyms.mp4"
+  ],
+  "videos_con_clips_candidatos": 265,
+  "clips_candidatos": 393,
+  "caballos_en_clips_candidatos": 136,
+  "clips_descartados": 34,
+  "motivos_descarte": {
+   "VENTANA_CORTA": 31,
+   "SIN_KEYPOINTS": 3
+  },
+  "clips_validos": 359,
+  "videos_con_clips_validos": 244,
+  "caballos_validos": 133,
+  "pct_clips_validos": 91.34860050890585,
+  "pct_videos_aprovechados": 89.05109489051095,
+  "pct_caballos_aprovechados": 96.3768115942029,
+  "frames_totales": 5744,
+  "frames_por_clip_unico": [
+   16
+  ],
+  "por_clase": [
+   {
+    "clase": "Disgustado",
+    "videos_inventariados": 110,
+    "clips_candidatos": 113,
+    "clips_validos": 103,
+    "clips_descartados": 10,
+    "pct_validos": 91.1504424778761,
+    "videos_validos": 91,
+    "caballos_validos": 57,
+    "caballos_candidatos": 59
+   },
+   {
+    "clase": "Interesado",
+    "videos_inventariados": 71,
+    "clips_candidatos": 120,
+    "clips_validos": 118,
+    "clips_descartados": 2,
+    "pct_validos": 98.33333333333333,
+    "videos_validos": 69,
+    "caballos_validos": 60,
+    "caballos_candidatos": 60
+   },
+   {
+    "clase": "Sereno",
+    "videos_inventariados": 93,
+    "clips_candidatos": 160,
+    "clips_validos": 138,
+    "clips_descartados": 22,
+    "pct_validos": 86.25,
+    "videos_validos": 84,
+    "caballos_validos": 52,
+    "caballos_candidatos": 54
+   }
+  ]
+ },
+ "caballos": {
+  "n": 133,
+  "clips_por_caballo": {
+   "media": 2.699248120300752,
+   "mediana": 2.0,
+   "min": 1,
+   "max": 14,
+   "p90": 5.0,
+   "con_1_clip": 58,
+   "con_5_o_mas": 16
+  },
+  "caballos_en_1_clase": 104,
+  "caballos_en_2_clases": 22,
+  "caballos_en_3_clases": 7,
+  "pct_caballos_multiclase": 21.804511278195488,
+  "clips_de_caballos_multiclase": 145,
+  "top10_caballos_por_clips": {
+   "037": 14,
+   "906": 13,
+   "058": 13,
+   "055": 10,
+   "155": 9,
+   "910": 9,
+   "237": 9,
+   "054": 8,
+   "218": 7,
+   "509": 7
+  },
+  "pct_clips_top10": 27.57660167130919,
+  "caballos_multiclase": {
+   "022": {
+    "clips": 3,
+    "clases": "Disgustado/Interesado"
+   },
+   "037": {
+    "clips": 14,
+    "clases": "Disgustado/Interesado"
+   },
+   "044": {
+    "clips": 3,
+    "clases": "Interesado/Sereno"
+   },
+   "054": {
+    "clips": 8,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "055": {
+    "clips": 10,
+    "clases": "Interesado/Sereno"
+   },
+   "057": {
+    "clips": 5,
+    "clases": "Interesado/Sereno"
+   },
+   "154": {
+    "clips": 2,
+    "clases": "Interesado/Sereno"
+   },
+   "178": {
+    "clips": 4,
+    "clases": "Disgustado/Interesado"
+   },
+   "201": {
+    "clips": 3,
+    "clases": "Disgustado/Interesado"
+   },
+   "203": {
+    "clips": 4,
+    "clases": "Disgustado/Sereno"
+   },
+   "204": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "205": {
+    "clips": 2,
+    "clases": "Disgustado/Sereno"
+   },
+   "208": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "218": {
+    "clips": 7,
+    "clases": "Disgustado/Sereno"
+   },
+   "220": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "228": {
+    "clips": 4,
+    "clases": "Disgustado/Interesado"
+   },
+   "229": {
+    "clips": 5,
+    "clases": "Disgustado/Sereno"
+   },
+   "230": {
+    "clips": 5,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "231": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "235": {
+    "clips": 2,
+    "clases": "Disgustado/Interesado"
+   },
+   "237": {
+    "clips": 9,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "906": {
+    "clips": 13,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "907": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "908": {
+    "clips": 5,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "909": {
+    "clips": 3,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "910": {
+    "clips": 9,
+    "clases": "Disgustado/Interesado/Sereno"
+   },
+   "912": {
+    "clips": 4,
+    "clases": "Disgustado/Interesado"
+   },
+   "914": {
+    "clips": 3,
+    "clases": "Disgustado/Sereno"
+   },
+   "916": {
+    "clips": 3,
+    "clases": "Interesado/Sereno"
+   }
+  },
+  "combinaciones": {
+   "Interesado": 41,
+   "Sereno": 30,
+   "Disgustado+Interesado": 7,
+   "Interesado+Sereno": 5,
+   "Disgustado": 33,
+   "Disgustado+Interesado+Sereno": 7,
+   "Disgustado+Sereno": 10
+  }
+ },
+ "videos": {
+  "videos_validos": 244,
+  "clips_por_video": {
+   "media": 1.471311475409836,
+   "mediana": 1.0,
+   "max": 7,
+   "con_1_clip": 175,
+   "con_2_o_mas": 69,
+   "clips_en_videos_multiclip": 184
+  }
+ },
+ "tecnico": {
+  "duracion_seg_por_clase": {
+   "Disgustado": {
+    "p10": 1.8,
+    "p25": 2.333333333333333,
+    "mediana": 3.2333333333333334,
+    "p75": 5.652783186849815,
+    "p90": 6.173333333333333
+   },
+   "Interesado": {
+    "p10": 4.728056666666666,
+    "p25": 5.998224607230741,
+    "mediana": 6.006,
+    "p75": 6.999764122777933,
+    "p90": 7.0002075187969925
+   },
+   "Sereno": {
+    "p10": 5.476666666666667,
+    "p25": 5.999772190472327,
+    "mediana": 6.005999684227146,
+    "p75": 6.999983625991432,
+    "p90": 7.000004861111111
+   }
+  },
+  "resoluciones_por_clase": {
+   "Disgustado": {
+    "1080x1920": 93,
+    "2560x1440": 8,
+    "640x480": 2
+   },
+   "Interesado": {
+    "1080x1920": 91,
+    "640x480": 26,
+    "720x1280": 1
+   },
+   "Sereno": {
+    "1080x1920": 138
+   }
+  },
+  "pct_clips_5_a_7s_por_clase": {
+   "Disgustado": 27.184466019417474,
+   "Interesado": 76.27118644067797,
+   "Sereno": 87.68115942028986
+  },
+  "pct_clips_menos_4_5s_por_clase": {
+   "Disgustado": 64.07766990291263,
+   "Interesado": 8.47457627118644,
+   "Sereno": 6.521739130434782
+  },
+  "clips_fuera_5_7s": 120,
+  "pct_clips_fuera_5_7s": 33.42618384401114,
+  "clips_menos_4_5s": 85
+ },
+ "consistencia_nombres": {
+  "clip_prefijo_igual_id": true,
+  "video_prefijo_igual_id": true,
+  "ids_con_3_digitos": true,
+  "clases_validas": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "nombres_con_espacio": 7,
+  "nombres_con_copia": 6,
+  "extensiones": {
+   "mp4": 246,
+   "avi": 13,
+   "mkv": 15
+  },
+  "carpeta_distinta_de_clase": {
+   "Se tapa una parte de la cara ": 7,
+   "Seleccionar cabeza?": 33
+  },
+  "videos_mismo_nombre_normalizado": 0,
+  "videos_avi": 13,
+  "ids_por_rango": {
+   "1xx-9xx": 136
+  }
+ },
+ "por_fold_global": [
+  {
+   "fold": 0,
+   "clips": 90,
+   "caballos": 33,
+   "clips_Disgustado": 36,
+   "clips_Interesado": 29,
+   "clips_Sereno": 25,
+   "caballos_Disgustado": 13,
+   "caballos_Interesado": 15,
+   "caballos_Sereno": 16
+  },
+  {
+   "fold": 1,
+   "clips": 90,
+   "caballos": 33,
+   "clips_Disgustado": 20,
+   "clips_Interesado": 28,
+   "clips_Sereno": 42,
+   "caballos_Disgustado": 16,
+   "caballos_Interesado": 12,
+   "caballos_Sereno": 14
+  },
+  {
+   "fold": 2,
+   "clips": 90,
+   "caballos": 34,
+   "clips_Disgustado": 29,
+   "clips_Interesado": 31,
+   "clips_Sereno": 30,
+   "caballos_Disgustado": 15,
+   "caballos_Interesado": 19,
+   "caballos_Sereno": 11
+  },
+  {
+   "fold": 3,
+   "clips": 89,
+   "caballos": 33,
+   "clips_Disgustado": 18,
+   "clips_Interesado": 30,
+   "clips_Sereno": 41,
+   "caballos_Disgustado": 13,
+   "caballos_Interesado": 14,
+   "caballos_Sereno": 11
+  }
+ ]
+}

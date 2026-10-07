@@ -1,0 +1,164 @@
+{
+ "videos_hasheados": 274,
+ "videos_no_encontrados": [],
+ "grupos_de_videos_con_hash_identico": [],
+ "pares_videos_perceptualmente_similares_hamming<=6": [
+  {
+   "a": "704_2026-05-12-00-29-19_354NnGnV.mkv",
+   "b": "704_2026-05-12-00-29-19_DISPf8sL.mkv",
+   "hamming_medio_64bits": 3.0,
+   "id_a": "704",
+   "id_b": "704",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "709_2026-08-27-11-07-48_sZMI2PzS.mkv",
+   "hamming_medio_64bits": 4.142857142857143,
+   "id_a": "709",
+   "id_b": "709",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "hamming_medio_64bits": 4.142857142857143,
+   "id_a": "709",
+   "id_b": "709",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "711_2026-08-27-11-05-57_K1OcreeL.mkv",
+   "hamming_medio_64bits": 4.625,
+   "id_a": "709",
+   "id_b": "711",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "710_2026-08-27-11-07-09_fnKJQTtP.mkv",
+   "hamming_medio_64bits": 5.571428571428571,
+   "id_a": "709",
+   "id_b": "710",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "711_2026-08-27-11-05-57_K1OcreeL.mkv",
+   "hamming_medio_64bits": 5.714285714285714,
+   "id_a": "709",
+   "id_b": "711",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "712_2026-08-27-11-05-10_sDx4PXS7.mkv",
+   "hamming_medio_64bits": 5.714285714285714,
+   "id_a": "709",
+   "id_b": "712",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "705_2026-05-15-11-34-30_sDHdiPPO.mkv",
+   "b": "707_2026-08-26-15-35-33_8yzMLAWJ.mkv",
+   "hamming_medio_64bits": 6.0,
+   "id_a": "705",
+   "id_b": "707",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_sZMI2PzS.mkv",
+   "b": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "hamming_medio_64bits": 6.0,
+   "id_a": "709",
+   "id_b": "709",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "710_2026-08-27-11-07-09_fnKJQTtP.mkv",
+   "hamming_medio_64bits": 6.0,
+   "id_a": "709",
+   "id_b": "710",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  }
+ ],
+ "n_pares_similares": 10,
+ "n_pares_similares_distinto_id": 6,
+ "pares_similares_distinto_id": [
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "711_2026-08-27-11-05-57_K1OcreeL.mkv",
+   "hamming_medio_64bits": 4.625,
+   "id_a": "709",
+   "id_b": "711",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "710_2026-08-27-11-07-09_fnKJQTtP.mkv",
+   "hamming_medio_64bits": 5.571428571428571,
+   "id_a": "709",
+   "id_b": "710",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-07-48_9dqwiZR6.mkv",
+   "b": "711_2026-08-27-11-05-57_K1OcreeL.mkv",
+   "hamming_medio_64bits": 5.714285714285714,
+   "id_a": "709",
+   "id_b": "711",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "712_2026-08-27-11-05-10_sDx4PXS7.mkv",
+   "hamming_medio_64bits": 5.714285714285714,
+   "id_a": "709",
+   "id_b": "712",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "705_2026-05-15-11-34-30_sDHdiPPO.mkv",
+   "b": "707_2026-08-26-15-35-33_8yzMLAWJ.mkv",
+   "hamming_medio_64bits": 6.0,
+   "id_a": "705",
+   "id_b": "707",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  },
+  {
+   "a": "709_2026-08-27-11-14-27_eHmfpXig.mkv",
+   "b": "710_2026-08-27-11-07-09_fnKJQTtP.mkv",
+   "hamming_medio_64bits": 6.0,
+   "id_a": "709",
+   "id_b": "710",
+   "clase_a": "Disgustado",
+   "clase_b": "Disgustado"
+  }
+ ],
+ "frames_analizados": 5744,
+ "grupos_frames_identicos_md5_entre_clips_distintos": 0,
+ "grupos_frames_dhash256_identicos_entre_clips_distintos": 0,
+ "de_ellos_cruzan_fold": 0,
+ "de_ellos_cruzan_clase": 0,
+ "detalle_grupos_frames": [],
+ "frames_repetidos_dentro_del_mismo_clip": 0,
+ "solapamientos_temporales_entre_clips_del_mismo_video": 0,
+ "videos_con_clips_en_mas_de_un_fold": 0
+}

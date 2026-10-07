@@ -1,0 +1,559 @@
+{
+ "balance": {
+  "tabla": [
+   {
+    "clase": "Disgustado",
+    "clips": 103,
+    "pct_clips": 28.690807799442897,
+    "caballos": 57,
+    "pct_caballos": 42.857142857142854,
+    "pct_pares_caballo_clase": 33.72781065088758,
+    "clips_por_caballo": 1.8070175438596492
+   },
+   {
+    "clase": "Interesado",
+    "clips": 118,
+    "pct_clips": 32.86908077994429,
+    "caballos": 60,
+    "pct_caballos": 45.11278195488722,
+    "pct_pares_caballo_clase": 35.50295857988166,
+    "clips_por_caballo": 1.9666666666666666
+   },
+   {
+    "clase": "Sereno",
+    "clips": 138,
+    "pct_clips": 38.440111420612816,
+    "caballos": 52,
+    "pct_caballos": 39.097744360902254,
+    "pct_pares_caballo_clase": 30.76923076923077,
+    "clips_por_caballo": 2.6538461538461537
+   }
+  ],
+  "ratio_mayor_menor_clips": 1.3398058252427185,
+  "ratio_mayor_menor_caballos": 1.1538461538461537,
+  "categoria_clips": "RAZONABLEMENTE BALANCEADO",
+  "categoria_caballos": "BALANCEADO",
+  "sensibilidad": [
+   {
+    "cortes": [
+     1.2,
+     1.5,
+     3.0
+    ],
+    "clips": "RAZONABLEMENTE BALANCEADO",
+    "caballos": "BALANCEADO"
+   },
+   {
+    "cortes": [
+     1.1,
+     1.3,
+     2.0
+    ],
+    "clips": "MODERADAMENTE DESBALANCEADO",
+    "caballos": "RAZONABLEMENTE BALANCEADO"
+   },
+   {
+    "cortes": [
+     1.25,
+     2.0,
+     4.0
+    ],
+    "clips": "RAZONABLEMENTE BALANCEADO",
+    "caballos": "BALANCEADO"
+   }
+  ],
+  "entropia_normalizada_clips": 0.9934889898699261,
+  "nota_pct_caballos": "los porcentajes de caballos suman >100 % porque 29 caballos tienen clips en más de una clase; se agrega % sobre pares caballo-clase (suma 100 %)",
+  "criterio": {
+   "cortes_IR": [
+    1.2,
+    1.5,
+    3.0
+   ],
+   "categorias": [
+    "BALANCEADO",
+    "RAZONABLEMENTE BALANCEADO",
+    "MODERADAMENTE DESBALANCEADO",
+    "FUERTEMENTE DESBALANCEADO"
+   ]
+  }
+ },
+ "folds": [
+  {
+   "fold": 0,
+   "test": {
+    "clips": 90,
+    "caballos": 33,
+    "clips_Disgustado": 36,
+    "caballos_Disgustado": 13,
+    "clips_Interesado": 29,
+    "caballos_Interesado": 15,
+    "clips_Sereno": 25,
+    "caballos_Sereno": 16,
+    "pct_Disgustado": 40.0,
+    "pct_Interesado": 32.22222222222222,
+    "pct_Sereno": 27.77777777777778,
+    "ratio_mayor_menor": 1.44,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   },
+   "train_interno": {
+    "clips": 199,
+    "caballos": 93,
+    "clips_Disgustado": 56,
+    "caballos_Disgustado": 40,
+    "clips_Interesado": 76,
+    "caballos_Interesado": 41,
+    "clips_Sereno": 67,
+    "caballos_Sereno": 29,
+    "pct_Disgustado": 28.14070351758794,
+    "pct_Interesado": 38.19095477386934,
+    "pct_Sereno": 33.66834170854271,
+    "ratio_mayor_menor": 1.3571428571428572,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   },
+   "validacion_interna": {
+    "clips": 70,
+    "caballos": 7,
+    "clips_Disgustado": 11,
+    "caballos_Disgustado": 4,
+    "clips_Interesado": 13,
+    "caballos_Interesado": 4,
+    "clips_Sereno": 46,
+    "caballos_Sereno": 7,
+    "pct_Disgustado": 15.714285714285714,
+    "pct_Interesado": 18.571428571428573,
+    "pct_Sereno": 65.71428571428571,
+    "ratio_mayor_menor": 4.181818181818182,
+    "categoria": "FUERTEMENTE DESBALANCEADO"
+   },
+   "train_val_total": {
+    "clips": 269,
+    "caballos": 100,
+    "clips_Disgustado": 67,
+    "caballos_Disgustado": 44,
+    "clips_Interesado": 89,
+    "caballos_Interesado": 45,
+    "clips_Sereno": 113,
+    "caballos_Sereno": 36,
+    "pct_Disgustado": 24.907063197026023,
+    "pct_Interesado": 33.08550185873606,
+    "pct_Sereno": 42.00743494423792,
+    "ratio_mayor_menor": 1.6865671641791045,
+    "categoria": "MODERADAMENTE DESBALANCEADO"
+   }
+  },
+  {
+   "fold": 1,
+   "test": {
+    "clips": 90,
+    "caballos": 33,
+    "clips_Disgustado": 20,
+    "caballos_Disgustado": 16,
+    "clips_Interesado": 28,
+    "caballos_Interesado": 12,
+    "clips_Sereno": 42,
+    "caballos_Sereno": 14,
+    "pct_Disgustado": 22.22222222222222,
+    "pct_Interesado": 31.11111111111111,
+    "pct_Sereno": 46.666666666666664,
+    "ratio_mayor_menor": 2.1,
+    "categoria": "MODERADAMENTE DESBALANCEADO"
+   },
+   "train_interno": {
+    "clips": 199,
+    "caballos": 93,
+    "clips_Disgustado": 59,
+    "caballos_Disgustado": 36,
+    "clips_Interesado": 78,
+    "caballos_Interesado": 43,
+    "clips_Sereno": 62,
+    "caballos_Sereno": 32,
+    "pct_Disgustado": 29.64824120603015,
+    "pct_Interesado": 39.19597989949749,
+    "pct_Sereno": 31.155778894472363,
+    "ratio_mayor_menor": 1.3220338983050848,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   },
+   "validacion_interna": {
+    "clips": 70,
+    "caballos": 7,
+    "clips_Disgustado": 24,
+    "caballos_Disgustado": 5,
+    "clips_Interesado": 12,
+    "caballos_Interesado": 5,
+    "clips_Sereno": 34,
+    "caballos_Sereno": 6,
+    "pct_Disgustado": 34.285714285714285,
+    "pct_Interesado": 17.142857142857142,
+    "pct_Sereno": 48.57142857142857,
+    "ratio_mayor_menor": 2.8333333333333335,
+    "categoria": "MODERADAMENTE DESBALANCEADO"
+   },
+   "train_val_total": {
+    "clips": 269,
+    "caballos": 100,
+    "clips_Disgustado": 83,
+    "caballos_Disgustado": 41,
+    "clips_Interesado": 90,
+    "caballos_Interesado": 48,
+    "clips_Sereno": 96,
+    "caballos_Sereno": 38,
+    "pct_Disgustado": 30.855018587360593,
+    "pct_Interesado": 33.45724907063197,
+    "pct_Sereno": 35.687732342007436,
+    "ratio_mayor_menor": 1.1566265060240963,
+    "categoria": "BALANCEADO"
+   }
+  },
+  {
+   "fold": 2,
+   "test": {
+    "clips": 90,
+    "caballos": 34,
+    "clips_Disgustado": 29,
+    "caballos_Disgustado": 15,
+    "clips_Interesado": 31,
+    "caballos_Interesado": 19,
+    "clips_Sereno": 30,
+    "caballos_Sereno": 11,
+    "pct_Disgustado": 32.22222222222222,
+    "pct_Interesado": 34.44444444444444,
+    "pct_Sereno": 33.333333333333336,
+    "ratio_mayor_menor": 1.0689655172413792,
+    "categoria": "BALANCEADO"
+   },
+   "train_interno": {
+    "clips": 199,
+    "caballos": 92,
+    "clips_Disgustado": 54,
+    "caballos_Disgustado": 38,
+    "clips_Interesado": 73,
+    "caballos_Interesado": 37,
+    "clips_Sereno": 72,
+    "caballos_Sereno": 35,
+    "pct_Disgustado": 27.1356783919598,
+    "pct_Interesado": 36.68341708542714,
+    "pct_Sereno": 36.18090452261306,
+    "ratio_mayor_menor": 1.3518518518518519,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   },
+   "validacion_interna": {
+    "clips": 70,
+    "caballos": 7,
+    "clips_Disgustado": 20,
+    "caballos_Disgustado": 4,
+    "clips_Interesado": 14,
+    "caballos_Interesado": 4,
+    "clips_Sereno": 36,
+    "caballos_Sereno": 6,
+    "pct_Disgustado": 28.571428571428573,
+    "pct_Interesado": 20.0,
+    "pct_Sereno": 51.42857142857143,
+    "ratio_mayor_menor": 2.5714285714285716,
+    "categoria": "MODERADAMENTE DESBALANCEADO"
+   },
+   "train_val_total": {
+    "clips": 269,
+    "caballos": 99,
+    "clips_Disgustado": 74,
+    "caballos_Disgustado": 42,
+    "clips_Interesado": 87,
+    "caballos_Interesado": 41,
+    "clips_Sereno": 108,
+    "caballos_Sereno": 41,
+    "pct_Disgustado": 27.509293680297397,
+    "pct_Interesado": 32.342007434944236,
+    "pct_Sereno": 40.14869888475837,
+    "ratio_mayor_menor": 1.4594594594594594,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   }
+  },
+  {
+   "fold": 3,
+   "test": {
+    "clips": 89,
+    "caballos": 33,
+    "clips_Disgustado": 18,
+    "caballos_Disgustado": 13,
+    "clips_Interesado": 30,
+    "caballos_Interesado": 14,
+    "clips_Sereno": 41,
+    "caballos_Sereno": 11,
+    "pct_Disgustado": 20.224719101123597,
+    "pct_Interesado": 33.70786516853933,
+    "pct_Sereno": 46.06741573033708,
+    "ratio_mayor_menor": 2.2777777777777777,
+    "categoria": "MODERADAMENTE DESBALANCEADO"
+   },
+   "train_interno": {
+    "clips": 197,
+    "caballos": 93,
+    "clips_Disgustado": 59,
+    "caballos_Disgustado": 39,
+    "clips_Interesado": 69,
+    "caballos_Interesado": 40,
+    "clips_Sereno": 69,
+    "caballos_Sereno": 36,
+    "pct_Disgustado": 29.949238578680202,
+    "pct_Interesado": 35.025380710659896,
+    "pct_Sereno": 35.025380710659896,
+    "ratio_mayor_menor": 1.1694915254237288,
+    "categoria": "BALANCEADO"
+   },
+   "validacion_interna": {
+    "clips": 73,
+    "caballos": 7,
+    "clips_Disgustado": 26,
+    "caballos_Disgustado": 5,
+    "clips_Interesado": 19,
+    "caballos_Interesado": 6,
+    "clips_Sereno": 28,
+    "caballos_Sereno": 5,
+    "pct_Disgustado": 35.61643835616438,
+    "pct_Interesado": 26.027397260273972,
+    "pct_Sereno": 38.35616438356164,
+    "ratio_mayor_menor": 1.4736842105263157,
+    "categoria": "RAZONABLEMENTE BALANCEADO"
+   },
+   "train_val_total": {
+    "clips": 270,
+    "caballos": 100,
+    "clips_Disgustado": 85,
+    "caballos_Disgustado": 44,
+    "clips_Interesado": 88,
+    "caballos_Interesado": 46,
+    "clips_Sereno": 97,
+    "caballos_Sereno": 41,
+    "pct_Disgustado": 31.48148148148148,
+    "pct_Interesado": 32.592592592592595,
+    "pct_Sereno": 35.925925925925924,
+    "ratio_mayor_menor": 1.1411764705882352,
+    "categoria": "BALANCEADO"
+   }
+  }
+ ],
+ "fuga": {
+  "caballos_en_mas_de_un_fold": 0,
+  "videos_en_mas_de_un_fold": 0,
+  "clips_en_mas_de_un_fold": 0
+ },
+ "intersecciones": [
+  {
+   "fold": 0,
+   "clave": "id_caballo",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 0,
+   "clave": "video",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 0,
+   "clave": "clip",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 1,
+   "clave": "id_caballo",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 1,
+   "clave": "video",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 1,
+   "clave": "clip",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 2,
+   "clave": "id_caballo",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 2,
+   "clave": "video",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 2,
+   "clave": "clip",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 3,
+   "clave": "id_caballo",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 3,
+   "clave": "video",
+   "interseccion_train_test": 0
+  },
+  {
+   "fold": 3,
+   "clave": "clip",
+   "interseccion_train_test": 0
+  }
+ ],
+ "reproduccion_particion": {
+  "construir_reproduce_la_particion_persistida": true,
+  "sklearn_GroupKFold_da_la_misma_particion": false,
+  "fraccion_de_clips_con_el_mismo_fold_en_sklearn": 0.3816155988857939,
+  "tamano_folds_sklearn": [
+   90,
+   90,
+   90,
+   89
+  ],
+  "tamano_folds_persistidos": [
+   90,
+   90,
+   90,
+   89
+  ],
+  "predicciones_vigentes_corresponden_a_los_folds_persistidos": true
+ },
+ "normalizacion": {
+  "MIL: el canal visual NO se estandariza (features crudas del backbone)": true,
+  "MIL: el canal geométrico se normaliza por frame con ojo-hocico del mismo frame (sin estadísticas globales)": true,
+  "MIL: pesos de clase calculados con train interno": true,
+  "LogReg baselines: StandardScaler dentro de un Pipeline ajustado con fit(X[entrena])": true,
+  "Backbone ResNet-18: normalización de ImageNet con constantes fijas": true,
+  "Selección de época por F1 macro de validación interna (nunca test)": true,
+  "El test se predice una sola vez tras cargar el mejor checkpoint": true
+ },
+ "multiclase": {
+  "022": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "037": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "044": [
+   "Interesado",
+   "Sereno"
+  ],
+  "054": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "055": [
+   "Interesado",
+   "Sereno"
+  ],
+  "057": [
+   "Interesado",
+   "Sereno"
+  ],
+  "154": [
+   "Interesado",
+   "Sereno"
+  ],
+  "178": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "201": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "203": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "204": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "205": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "208": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "218": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "220": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "228": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "229": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "230": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "231": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "235": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "237": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "906": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "907": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "908": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "909": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "910": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "912": [
+   "Disgustado",
+   "Interesado"
+  ],
+  "914": [
+   "Disgustado",
+   "Sereno"
+  ],
+  "916": [
+   "Interesado",
+   "Sereno"
+  ]
+ },
+ "multiclase_resumen": {
+  "caballos_multiclase": 29,
+  "clips_de_esos_caballos": 145,
+  "fraccion_de_caballos_de_test_vistos_en_train_con_folds_ingenuos_por_clip": 0.7458408256817971
+ }
+}

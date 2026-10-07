@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+datos/_*.log
+datos/_*.json
