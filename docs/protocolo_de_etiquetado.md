@@ -157,15 +157,12 @@ R15 queda atendida en lo documental.
 
 **Pendientes que abre el formulario.**
 
-- **`Separar cabeza?` queda fuera del catálogo sin fundamento de etiqueta**: significa lo mismo que
-  `Seleccionar cabeza?`, que sí se incluye. Incluirla cambia el dataset y obliga a re-ejecutar el
-  pipeline; queda a decidir.
 - **Caballos atados.** Se declaran excluidos, pero el criterio de `Interesado` menciona la esclerótica
   visible «especialmente en animales atados». Conviene preguntarle si hay videos de animales atados
   en el dataset.
-- **Videos posteriores a la composición vigente.** Hay filmaciones del 03/09/2026 y del campus
-  hasta 09/2026; la composición vigente es del 25/08/2026. Hay que verificar si quedaron videos sin
-  incorporar.
+
+`Separar cabeza?` ya no existe ni en Drive ni en la copia local (verificado el 07/10/2026): el
+catálogo no excluye nada, así que no queda material fuera por esa carpeta.
 
 **Texto de limitación para la tesis**, en sustancia:
 

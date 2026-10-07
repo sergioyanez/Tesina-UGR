@@ -422,10 +422,11 @@ pero **el dataset lo etiquetó una sola persona**, que además filmó; y el crit
 postura, no sólo la cara. El formulario confirma un confusor parcial de establecimiento (box de
 hipódromo → `Interesado`, manada → `Disgustado`).
 
-**Pendientes que abre:** (1) `Separar cabeza?` significa lo mismo que `Seleccionar cabeza?`; decidir
-si se incluye, lo que obliga a re-ejecutar; (2) preguntar por caballos atados (excluidos, pero el
-criterio de `Interesado` los menciona); (3) verificar si hay videos filmados después del 25/08 sin
-incorporar; (4) fusionar la rama a `main` y archivar el change; (5) `test_equivalencia.py`.
+`Separar cabeza?` ya no existe en Drive ni en local: no hay nada que incorporar. La copia local
+coincide con Drive.
+
+**Pendientes:** (1) preguntar por caballos atados (excluidos, pero el criterio de `Interesado` los
+menciona); (2) fusionar la rama a `main` y archivar el change; (3) `test_equivalencia.py`.
 
 ### Estado al 25/09/2026
 

@@ -47,10 +47,8 @@ EXTENSIONES_VIDEO = (".mp4", ".avi", ".mov", ".mkv", ".webm")
 # estructura común es lo que obligaba a elegir entre dejar afuera los 10 videos de `Disgustado` o
 # dejar entrar carpetas que en otra clase no corresponden.
 #
-# `Separar cabeza?` (en `Sereno`) NO está declarada. Según el formulario de la etiquetadora
-# (28/09/2026) significa lo mismo que `Seleccionar cabeza?` —varios animales en cuadro—, así que
-# no hay razón de etiqueta para excluirla; incluirla está pendiente porque obliga a re-ejecutar.
-# Ver `docs/protocolo_de_etiquetado.md`, sección 4.
+# `Separar cabeza?` (en `Sereno`) NO está declarada a propósito: es material de trabajo sin
+# decisión de etiqueta tomada. Si mañana la tiene, se agrega acá y se re-ejecuta la etapa.
 SUBCARPETAS_POR_CLASE: dict[str, tuple[str, ...]] = {
     "Disgustado": ("Seleccionar cabeza?", "Se tapa una parte de la cara"),
     "Interesado": ("Seleccionar cabeza?",),
