@@ -173,29 +173,25 @@
     "fold": 0,
     "mejor_epoca_igual": true,
     "curva_val_igual": true,
-    "pesos_identicos": true,
-    "predicciones_cambian_con_el_test_alterado": true
+    "pesos_identicos": true
    },
    {
     "fold": 1,
     "mejor_epoca_igual": true,
     "curva_val_igual": true,
-    "pesos_identicos": true,
-    "predicciones_cambian_con_el_test_alterado": true
+    "pesos_identicos": true
    },
    {
     "fold": 2,
     "mejor_epoca_igual": true,
     "curva_val_igual": true,
-    "pesos_identicos": true,
-    "predicciones_cambian_con_el_test_alterado": true
+    "pesos_identicos": true
    },
    {
     "fold": 3,
     "mejor_epoca_igual": true,
     "curva_val_igual": true,
-    "pesos_identicos": true,
-    "predicciones_cambian_con_el_test_alterado": true
+    "pesos_identicos": true
    }
   ],
   "el_test_no_interviene": true

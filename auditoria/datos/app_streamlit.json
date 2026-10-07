@@ -1,0 +1,12 @@
+{
+ "excepciones_al_renderizar": [],
+ "titulo": [
+  "Detección de expresiones faciales en equinos"
+ ],
+ "aviso_visible": [
+  "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un trabajo de tesina. El modelo acierta **74% de las veces** (F1 macro 0.740), medido sobre 359 tomas de 133 caballos que no usó para entrenarse, y su acierto depende mucho de la clase: consultá el detalle que acompaña a cada resultado."
+ ],
+ "el_aviso_cita_accuracy_vigente": true,
+ "el_aviso_cita_f1_vigente": true,
+ "alcance": "Se ejecuta el script de la interfaz sin subir un video; la inferencia sobre videos se mide en orientacion_inferencia.json"
+}

@@ -106,7 +106,7 @@ def t_folds_conjuntos():
     return md(["Fold", "Conjunto", "Caballos", "Clips", "Disgustado", "Interesado", "Sereno", "Ratio", "Categoría"], rows)
 
 
-def t_early():
+def t_early_stopping():
     t = J("early_stopping_sobreajuste.json")["tabla"]
     fil = [(r["fold"], r["mejor_epoca"], r["epocas_ejecutadas"], f(r["f1_validacion"]), f(r["f1_test"]), f(r["f1_train"])) for r in t]
     m = J("early_stopping_sobreajuste.json")["medias"]
