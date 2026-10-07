@@ -1,0 +1,69 @@
+{
+ "arquitectura": {
+  "MIL multimodal: parametros_totales": 132355,
+  "MIL multimodal: parametros_entrenables": 132355,
+  "por_componente": {
+   "geom_mlp (9→64→128)": 8960,
+   "attention (640→128→1)": 82176,
+   "classifier (640→64→3)": 41219
+  },
+  "pct_atencion": 62.08756752672736,
+  "resnet18_sin_fc: parametros_totales": 11176512,
+  "resnet18_sin_fc: entrenables_tras_congelar": 0,
+  "pipeline_total_parametros": 11308867,
+  "pipeline_entrenables": 132355,
+  "guia_dice_132355_entrenables": true,
+  "dimensiones_por_clip": {
+   "visuales_por_frame": 512,
+   "geometricas_por_frame": 9,
+   "frames": 16,
+   "numero_de_valores_por_clip": 8336
+  },
+  "muestras": {
+   "clips": 359,
+   "caballos": 133,
+   "clips_train_por_fold_aprox": 270,
+   "clips_train_interno": 199,
+   "caballos_train_interno": 93
+  },
+  "razones": {
+   "parametros_entrenables_por_clip_train_interno": 665.1005025125628,
+   "parametros_entrenables_por_caballo_train_interno": 1423.1720430107528,
+   "dimension_de_entrada_por_clip_sobre_clips_train": 41.88944723618091,
+   "dimension_de_entrada_vector_por_frame_sobre_clips_train": 2.6180904522613067
+  }
+ },
+ "invariancia_al_orden": {
+  "clips_evaluados": 359,
+  "predicciones_cambiadas_con_orden_barajado": 0,
+  "max_dif_abs_logits": 3.814697265625e-06,
+  "max_dif_abs_logits_con_orden_invertido": 1.9073486328125e-06,
+  "por_fold": [
+   {
+    "fold": 0,
+    "clips": 90,
+    "cambios": 0,
+    "max_dif_logits": 1.9073486328125e-06
+   },
+   {
+    "fold": 1,
+    "clips": 90,
+    "cambios": 0,
+    "max_dif_logits": 3.814697265625e-06
+   },
+   {
+    "fold": 2,
+    "clips": 90,
+    "cambios": 0,
+    "max_dif_logits": 4.76837158203125e-07
+   },
+   {
+    "fold": 3,
+    "clips": 89,
+    "cambios": 0,
+    "max_dif_logits": 9.5367431640625e-07
+   }
+  ],
+  "conclusion": "El MIL es invariante al orden de los frames por construcción: la salida es una suma ponderada por softmax de instancias que se procesan independientemente; no hay codificación de posición ni recurrencia. Es 'espacial + agregación de conjunto'."
+ }
+}

@@ -1,0 +1,58 @@
+{
+ "origen_alineacion": {
+  "keypoints": 5744
+ },
+ "clips_solo_deteccion_propia": 359,
+ "clips": 359,
+ "span_seg_por_clase": {
+  "Disgustado": {
+   "p10": 1.3202,
+   "p25": 1.7999999999999998,
+   "mediana": 2.867,
+   "p75": 3.983,
+   "p90": 5.767
+  },
+  "Interesado": {
+   "p10": 3.8030000000000004,
+   "p25": 5.00325,
+   "mediana": 5.906,
+   "p75": 6.43525,
+   "p90": 6.907
+  },
+  "Sereno": {
+   "p10": 3.1568,
+   "p25": 5.52775,
+   "mediana": 5.9295,
+   "p75": 6.833,
+   "p90": 6.933
+  }
+ },
+ "paso_entre_frames_s_mediana_por_clase": {
+  "Disgustado": 0.19113333333333332,
+  "Interesado": 0.3937333333333333,
+  "Sereno": 0.3953
+ },
+ "pct_del_clip_cubierto_mediana_por_clase": {
+  "Disgustado": 96.47368421052632,
+  "Interesado": 98.33499833499833,
+  "Sereno": 98.27480400969279
+ },
+ "kruskal_wallis_span_por_clase": {
+  "H": 118.38739266609787,
+  "p": 1.9611206789114892e-26
+ },
+ "clips_con_ventana_menor_a_2s": {
+  "Disgustado": 31,
+  "Interesado": 2,
+  "Sereno": 2
+ },
+ "validos_ojo_hocico_por_clip_mediana": 142.0,
+ "gap_maximo_entre_frames_elegidos_(frames)": {
+  "mediana": 16.0,
+  "p95": 32.0,
+  "max": 56.0
+ },
+ "metodo": "ventana contigua más larga (≤7 s) con ≥16 mediciones válidas y sin huecos >0,5 s; 16 posiciones equiespaciadas en la ventana ancladas al frame medido más cercano (tolerancia 0,1 s, elige el de mayor confianza); NO es muestreo uniforme sobre el clip ni aleatorio",
+ "sesgo": "la ventana depende de la disponibilidad de keypoints y de la duración del clip, y la duración depende de la clase",
+ "AUC_span_Disgustado_vs_resto": 0.8656515473300971
+}

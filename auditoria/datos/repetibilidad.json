@@ -1,0 +1,87 @@
+{
+ "semillas": [
+  "42",
+  "43",
+  "44",
+  "45",
+  "46",
+  "47"
+ ],
+ "f1_macro_por_semilla": {
+  "42": 0.7396195634909437,
+  "43": 0.7509462741161805,
+  "44": 0.729508101333221,
+  "45": 0.7263886057894338,
+  "46": 0.762858091640893,
+  "47": 0.7274925940919694
+ },
+ "accuracy_por_semilla": {
+  "42": 0.7437325905292479,
+  "43": 0.7604456824512534,
+  "44": 0.7381615598885793,
+  "45": 0.7325905292479109,
+  "46": 0.766016713091922,
+  "47": 0.7325905292479109
+ },
+ "f1_media_entre_semillas": 0.7394688717437736,
+ "f1_desvio_entre_semillas": 0.014782087887830402,
+ "f1_min": 0.7263886057894338,
+ "f1_max": 0.762858091640893,
+ "rango": 0.03646948585145926,
+ "desvio_entre_folds_medio": 0.06064765151765439,
+ "mejor_epoca_por_semilla_y_fold": [
+  [
+   28,
+   26,
+   20,
+   40
+  ],
+  [
+   44,
+   28,
+   21,
+   27
+  ],
+  [
+   18,
+   23,
+   16,
+   22
+  ],
+  [
+   50,
+   24,
+   14,
+   19
+  ],
+  [
+   13,
+   15,
+   18,
+   22
+  ],
+  [
+   24,
+   30,
+   21,
+   21
+  ]
+ ],
+ "mejor_epoca_min": 13,
+ "mejor_epoca_max": 50,
+ "mejor_epoca_desvio_global": 9.14932483451846,
+ "f1_train_medio": 0.9700275,
+ "f1_validacion_medio": 0.7199758333333334,
+ "determinismo_semilla_42": {
+  "predicciones_iguales_a_las_guardadas": "359/359",
+  "pesos_identicos_bit_a_bit_por_fold": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "curvas_validacion_iguales": true,
+  "curvas_train_iguales": true
+ },
+ "lectura": "El resultado con la semilla vigente (42) es reproducible bit a bit en esta máquina; con otras semillas el F1 macro varía en el orden de ±0,015 y la mejor época cambia mucho entre semillas. El 0,740 es un punto dentro de una distribución de ~0,73–0,76, y la diferencia con el baseline estático (0,741) es menor que esa dispersión."
+}

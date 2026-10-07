@@ -1,0 +1,255 @@
+{
+ "videos_con_rotacion_declarada": 69,
+ "videos": 274,
+ "rotaciones": {
+  "0.0": 205,
+  "90.0": 69
+ },
+ "por_clase": {
+  "Disgustado": 1,
+  "Interesado": 21,
+  "Sereno": 47
+ },
+ "clips_validos_de_videos_rotados": 127,
+ "pct_clips_validos_de_videos_rotados": 35.37604456824512,
+ "inferencia_menciona_ORIENTATION_AUTO": false,
+ "notebook01_activa_ORIENTATION_AUTO": true,
+ "pruebas_extremo_a_extremo": [
+  {
+   "video": "217_20260818_144806.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 46.1,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.9788726568222046
+  },
+  {
+   "video": "207_20260818_151913.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 37.8,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.877625584602356
+  },
+  {
+   "video": "217_20260818_144548.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 44.9,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.9875752329826355
+  },
+  {
+   "video": "154_20260811_123118.mp4",
+   "clase_real": "Interesado",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 45.4,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Interesado",
+   "probabilidad_max": 0.9336057305335999
+  },
+  {
+   "video": "230_20260818_120401.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 45.0,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.8224971890449524
+  },
+  {
+   "video": "912_20260702_142421.mp4",
+   "clase_real": "Interesado",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 41.0,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.6796676516532898
+  },
+  {
+   "video": "218_20260818_143428.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 19.7,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.8034319281578064
+  },
+  {
+   "video": "218_20260818_144743.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 90.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1080,
+    1920
+   ],
+   "segundos": 39.6,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.9241453409194946
+  },
+  {
+   "video": "914_20260702-141211_NZFZ0IuM.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 30.4,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.8839928507804871
+  },
+  {
+   "video": "124_bajado-5-s3_iKQVsdsn.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 48.8,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.5509358644485474
+  },
+  {
+   "video": "706_2026-08-26-15-26-24_0LGlb5JC.mkv",
+   "clase_real": "Disgustado",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1440,
+    2560
+   ],
+   "segundos": 30.6,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.999474823474884
+  },
+  {
+   "video": "200_20260818-154550_XbCo4YG4.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 18.8,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.9667319655418396
+  },
+  {
+   "video": "908_20260702-141427_ngER7GIe.mp4",
+   "clase_real": "Disgustado",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 24.6,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.9058291912078857
+  },
+  {
+   "video": "231_20260818-121656_YEVak6no.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 24.4,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.9555202722549438
+  },
+  {
+   "video": "500_27v1_MqeH8hYv.avi",
+   "clase_real": "Interesado",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    480,
+    640
+   ],
+   "segundos": 16.3,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Disgustado",
+   "probabilidad_max": 0.6905637979507446
+  },
+  {
+   "video": "217_20260818-144422_akI0bRyV.mp4",
+   "clase_real": "Sereno",
+   "rotacion_declarada": 0.0,
+   "forma_del_frame_leido_por_cv2_(alto,ancho)": [
+    1920,
+    1080
+   ],
+   "segundos": 40.0,
+   "resultado": "PREDICCION",
+   "clase_predicha": "Sereno",
+   "probabilidad_max": 0.9533025026321411
+  }
+ ],
+ "resumen_e2e": {
+  "total": 16,
+  "predicciones": 16,
+  "negativas": 0,
+  "errores": 0,
+  "motivos_de_negativa": {},
+  "coinciden_con_la_etiqueta": 8,
+  "segundos_medios": 34.587500000000006,
+  "rotados": {
+   "total": 8,
+   "predicciones": 8,
+   "negativas": 0,
+   "errores": 0,
+   "motivos_de_negativa": {},
+   "coinciden_con_la_etiqueta": 3,
+   "segundos_medios": 39.93750000000001
+  },
+  "sin_rotacion": {
+   "total": 8,
+   "predicciones": 8,
+   "negativas": 0,
+   "errores": 0,
+   "motivos_de_negativa": {},
+   "coinciden_con_la_etiqueta": 5,
+   "segundos_medios": 29.2375
+  },
+  "nota": "Videos del propio dataset: el modelo de producción se entrenó con sus clips, así que la coincidencia con la etiqueta NO estima el rendimiento; sólo mide si la cadena funciona de punta a punta. Muestra pequeña: indicativa."
+ }
+}

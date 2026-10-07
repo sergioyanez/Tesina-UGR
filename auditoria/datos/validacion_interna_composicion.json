@@ -1,0 +1,98 @@
+{
+ "por_fold": [
+  {
+   "fold": 0,
+   "caballos_validacion": 7,
+   "clips_por_caballo_validacion": [
+    13,
+    13,
+    10,
+    9,
+    9,
+    9,
+    7
+   ],
+   "media_clips_por_caballo_val": 10.0,
+   "media_clips_por_caballo_train_interno": 2.139784946236559,
+   "maximo_clips_por_caballo_train_interno": 5,
+   "minimo_clips_por_caballo_val": 7,
+   "caballos_val_multiclase": 5,
+   "clases_val": {
+    "Sereno": 46,
+    "Interesado": 13,
+    "Disgustado": 11
+   }
+  },
+  {
+   "fold": 1,
+   "caballos_validacion": 7,
+   "clips_por_caballo_validacion": [
+    14,
+    13,
+    10,
+    9,
+    9,
+    8,
+    7
+   ],
+   "media_clips_por_caballo_val": 10.0,
+   "media_clips_por_caballo_train_interno": 2.139784946236559,
+   "maximo_clips_por_caballo_train_interno": 7,
+   "minimo_clips_por_caballo_val": 7,
+   "caballos_val_multiclase": 6,
+   "clases_val": {
+    "Disgustado": 24,
+    "Interesado": 12,
+    "Sereno": 34
+   }
+  },
+  {
+   "fold": 2,
+   "caballos_validacion": 7,
+   "clips_por_caballo_validacion": [
+    14,
+    13,
+    10,
+    9,
+    9,
+    8,
+    7
+   ],
+   "media_clips_por_caballo_val": 10.0,
+   "media_clips_por_caballo_train_interno": 2.1630434782608696,
+   "maximo_clips_por_caballo_train_interno": 7,
+   "minimo_clips_por_caballo_val": 7,
+   "caballos_val_multiclase": 5,
+   "clases_val": {
+    "Disgustado": 20,
+    "Interesado": 14,
+    "Sereno": 36
+   }
+  },
+  {
+   "fold": 3,
+   "caballos_validacion": 7,
+   "clips_por_caballo_validacion": [
+    14,
+    13,
+    13,
+    9,
+    9,
+    8,
+    7
+   ],
+   "media_clips_por_caballo_val": 10.428571428571429,
+   "media_clips_por_caballo_train_interno": 2.118279569892473,
+   "maximo_clips_por_caballo_train_interno": 5,
+   "minimo_clips_por_caballo_val": 7,
+   "caballos_val_multiclase": 5,
+   "clases_val": {
+    "Disgustado": 26,
+    "Interesado": 19,
+    "Sereno": 28
+   }
+  }
+ ],
+ "media_global_clips_por_caballo": 2.699248120300752,
+ "lectura": "La validación interna reúne a los 7 caballos con MÁS clips del train_val de cada fold (≈10 clips por caballo frente a ≈2,7 en el conjunto): no es una muestra aleatoria de caballos, el train interno pierde a los caballos más representados y la métrica de validación pesa muy poco a los caballos con pocos clips (mayoría). Sesgo de selección en la elección de la época."
+}

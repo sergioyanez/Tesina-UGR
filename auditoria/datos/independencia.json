@@ -1,0 +1,84 @@
+{
+ "indep": {
+  "clips": 359,
+  "caballos": 133,
+  "videos": 244,
+  "clips_por_caballo_medio": 2.699248120300752,
+  "ICC_acierto_por_caballo": 0.3057206888790883,
+  "efecto_de_diseno": 1.519495305914842,
+  "n_efectivo_por_caballo_(clips)": 236.26265813559525,
+  "n_efectivo_minimo_(caballos)": 133,
+  "nota": "el ICC se estima con ANOVA de una vía sobre el indicador de acierto; con muchos caballos de 1 clip es ruidoso. El tamaño efectivo real está entre 236 y 133",
+  "clips_por_video_medio": 1.471311475409836,
+  "pct_clips_en_videos_con_mas_de_un_clip": 51.25348189415042,
+  "errores_concentrados": {
+   "caballos_con_algun_error": 55,
+   "top10_acumulan_pct_errores": 40.21739130434783,
+   "top10": [
+    {
+     "id_caballo": "906",
+     "n": 13,
+     "errores": 6.0
+    },
+    {
+     "id_caballo": "013",
+     "n": 5,
+     "errores": 5.0
+    },
+    {
+     "id_caballo": "037",
+     "n": 14,
+     "errores": 5.0
+    },
+    {
+     "id_caballo": "053",
+     "n": 4,
+     "errores": 4.0
+    },
+    {
+     "id_caballo": "044",
+     "n": 3,
+     "errores": 3.0
+    },
+    {
+     "id_caballo": "251",
+     "n": 3,
+     "errores": 3.0
+    },
+    {
+     "id_caballo": "904",
+     "n": 4,
+     "errores": 3.0
+    },
+    {
+     "id_caballo": "916",
+     "n": 3,
+     "errores": 3.0
+    },
+    {
+     "id_caballo": "910",
+     "n": 9,
+     "errores": 3.0
+    },
+    {
+     "id_caballo": "054",
+     "n": 8,
+     "errores": 2.0
+    }
+   ],
+   "caballos_con_>=2_clips_y_100%_error": 9
+  },
+  "accuracy_IC95_ingenuo_por_clip_Wilson": [
+   0.6961566705902991,
+   0.7861474533028818
+  ],
+  "accuracy_IC95_bootstrap_por_caballo": [
+   0.6789984518280339,
+   0.8011061665101024
+  ],
+  "f1_IC95_bootstrap_por_caballo": [
+   0.6772173177657993,
+   0.796927144461369
+  ]
+ }
+}
