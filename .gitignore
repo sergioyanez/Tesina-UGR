@@ -83,3 +83,6 @@ $RECYCLE.BIN/
 # Es configuración de una máquina y de un editor, no del proyecto.
 .idea/
 .vscode/
+
+# Cachés y modelos de la comparación (regenerables)
+artefactos_base/
