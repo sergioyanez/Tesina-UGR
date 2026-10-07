@@ -53,6 +53,10 @@ def balanced_accuracy(reales, predichas, clases=CLASES):
     return sum(recalls) / len(recalls) if recalls else float("nan")
 
 
+def _exactitud(reales, predichas):
+    return sum(1 for r, p in zip(reales, predichas) if r == p) / len(reales) if reales else float("nan")
+
+
 def recall_de(reales, predichas, clase):
     presentes = [p for r, p in zip(reales, predichas) if r == clase]
     return sum(1 for p in presentes if p == clase) / len(presentes) if presentes else float("nan")
@@ -327,6 +331,21 @@ class MILFusionModel(nn.Module):
         fusion = torch.cat([v_vis, self.geom_mlp(v_geom)], dim=-1)
         return self.classifier(fusion)
 
+def cargador_de_medicion(dataset, batch_size=32):
+    """Un `DataLoader` para medir sin alterar el entrenamiento.
+
+    Iterar un `DataLoader` saca una semilla del RNG global de torch **aunque no baraje**, salvo
+    que tenga generador propio. En GPU eso no cambia nada —el dropout usa el RNG de CUDA—, pero en
+    CPU desplazaría las máscaras de dropout de las épocas siguientes: el modelo medido dejaría de
+    ser el que se reporta, sin que nada fallara. Con generador propio, recorrerlo es inocuo en
+    cualquier dispositivo (`tests/test_sobreajuste.py`).
+    """
+    propio = torch.Generator()
+    propio.manual_seed(0)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn,
+                      generator=propio)
+
+
 def pesos_de_clase(clases_del_conjunto, clases_del_modelo, estrategia="inversa"):
     """Peso por clase para la loss. `inversa` es frecuencia inversa; `raiz`, su raíz cuadrada.
 
@@ -397,6 +416,8 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
                         generator=generador)
     dl_val = DataLoader(ds_val, batch_size=32, shuffle=False, collate_fn=collate_fn)
     dl_pru = DataLoader(ds_pru, batch_size=32, shuffle=False, collate_fn=collate_fn)
+    # El train interno, recorrido en orden y en modo `eval`, sólo para medir el sobreajuste.
+    dl_ent_eval = cargador_de_medicion(ds_ent)
 
     # Los pesos salen del train interno y no del conjunto entero: son parte de lo que se aprende,
     # y calcularlos sobre la validación le daría a la red información de un conjunto que se usa
@@ -439,11 +460,19 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
 
         predichas_val, reales_val, perdida_val = predecir(dl_val)
         f1_val = f1_macro(reales_val, predichas_val)
+        predichas_tr, reales_tr, perdida_tr = predecir(dl_ent_eval)
+        f1_tr = f1_macro(reales_tr, predichas_tr)
+        # `loss_train` es la del paso de entrenamiento, con dropout y promediada mientras los
+        # pesos cambian; `loss_train_eval` es la del train interno con los pesos del final de la
+        # época y sin dropout, que es la comparable con `loss_val`.
         curva.append({"epoca": epoca, "loss_train": round(perdida_ent, 5),
-                      "loss_val": round(perdida_val, 5), "f1_val": round(f1_val, 5)})
+                      "loss_val": round(perdida_val, 5), "f1_val": round(f1_val, 5),
+                      "loss_train_eval": round(perdida_tr, 5), "f1_train": round(f1_tr, 5),
+                      "acc_train": round(_exactitud(reales_tr, predichas_tr), 5),
+                      "acc_val": round(_exactitud(reales_val, predichas_val), 5)})
 
         if f1_val > mejor["f1"]:
-            mejor = {"f1": f1_val, "epoca": epoca,
+            mejor = {"f1": f1_val, "epoca": epoca, "f1_train": f1_tr,
                      "estado": {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}}
             sin_mejorar = 0
         else:
@@ -468,6 +497,7 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
         "sin_ver": 0,
         "mejor_epoca": mejor["epoca"],
         "f1_validacion": round(mejor["f1"], 5),
+        "f1_train": round(mejor.get("f1_train", float("nan")), 5),
         "epocas_corridas": len(curva),
         "clips_train_interno": len(train_interno),
         "clips_validacion": len(validacion),
@@ -749,7 +779,7 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
         "criterio_de_epocas": (
             "media de la mejor época de la validación cruzada, elegida en cada fold con "
             "validación interna por ejemplar y early stopping"),
-        "huella_caracteristicas": _huella_caracteristicas(),
+        "huella_caracteristicas": _huella_caracteristicas(clips),
         "metrica_validacion_cruzada": metrica_validacion,
         "advertencia": (
             "La métrica de este modelo es la de validación cruzada, no una calculada sobre el "
@@ -767,14 +797,30 @@ def entrenar_produccion(clips, vectores, indice, pose_filas, metrica_validacion=
     return modelo, procedencia
 
 
-def _huella_caracteristicas():
-    """De qué corrida del preprocesamiento salen las características que entrenaron el modelo."""
+def _huella_caracteristicas(clips=None):
+    """De qué corrida del preprocesamiento salen las características que entrenaron el modelo.
+
+    Se lee del archivo que nombra `caracteristicas.ARCHIVO_HUELLA`, el mismo que usa la caché
+    vigente. Antes se leía un nombre literal, `caracteristicas_backbone.json`, que quedó apuntando
+    a la caché de 153 clips cuando la vigente pasó a `_v2`: la procedencia del modelo desplegado
+    registraba las características de otro conjunto, sin que nada fallara.
+
+    Con `clips`, verifica además que la caché corresponda a esos clips: registrar la huella de una
+    caché que no es la que entrenó sería el mismo error por otro camino.
+    """
     import json
 
-    ruta = rutas.carpeta("resultados") / "caracteristicas_backbone.json"
+    from equinos import caracteristicas
+
+    ruta = rutas.carpeta("resultados") / caracteristicas.ARCHIVO_HUELLA
     if not ruta.exists():
         return None
-    return json.loads(ruta.read_text(encoding="utf-8")).get("huella")
+    registrada = json.loads(ruta.read_text(encoding="utf-8")).get("huella")
+    if clips is not None and registrada != caracteristicas.huella(clips):
+        raise ValueError(
+            f"La caché de características ({ruta.name}, huella {registrada}) no corresponde a los "
+            f"{len(clips)} clips con que se entrena. Volver a extraer antes de entrenar.")
+    return registrada
 
 
 def cargar_produccion():

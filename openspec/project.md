@@ -43,8 +43,8 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
-| 3. Clasificación orientada a video | 🟡 Modelo entrenado y evaluado; **la hipótesis no queda sostenida** y el criterio declarado no se cumple (0,626 contra 0,691). Falta el notebook de la etapa. Ver abajo |
-| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit funcionando (`./correr_local.sh interfaz`). **Responde en el 42 % de los videos** y se niega con motivo en el resto. Falta la prueba con una persona ajena (tarea 6.2) |
+| 3. Clasificación orientada a video | 🟡 **Modelo vigente: MIL multimodal, F1 macro 0,740 ± 0,052** (359 clips, 133 caballos; `objetivo3_evaluacion_v2.json`). Supera a los metadatos de filmación (0,618) pero **empata con un promedio estático lineal (0,741)**: el aporte de la arquitectura y del orden temporal no está demostrado. Sobreajuste moderado. Ver «Estado al 25/09/2026» |
+| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo el MIL vigente (`mil_multimodal_produccion.pt`), con la preparación compartida con el entrenamiento. La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
 
 ### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
 
@@ -412,6 +412,56 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
+### Estado al 07/10/2026 — lo más reciente
+
+La veterinaria que etiquetó, Bárbara Zimmermann (codificadora certificada de EquiFACS), devolvió el
+formulario el 28/09 (`docs/formulario_etiquetado_2026-09-28.docx`). `docs/protocolo_de_etiquetado.md`
+§3 y §4 quedan completas: hay criterio escrito por clase con unidades de acción EquiFACS y etogramas,
+y criterios de exclusión. El acuerdo se midió en un piloto sobre imágenes (kappa de Fleiss 0,99),
+pero **el dataset lo etiquetó una sola persona**, que además filmó; y el criterio usa contexto y
+postura, no sólo la cara. El formulario confirma un confusor parcial de establecimiento (box de
+hipódromo → `Interesado`, manada → `Disgustado`).
+
+`Separar cabeza?` ya no existe en Drive ni en local: no hay nada que incorporar. La copia local
+coincide con Drive.
+
+`test_equivalencia.py` vuelve a pasar: la «limpieza» `db2dd6d` (21/09) había subido
+`CONF_MINIMA_KEYPOINT` de 0,50 a 0,55 en el notebook 02, `encuadre.py` e `interpolacion.py`, y la
+interfaz preprocesaba distinto de como se construyó el dataset. Se restituyó 0,50, el valor con que
+se entrenó el modelo vigente.
+
+La rama se fusionó a `main` y el change quedó archivado como `2026-10-07-mejoras-prioridad-alta`.
+
+### Estado al 25/09/2026
+
+Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/archive/2026-10-07-mejoras-prioridad-alta`. Cierra las
+mejoras de prioridad alta de la auditoría del 25/09 (`material para presentar/2da entrega/
+condiciones_cumplidas.pdf`):
+
+- **Líneas de base del conjunto vigente** (`scripts/evaluar_lineas_de_base.py` →
+  `objetivo3_lineas_de_base.json`). El promedio lineal de las características de los 16 frames da
+  0,741 ± 0,020 contra 0,740 ± 0,052 del MIL: diferencia −0,004, IC95 por caballo
+  [−0,066; +0,058]. Los metadatos de filmación solos dan 0,618; sin los rasgos delatores el MIL
+  conserva 0,705.
+- **Criterio de aceptación re-declarado** con la misma regla sobre el conjunto vigente: 0,761. El
+  MIL cumple el declarado (0,691) y no el re-declarado. Se re-declaró después de medir, y así consta.
+- **Sobreajuste registrado** en cada época: F1 train 0,979, validación 0,712, test 0,740
+  (`docs/analisis_sobreajuste.md`).
+- **Procedencia del modelo desplegado** corregida (huella de las características `_v2`).
+- **Notebooks 03 y 04** reescritos y re-ejecutados para el modelo vigente; figuras 5 y 6 nuevas.
+- **Registro de experimentos** (`docs/registro_de_experimentos.md`): los resultados de canal
+  geométrico, CV anidada y *fine-tuning* salen de ramas laterales no fusionadas.
+- **Protocolo de etiquetado** (`docs/protocolo_de_etiquetado.md`): completo con el formulario de la
+  etiquetadora (ver el estado al 07/10).
+
+La re-ejecución de `scripts/evaluar_v2.py` reprodujo bit a bit predicciones y pesos.
+
+**Decisiones del 25/09:** se **conserva el MIL** (revisable; D7 del `design.md` del change), el
+*fine-tuning* queda descartado, y el etiquetado lo hizo un profesional veterinario al que se le
+envió el formulario de `docs/protocolo_de_etiquetado.md` §3 (respondido el 28/09).
+
+### Estado al 25/08/2026 — historia anterior
+
 Estado al cierre del **25/08/2026**. Rama `ejecucion-local-gpu`, **sin pushear** por decisión de
 Sergio: vive sólo en la máquina local.
 
@@ -702,10 +752,12 @@ resolverlas antes de entrenar:
    pasado por un editor online. Se revisaron los metadatos de encoder: el reprocesado
    (`Lavf58.76.100`) está en 67 % de Disgustado, 62 % de Interesado y 65 % de Sereno — parejo entre
    clases, **no es un confundido**.
-8. **Etiquetado sin protocolo documentado.** No hay registro de quién etiquetó, con qué criterio ni
-   acuerdo inter-observador. EquiFACS es el marco de referencia natural para justificarlo. La
-   etiqueta se hereda del video completo hacia todos sus clips, lo que asume que la expresión se
-   mantiene constante durante los 8–37 s originales — supuesto fuerte y no verificado.
+8. **Etiquetado con un solo anotador.** Desde el 28/09 hay protocolo documentado
+   (`docs/protocolo_de_etiquetado.md`): criterio escrito con EquiFACS y etogramas, a cargo de una
+   veterinaria codificadora certificada. Pero el acuerdo se midió sólo en un piloto sobre imágenes;
+   sobre el dataset hay un único anotador y el criterio incluye contexto y postura. La etiqueta se
+   hereda del video a sus clips; el formulario lo sostiene (los videos son tramos recortados donde
+   la expresión está presente).
 
 ## Convenciones del proyecto
 

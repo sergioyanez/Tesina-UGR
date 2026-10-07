@@ -18,29 +18,33 @@ objetivos, el estado de cada uno, la caracterización del dataset, el pipeline, 
 —sobre todo— las **limitaciones conocidas** que condicionan cualquier resultado. Leerlo antes de
 tocar el código.
 
-El plan de trabajo original está en [`plan_de_trabajo.pdf`](plan_de_trabajo.pdf).
+El plan de trabajo vigente está en [`docs/plan_de_trabajo_corregido.pdf`](docs/plan_de_trabajo_corregido.pdf).
+Qué número sale de qué código y rama: [`docs/registro_de_experimentos.md`](docs/registro_de_experimentos.md).
 
 ## Estructura
 
 ```
 ├── 00_pipeline.ipynb                   Orquestador: ejecuta las etapas en orden (Colab)
-├── 01_preparar_dataset_equinos.ipynb   Inventario, clips de 5-7 s y frames (Colab)
-├── 02_roi_y_normalizacion.ipynb        ROI facial y normalización de pose (Colab)
-├── equinos/                            Infraestructura de ejecución
-│   ├── rutas.py                        Raíz persistente en Drive y resolución de rutas
-│   ├── catalogo.py                     Qué videos de Drive pertenecen a cada clase
-│   ├── checkpoint.py                   Reanudación de etapas interrumpidas
-│   ├── cache.py                        Empaquetado de artefactos numerosos
-│   └── etapas.py                       Registro del pipeline y su estado
-├── tests/
-│   ├── test_catalogo.py                Pruebas del catálogo de videos por clase
-│   ├── test_geometria.py               Pruebas de la geometría del notebook 02
-│   └── test_persistencia.py            Pruebas del paquete equinos
-├── openspec/
-│   ├── project.md                      Contexto completo del proyecto
-│   ├── config.yaml                     Reglas para generación de artefactos
-│   └── changes/                        Cambios planificados (propuesta, spec, diseño, tareas)
-└── plan_de_trabajo.pdf                 Plan de trabajo presentado
+├── 01_preparar_dataset_equinos.ipynb   Inventario, clips de hasta 7 s y frames
+├── 02_roi_y_normalizacion.ipynb        Pose, ROI facial y normalización
+├── 03_clasificacion.ipynb              Objetivo 3: líneas de base, MIL y evaluación (reproduce los scripts)
+├── 04_figuras_tesis.ipynb              Figuras de la tesis a partir de los resultados vigentes
+├── app_inferencia.py                   Objetivo 4: interfaz Streamlit
+├── equinos/                            Paquete del pipeline
+│   ├── catalogo.py · rutas.py · …      Catálogo de videos, rutas, checkpoints, caché
+│   ├── pose.py · secuencia.py          Keypoints y selección de los 16 frames por ventana
+│   ├── alineado.py · encuadre.py       Recorte alineado, compartido por entrenamiento e inferencia
+│   ├── particion.py                    Clips íntegros y partición por caballo
+│   ├── caracteristicas.py              ResNet-18 congelada y su caché
+│   ├── clasificacion.py                Métricas, MIL multimodal, validación cruzada, producción
+│   ├── lineas_de_base.py               Líneas de base, confusor de filmación, bootstrap por caballo
+│   └── inferencia.py                   De un video a una predicción, o a una negativa explicada
+├── scripts/
+│   ├── evaluar_v2.py                   Evaluación vigente y modelo de producción
+│   └── evaluar_lineas_de_base.py       Líneas de base sobre los mismos folds
+├── tests/                              Guiones de prueba (python3 tests/test_X.py)
+├── docs/                               Plan de trabajo, informes, registro de experimentos
+└── openspec/                           Contexto (project.md), specs y changes
 ```
 
 El dataset **no vive en el repositorio ni bajo la raíz de artefactos** (ver abajo).
@@ -239,50 +243,77 @@ Recibe una toma corta de la cara de un caballo y devuelve la expresión predicha
 vive en `equinos/inferencia.py`; `app_inferencia.py` es sólo la presentación.
 
 **Qué necesita:** la máquina con GPU, el entorno de `requirements-local.txt`, y el modelo de
-producción en `modelos/objetivo3/`. Arrastra la cadena entera —YOLO11x y DeepLabCut— así que tarda
-**alrededor de 35 s por video**: 15 s de detección y 20 s de pose. La clasificación en sí es
-instantánea.
+producción en `modelos/objetivo3_v2/mil_multimodal_produccion.pt`. Corre DeepLabCut sobre todos los
+fotogramas del video, así que tarda **alrededor de 80 s para una toma de 7 s** (medido el 18/09). La
+preparación es la misma función que fabricó el conjunto de entrenamiento
+(`alineado.preparar_secuencia`); YOLO ya no participa.
 
 **Qué NO hace, y conviene decirlo antes de que alguien lo suponga:**
 
 - **No es una herramienta de diagnóstico veterinario.** Es la demostración de un pipeline.
 - **No siempre responde.** Necesita 16 fotogramas donde se vean el ojo y el hocico; si no los
-  consigue, se niega y explica por qué. Negarse es un resultado normal y frecuente, no un error:
-  sobre el propio conjunto de datos sólo el 38 % de las tomas llegó a ser utilizable.
+  consigue, se niega y explica por qué. Negarse es un resultado normal, no un error:
+  sobre el propio conjunto de datos el 91 % de los clips tiene una ventana utilizable.
 - **No acepta videos largos.** Máximo 15 s, idealmente una toma de 5 a 7 s. Los 16 fotogramas se
-  muestrean repartidos por todo el video, así que sobre uno de dos minutos serían momentos sueltos
-  separados por ocho segundos y no una secuencia de expresión.
+  eligen dentro de la mejor ventana de hasta 7 s, que en un video largo puede no ser el tramo que
+  interesa.
 - **No reentrena, no procesa lotes y no guarda nada** del video que se le sube.
 
-**El límite del entregable, medido y no supuesto.** El modelo **no alcanzó el criterio que se
-declaró antes de entrenarlo** para considerarlo útil: F1 macro 0,626 contra 0,691 exigido. Y su
-acierto depende mucho de la clase — cuando dice `Disgustado`, que es la de interés clínico, acierta
-**una de cada tres veces**:
+**El límite del entregable, medido y no supuesto.** El modelo vigente —MIL multimodal— tiene F1
+macro **0,740 ± 0,052** sobre caballos que nunca vio (`objetivo3_evaluacion_v2.json`). Cuando dice
+una clase, acierta:
 
 | el modelo dice | acierta |
 |---|---:|
-| `Disgustado` | 7 de 21 — **33 %** |
-| `Interesado` | 49 de 62 — 79 % |
-| `Sereno` | 44 de 58 — 76 % |
+| `Disgustado` | 71 de 96 — **74 %** |
+| `Interesado` | 94 de 123 — 76 % |
+| `Sereno` | 102 de 140 — 73 % |
+
+Y hay que decir con la misma claridad lo que ese número **no** demuestra: un promedio lineal de las
+características de los 16 frames rinde lo mismo (0,741 ± 0,020), y la duración y la resolución del
+clip, sin mirar la cara, ya dan 0,618 (`objetivo3_lineas_de_base.json`). Ver la sección siguiente.
 
 Por eso la interfaz muestra ese número al lado de la etiqueta y con el mismo tamaño, en vez de
 dejarlo en un descargo al pie. Una pantalla que devuelve «Disgustado, 87 %» es indistinguible, para
 quien la mira, de una herramienta validada.
 
-### Pendiente
+## El resultado del objetivo 3, con sus líneas de base
 
-Los objetivos específicos 3 y 4 —modelo de clasificación, entrenamiento, evaluación e interfaz de
-uso— todavía no están implementados.
+Sobre los mismos 4 folds por caballo (359 clips, 133 caballos):
+
+| Modelo | F1 macro |
+|---|---:|
+| Clase mayoritaria / sólo `id_caballo` | 0,183 ± 0,033 |
+| Azar estratificado | 0,325 ± 0,025 |
+| Metadatos de filmación (duración, fps, resolución), sin mirar la cara | 0,618 ± 0,034 |
+| Visual, 1 frame central | 0,679 ± 0,024 |
+| **MIL multimodal (vigente)** | **0,740 ± 0,052** |
+| Visual, media de los 16 frames | 0,741 ± 0,020 |
+
+- El modelo **lee la cara**: supera a los metadatos (+0,121, IC95 por caballo [+0,031; +0,209]) y
+  conserva 0,705 sobre los clips 1080×1920 de al menos 5 s, donde la filmación no delata la clase.
+- **No está demostrado que la arquitectura aporte**: contra el promedio estático la diferencia es
+  −0,004, IC95 [−0,066; +0,058]. Ni la atención, ni el orden, ni el canal geométrico tienen un aporte
+  demostrado. La hipótesis temporal no queda sostenida.
+- **Sobreajusta el train** (F1 0,98 contra 0,71 de validación); el *early stopping* mantiene el test
+  en línea con la validación. Ver [`docs/analisis_sobreajuste.md`](docs/analisis_sobreajuste.md).
+- **Las etiquetas tienen un solo anotador**: hay criterio escrito con EquiFACS, pero el acuerdo
+  sólo se midió en un piloto sobre imágenes. Ver
+  [`docs/protocolo_de_etiquetado.md`](docs/protocolo_de_etiquetado.md).
+
+Para reproducirlo: `PYTHONPATH="$PWD" python3 scripts/evaluar_v2.py` y después
+`PYTHONPATH="$PWD" python3 scripts/evaluar_lineas_de_base.py`.
 
 ## Pruebas
 
+Son guiones, no pytest: cada uno se corre con `python3 tests/test_X.py` e informa OK/FALLA por caso.
+
 ```
-python3 tests/test_geometria.py
-python3 tests/test_persistencia.py
-python3 tests/test_catalogo.py
-python3 tests/test_pose.py
-python3 tests/test_entorno.py
+for t in tests/test_*.py; do PYTHONPATH="$PWD" python3 "$t" || echo "FALLÓ $t"; done
 ```
+
+`test_equivalencia.py` tiene una comprobación que falla («elige los mismos fotogramas», clip 013)
+aunque los recortes salen idénticos píxel a píxel; está registrada como deuda.
 
 `test_geometria.py` verifica las funciones geométricas del notebook 02 —suavizado, relleno,
 transformada de similitud y cálculo de ROI— con 21 casos que incluyen los degenerados. **Las extrae
@@ -307,23 +338,27 @@ cualquier resultado si se ignoran:
 
 1. **Particionar por caballo, nunca por frame ni por clip.** Los 16 frames de un clip son casi
    idénticos y varios videos comparten ejemplar. Usar `GroupKFold` sobre la columna `id_caballo`.
-   El tamaño muestral efectivo son los **22 caballos**, no los 92 clips ni los 1472 frames.
+   El tamaño muestral efectivo son los **133 caballos**, no los 359 clips ni los 5744 frames.
 
-2. **La accuracy global no es una métrica válida.** Las clases están desbalanceadas
-   (64 % / 25 % / 11 %): predecir siempre "Sereno" ya da 64 %. Reportar **F1 macro**,
-   **balanced accuracy** y matriz de confusión.
+2. **La accuracy global no alcanza.** Reportar **F1 macro**, **balanced accuracy**, métricas por
+   clase y matriz de confusión, **siempre al lado de las líneas de base** —incluida la de metadatos
+   de filmación, que es el piso honesto—.
 
 ## Estado actual del dataset
 
-| Clase | Videos | Clips (5–7 s) | Caballos distintos |
-|---|---:|---:|---:|
-| Sereno | 23 | 59 | 15 |
-| Interesado | 8 | 23 | 8 |
-| Disgustado | 3 | 10 | **1** |
-| **Total** | **34** | **92** | **22** |
+Conjunto vigente (`particion_clips.json`, selección por ventana del 18/09/2026):
 
-En ampliación. La prioridad de recolección es **Disgustado en otros ejemplares**: hoy la clase
-proviene de un solo caballo, lo que la vuelve no evaluable bajo partición por caballo.
+| Clase | Clips | % | Caballos distintos |
+|---|---:|---:|---:|
+| Sereno | 138 | 38,4 % | 52 |
+| Interesado | 118 | 32,9 % | 60 |
+| Disgustado | 103 | 28,7 % | 57 |
+| **Total** | **359** | | **133** |
+
+De 274 videos y 393 clips candidatos entran 359 (91,3 %). Los caballos no suman 133 porque 29
+aparecen en más de una clase. Desbalance mayor:menor 1,34 en clips y 1,15 en caballos.
+**Las clases no se filmaron igual**: `Disgustado` tiene clips de 3,2 s de mediana contra 6,0 s de
+las otras dos, y los 26 clips 640×480 son todos `Interesado`.
 
 ## Stack
 

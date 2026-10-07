@@ -49,6 +49,16 @@ matriz = {real: {p: sum(1 for x in pred if x["real"] == real and x["predicha"] =
                  for p in clasificacion.CLASES} for real in clasificacion.CLASES}
 epocas = [f["mejor_epoca"] for f in r["por_fold"]]
 
+# El sobreajuste, medido en la época elegida. No existe un umbral universal: el gap se lee junto
+# con las curvas y con que el test acompañe a la validación (docs/analisis_sobreajuste.md).
+sobreajuste_por_fold = [{
+    "fold": f["fold"], "mejor_epoca": f["mejor_epoca"], "f1_train": f["f1_train"],
+    "f1_validacion": f["f1_validacion"], "f1_test": f["f1_macro"],
+    "gap_train_validacion": f["f1_train"] - f["f1_validacion"],
+    "gap_train_test": f["f1_train"] - f["f1_macro"],
+    "epoca_de_minima_loss_val": min(f["curva"], key=lambda e: e["loss_val"])["epoca"],
+} for f in r["por_fold"]]
+
 import torch, numpy
 resumen = {
     "modelo": "MIL multimodal (MILFusionModel)",
@@ -65,6 +75,14 @@ resumen = {
     "recall_macro": statistics.mean(v["recall"] for v in pc.values()),
     "mejor_epoca_media": statistics.mean(epocas),
     "mejor_epoca_desvio": statistics.stdev(epocas),
+    "sobreajuste": {
+        "f1_train_media": statistics.mean(x["f1_train"] for x in sobreajuste_por_fold),
+        "f1_validacion_media": statistics.mean(x["f1_validacion"] for x in sobreajuste_por_fold),
+        "gap_train_validacion_medio": statistics.mean(
+            x["gap_train_validacion"] for x in sobreajuste_por_fold),
+        "gap_train_test_medio": statistics.mean(x["gap_train_test"] for x in sobreajuste_por_fold),
+        "por_fold": sobreajuste_por_fold,
+    },
     "dropout": DROPOUT,
     "estrategia_pesos": PESOS,
     "semilla": clasificacion.SEMILLA,
