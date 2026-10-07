@@ -1,0 +1,175 @@
+{
+ "1_se_reutilizaron_los_landmarks": {
+  "respuesta": "Sí. No se volvió a correr DeepLabCut: se leyó pose_seleccionada_v2.csv (39 bodyparts x 16 frames x 359 clips, coordenadas del cuadro original, formato largo con likelihood). Para SimBA hubo que CONVERTIR a formato ancho + proyecto SimBA; ver compatibilidad_dlc_simba.json.",
+  "importacion_directa_a_SimBA": false
+ },
+ "2_que_features": {
+  "respuesta": "Principal: «features tipo SimBA calculadas con código propio» (NO es SimBA): orejas (largo, ángulo respecto del eje de la cabeza, asimetrías, separación), ojos/cabeza (distancia interocular, escorzo, inclinación), boca/mandíbula, cabeza-cuello; por frame y agregadas por clip (media, desvío, mín, máx, rango); dinámicas (velocidad, velocidad angular, aceleración de cabeza/oreja/mandíbula: media, desvío, máx); disponibilidad de keypoints. Secundario (B2): features REALES de SimBA (UserDefinedFeatureExtractor), que para 1 animal solo describen movimiento.",
+  "extractor_real_de_simba_ejecutado": "EJECUTADO"
+ },
+ "3_cuantas_quedaron": {
+  "principal_propio": 160,
+  "por_grupo": {
+   "estatica": 130,
+   "dinamica": 21,
+   "disponibilidad": 9
+  },
+  "B2_simba_real": 174,
+  "nota": "160 = 26 series estáticas x 5 agregados + 7 series dinámicas x 3 + 9 de disponibilidad (conteo exacto en columnas.json)"
+ },
+ "4_f1_macro": {
+  "SimBA_propio_RF_original": {
+   "media": 0.8505560641065232,
+   "desvio": 0.0497811413812,
+   "min": 0.7766921457848676,
+   "max": 0.8822428700477482,
+   "accuracy": 0.8523676880222841,
+   "denominador": "359 clips fuera de muestra, 4 folds por caballo"
+  },
+  "baseline_estatico_original": 0.7405419586232885,
+  "MIL_original": 0.7396195634909437,
+  "limpio_pooled_(236 clips)": {
+   "SimBA_RF": 0.7500843983602604,
+   "baseline": 0.6708347598875108,
+   "MIL": 0.7047824300721369
+  }
+ },
+ "5_desvio_entre_folds": {
+  "SimBA_RF": 0.0497811413812,
+  "baseline": 0.020314938709037927,
+  "MIL": 0.0524165789306701,
+  "nota": "desvío muestral (n=4 folds)"
+ },
+ "6_clases_mejor_reconocidas": {
+  "F1_por_clase_SimBA_RF": {
+   "Disgustado": 0.8516746411483254,
+   "Interesado": 0.8347826086956522,
+   "Sereno": 0.8673835125448028
+  },
+  "F1_por_clase_baseline": {
+   "Disgustado": 0.6902654867256638,
+   "Interesado": 0.8114754098360656,
+   "Sereno": 0.7419354838709676
+  },
+  "F1_por_clase_MIL": {
+   "Disgustado": 0.7135678391959799,
+   "Interesado": 0.7800829875518673,
+   "Sereno": 0.7338129496402879
+  },
+  "respuesta": "En SimBA-RF las tres clases quedan parejas (Sereno > Disgustado > Interesado; ver F1 por clase); la confusión más común es Interesado -> Sereno."
+ },
+ "7_top_features_SHAP": [
+  [
+   "cabeza_velocidad__media",
+   0.030602503745048727
+  ],
+  [
+   "cabeza_aceleracion__media",
+   0.01987692684490623
+  ],
+  [
+   "cabeza_velocidad__desvio",
+   0.018730694522673442
+  ],
+  [
+   "cabeza_velocidad__max",
+   0.018608218420744536
+  ],
+  [
+   "cabeza_velocidad_angular__media",
+   0.016026951932089452
+  ],
+  [
+   "oreja_asimetria_largo__media",
+   0.01581580658688755
+  ],
+  [
+   "cabeza_aceleracion__desvio",
+   0.012833831703025576
+  ],
+  [
+   "cabeza_aceleracion__max",
+   0.012640758459852066
+  ],
+  [
+   "ojos_distancia__desvio",
+   0.01247739556771108
+  ],
+  [
+   "oreja_separacion_puntas_sobre_bases__min",
+   0.01228522978357729
+  ]
+ ],
+ "8_supera_al_baseline_estatico": {
+  "original": {
+   "diferencia_F1_agrupado_SimBA_menos_otro": 0.10550492846636825,
+   "ic95": [
+    0.0373412401134912,
+    0.1791253763776702
+   ],
+   "incluye_cero": false
+  },
+  "limpio": {
+   "diferencia_F1_agrupado_SimBA_menos_otro": 0.08348323736506204,
+   "ic95": [
+    -0.01812544072382093,
+    0.20208028265558425
+   ],
+   "incluye_cero": true
+  },
+  "respuesta": "En el conjunto original sí (diferencia positiva con IC95 que excluye 0). En el subconjunto limpio la diferencia sigue siendo positiva pero el IC incluye 0: no concluyente."
+ },
+ "9_supera_al_MIL": {
+  "original": {
+   "diferencia_F1_agrupado_SimBA_menos_otro": 0.11029767956627014,
+   "ic95": [
+    0.04240248152698287,
+    0.18123730764789361
+   ],
+   "incluye_cero": false
+  },
+  "limpio": {
+   "diferencia_F1_agrupado_SimBA_menos_otro": 0.04834902197858031,
+   "ic95": [
+    -0.05577900420334081,
+    0.16875259579346524
+   ],
+   "incluye_cero": true
+  },
+  "respuesta": "En el conjunto original sí (IC95 excluye 0). En el subconjunto limpio la ventaja baja y el IC incluye 0: no concluyente."
+ },
+ "10_menor_overfitting": {
+  "SimBA_RF": {
+   "gap_train_validacion": 0.3369045902493095,
+   "gap_train_test": 0.1428348898006085,
+   "f1_train": 0.9933909539071316
+  },
+  "baseline_LR": {
+   "gap_train_validacion": 0.36643793729953145,
+   "gap_train_test": 0.25945804137671147
+  },
+  "MIL": {
+   "gap_train_validacion": 0.2669325,
+   "gap_train_test": 0.2396679365090563
+  },
+  "respuesta": "Parcial. El gap train-test del RF (0,14) es menor que el del MIL (0,24) y el baseline (0,26), pero el RF memoriza el train (F1 train ~0,99) y su gap train-validación interna (0,34, sobre ~7 caballos) NO es menor que el del MIL (0,27). Lo que sostiene la comparación es el test fuera de muestra, no el gap."
+ },
+ "11_mas_interpretable": {
+  "respuesta": "Sí en el sentido de que cada feature tiene nombre y significado geométrico y SHAP permite rankearlas; con reservas: hay features muy correlacionadas (SHAP reparte el crédito), la lectura es asociación y no causalidad, 2D depende del punto de vista, y las velocidades de cabeza pueden reflejar movimiento de cámara. Requiere validación experta.",
+  "aporte_por_familia_anatomica": {
+   "Cabeza (orientación/dinámica)": 0.4019702314982836,
+   "Orejas": 0.38521849638705086,
+   "Boca/mandíbula": 0.09655356322424673,
+   "Ojos": 0.07377958209611442,
+   "Disponibilidad de keypoints": 0.022879981959772595,
+   "Cabeza-cuello": 0.019598144834531605
+  }
+ },
+ "12_conviene_incorporarlo": {
+  "respuesta": "Conviene incorporarlo como modelo complementario (liviano, sin GPU en entrenamiento ni inferencia salvo DLC, interpretable) y como línea de base geométrica fuerte; NO conviene sustituir al MIL ni reportar la ventaja como definitiva: en el subconjunto limpio la diferencia no es significativa, la señal puede depender del punto de vista/encuadre, hay un solo observador de etiquetas y 133 caballos. Siguiente paso: validar en un conjunto con punto de vista controlado y revisar con un etólogo.",
+  "F_simba_mas_visual_no_mejora_a_SimBA_solo": [
+   0.8444104308022959,
+   0.8505560641065232
+  ]
+ }
+}

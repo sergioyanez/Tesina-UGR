@@ -1,0 +1,62 @@
+{
+ "almacenamiento": {
+  "archivo_usado": "datos_equinos/resultados/pose_seleccionada_v2.csv (16 frames por clip) ; pose_todos_los_frames.csv = todos los frames; pose_completa.csv = corrida anterior",
+  "formato": "LARGO, una fila por (clip, orden, bodypart): columnas clip, orden, bodypart, x, y, confianza",
+  "orden": "posición 0..15 en la secuencia del clip en el CSV seleccionado; en pose_todos_los_frames.csv 'orden' es el índice del frame del video",
+  "frame_a_punto": "dataset_frames_alineados_v2.csv enlaza (clip, orden) con el número de frame del video ('frame') y el fps",
+  "likelihood": "columna 'confianza' (likelihood de DLC, 0-1); umbral del pipeline 0,50 (CONF_MINIMA_KEYPOINT)",
+  "individuos": "DLC devuelve 10 'individuals'; equinos.pose.elegir_individuo se queda con el de mayor confianza media; el CSV ya tiene un solo animal",
+  "coordenadas": "píxeles del CUADRO ORIGINAL del video (no del recorte alineado 224x343 ni normalizadas)",
+  "coordenadas_max_x_y": [
+   1981.07,
+   1941.52
+  ],
+  "resoluciones_de_origen": {
+   "640x480": 28,
+   "720x1280": 1,
+   "1080x1920": 322,
+   "2560x1440": 8
+  },
+  "fps_clips_min_med_max": [
+   28.91,
+   30.0,
+   120.0
+  ],
+  "separacion_temporal_entre_frames_consecutivos_s_(p10,mediana,p90)": [
+   0.1,
+   0.33366700033366703,
+   0.5
+  ],
+  "ventana_del_clip_s_(min,mediana,max)": [
+   0.733,
+   5.772,
+   7.007
+  ],
+  "normalizacion_o_alineacion_en_el_CSV": "ninguna: son landmarks crudos de DLC; la alineación afín (recorte 224x343 por ojo-hocico) se aplica a las imágenes, y la normalización ojo-hocico del MIL se hace dentro de MultimodalEquineDataset, no en el archivo"
+ },
+ "importacion_a_SimBA": {
+  "directa": false,
+  "motivo": [
+   "el CSV es largo y SimBA espera ancho (<bp>_x, <bp>_y, <bp>_p) o el CSV/H5 multiindex de DLC (scorer/bodyparts/coords)",
+   "SimBA exige un proyecto con project_config.ini, body-part config definido por el usuario (39 nombres), video_info.csv (fps, resolución, px/mm) y los archivos en csv/outlier_corrected_movement_location",
+   "SimBA asume series de frames CONSECUTIVOS a fps constante (ventanas móviles en frames); aquí son 16 frames separados 0,2-0,5 s"
+  ],
+  "conversion_realizada": "experimentos/simba/simba_real_intento.py: escribe los 359 clips en formato ancho de SimBA y crea el proyecto con ProjectConfigCreator",
+  "pixeles_por_mm": "sin calibración: se usó 1,0 (las distancias de SimBA quedan en píxeles del cuadro original, dependientes de la resolución)"
+ },
+ "roles": "DLC = video -> landmarks (detector/estimador de pose). SimBA = landmarks -> features -> clasificador. Ninguno cumple ambos roles.",
+ "simba_real": {
+  "resultado": "EJECUTADO",
+  "pasos": [
+   "proyecto SimBA creado con 39 body-parts definidos por el usuario",
+   "landmarks escritos como <bp>_x/<bp>_y/<bp>_p, 16 filas por clip",
+   "extractor ejecutado; archivos: 359"
+  ],
+  "columnas_extraidas_por_clip": 176,
+  "filas_por_clip": 16,
+  "columnas_agregadas": 174,
+  "instalacion": "pip install simba-uw-tf-dev (5.6.1) en ~/.venvs/simba (Python 3.10); requiere tkinter para importar: no está en el sistema y no hay sudo, se usó un stub vacío (experimentos/simba/stub_tkinter), que solo afecta a la GUI",
+  "alcance_del_extractor": "UserDefinedFeatureExtractor con 1 animal solo genera movimiento por bodypart, estadísticas de movimiento global, ventanas móviles de ese movimiento (2/5/6/7,5/15 frames según fps), suma/media de probabilidades y conteo de detecciones de baja probabilidad: NO calcula distancias entre bodyparts, ángulos, áreas ni nada facial. Solo cubre movimiento."
+ },
+ "decision": "Las features faciales (ángulos, distancias, ratios) NO las produce el extractor real de SimBA para un solo animal. Conjunto principal: «features tipo SimBA calculadas con código propio» (experimentos/simba/features_simba.py). Conjunto secundario B2: features REALES de SimBA (solo movimiento) agregadas por clip."
+}
