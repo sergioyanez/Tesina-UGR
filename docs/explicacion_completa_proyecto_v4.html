@@ -564,7 +564,7 @@ tr.diag td{color:var(--ink-soft);font-style:italic}
 <p>Los dos se concatenan (640 dimensiones) y sobre esa fusión operan la atención y el clasificador.</p>
 
 <div class="caja porque"><span class="tag">¿Por qué el backbone va congelado?</span>
-<p>Con 133 caballos, descongelar un ResNet18 entero (11 millones de parámetros) sobre 359 clips es una receta de sobreajuste: la red memorizaría los caballos en vez de aprender expresiones. Congelado, el backbone es un extractor fijo y lo único que se entrena son las ~90 mil parámetros de la atención y el clasificador.</p>
+<p>Con 133 caballos, descongelar un ResNet18 entero (11 millones de parámetros) sobre 359 clips es una receta de sobreajuste: la red memorizaría los caballos en vez de aprender expresiones. Congelado, el backbone es un extractor fijo y lo único que se entrenan son los 132 355 parámetros de la atención y el clasificador.</p>
 <p>Tiene una ventaja práctica además: para un recorte dado el vector es siempre el mismo, así que se calcula una vez y se cachea. Las corridas de entrenamiento tardan minutos en vez de horas.</p>
 </div>
 </section>
@@ -682,7 +682,7 @@ tr.diag td{color:var(--ink-soft);font-style:italic}
 <p>En este proyecto el sobreajuste tiene tres defensas, y conviene poder nombrarlas en orden:</p>
 <ol>
 <li><strong>Partición por caballo.</strong> Impide la forma más grave: memorizar al animal en vez de la expresión.</li>
-<li><strong>Backbone congelado.</strong> Reduce de 11 millones de parámetros entrenables a unos 90 mil.</li>
+<li><strong>Backbone congelado.</strong> Reduce de 11 millones de parámetros entrenables a 132 355.</li>
 <li><strong>Early stopping con validación interna.</strong> Encuentra el punto donde el modelo deja de generalizar, en vez de suponerlo.</li>
 </ol>
 

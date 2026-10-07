@@ -432,6 +432,9 @@ se entrenó el modelo vigente.
 
 La rama se fusionó a `main` y el change quedó archivado como `2026-10-07-mejoras-prioridad-alta`.
 
+**Decisión del 07/10:** se trabaja con **un único observador** (Bárbara Zimmermann); no se medirá
+el acuerdo sobre el dataset. **Próximo paso: redactar el informe final, entrega el 29/10/2026.**
+
 ### Estado al 25/09/2026
 
 Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/archive/2026-10-07-mejoras-prioridad-alta`. Cierra las
