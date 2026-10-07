@@ -297,7 +297,8 @@ Sobre los mismos 4 folds por caballo (359 clips, 133 caballos):
   demostrado. La hipótesis temporal no queda sostenida.
 - **Sobreajusta el train** (F1 0,98 contra 0,71 de validación); el *early stopping* mantiene el test
   en línea con la validación. Ver [`docs/analisis_sobreajuste.md`](docs/analisis_sobreajuste.md).
-- **Las etiquetas no tienen protocolo documentado**: ver
+- **Las etiquetas tienen un solo anotador**: hay criterio escrito con EquiFACS, pero el acuerdo
+  sólo se midió en un piloto sobre imágenes. Ver
   [`docs/protocolo_de_etiquetado.md`](docs/protocolo_de_etiquetado.md).
 
 Para reproducirlo: `PYTHONPATH="$PWD" python3 scripts/evaluar_v2.py` y después

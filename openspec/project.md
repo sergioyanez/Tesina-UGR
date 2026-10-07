@@ -412,7 +412,22 @@ Dos consecuencias que condicionan el objetivo 3:
 
 ## Punto de partida de la próxima sesión
 
-### Estado al 25/09/2026 — lo más reciente
+### Estado al 07/10/2026 — lo más reciente
+
+La veterinaria que etiquetó, Bárbara Zimmermann (codificadora certificada de EquiFACS), devolvió el
+formulario el 28/09 (`docs/formulario_etiquetado_2026-09-28.docx`). `docs/protocolo_de_etiquetado.md`
+§3 y §4 quedan completas: hay criterio escrito por clase con unidades de acción EquiFACS y etogramas,
+y criterios de exclusión. El acuerdo se midió en un piloto sobre imágenes (kappa de Fleiss 0,99),
+pero **el dataset lo etiquetó una sola persona**, que además filmó; y el criterio usa contexto y
+postura, no sólo la cara. El formulario confirma un confusor parcial de establecimiento (box de
+hipódromo → `Interesado`, manada → `Disgustado`).
+
+**Pendientes que abre:** (1) `Separar cabeza?` significa lo mismo que `Seleccionar cabeza?`; decidir
+si se incluye, lo que obliga a re-ejecutar; (2) preguntar por caballos atados (excluidos, pero el
+criterio de `Interesado` los menciona); (3) verificar si hay videos filmados después del 25/08 sin
+incorporar; (4) fusionar la rama a `main` y archivar el change; (5) `test_equivalencia.py`.
+
+### Estado al 25/09/2026
 
 Rama `feat/mejoras-prioridad-alta`, change `openspec/changes/mejoras-prioridad-alta`. Cierra las
 mejoras de prioridad alta de la auditoría del 25/09 (`material para presentar/2da entrega/
@@ -431,14 +446,14 @@ condiciones_cumplidas.pdf`):
 - **Notebooks 03 y 04** reescritos y re-ejecutados para el modelo vigente; figuras 5 y 6 nuevas.
 - **Registro de experimentos** (`docs/registro_de_experimentos.md`): los resultados de canal
   geométrico, CV anidada y *fine-tuning* salen de ramas laterales no fusionadas.
-- **Protocolo de etiquetado** (`docs/protocolo_de_etiquetado.md`): lo verificable está escrito; quién
-  etiquetó y con qué criterio **queda a completar por los autores**.
+- **Protocolo de etiquetado** (`docs/protocolo_de_etiquetado.md`): completo con el formulario de la
+  etiquetadora (ver el estado al 07/10).
 
 La re-ejecución de `scripts/evaluar_v2.py` reprodujo bit a bit predicciones y pesos.
 
 **Decisiones del 25/09:** se **conserva el MIL** (revisable; D7 del `design.md` del change), el
 *fine-tuning* queda descartado, y el etiquetado lo hizo un profesional veterinario al que se le
-envió el formulario de `docs/protocolo_de_etiquetado.md` §3 — **respuesta pendiente**.
+envió el formulario de `docs/protocolo_de_etiquetado.md` §3 (respondido el 28/09).
 
 ### Estado al 25/08/2026 — historia anterior
 
@@ -732,10 +747,12 @@ resolverlas antes de entrenar:
    pasado por un editor online. Se revisaron los metadatos de encoder: el reprocesado
    (`Lavf58.76.100`) está en 67 % de Disgustado, 62 % de Interesado y 65 % de Sereno — parejo entre
    clases, **no es un confundido**.
-8. **Etiquetado sin protocolo documentado.** No hay registro de quién etiquetó, con qué criterio ni
-   acuerdo inter-observador. EquiFACS es el marco de referencia natural para justificarlo. La
-   etiqueta se hereda del video completo hacia todos sus clips, lo que asume que la expresión se
-   mantiene constante durante los 8–37 s originales — supuesto fuerte y no verificado.
+8. **Etiquetado con un solo anotador.** Desde el 28/09 hay protocolo documentado
+   (`docs/protocolo_de_etiquetado.md`): criterio escrito con EquiFACS y etogramas, a cargo de una
+   veterinaria codificadora certificada. Pero el acuerdo se midió sólo en un piloto sobre imágenes;
+   sobre el dataset hay un único anotador y el criterio incluye contexto y postura. La etiqueta se
+   hereda del video a sus clips; el formulario lo sostiene (los videos son tramos recortados donde
+   la expresión está presente).
 
 ## Convenciones del proyecto
 

@@ -2,19 +2,16 @@
 
 Cómo se asignó la clase —`Disgustado`, `Interesado` o `Sereno`— a cada video del dataset.
 
-Este documento separa **lo que el código y los datos permiten afirmar** de **lo que sólo los
-autores pueden declarar**.
+Este documento separa **lo que el código y los datos permiten afirmar** (secciones 1 y 2) de **lo
+que declara quien etiquetó** (sección 3), y saca las consecuencias para el trabajo (sección 4).
 
-> **Estado al 25/09/2026.** Según los autores, las etiquetas las asignó **un profesional
-> veterinario**. Se le envió la tabla de la sección 3 para que documente su criterio; **la respuesta
-> está pendiente**. Hasta recibirla, la sección 3 sigue sin completar y la sección 4 vale tal como
-> está, salvo por la autoría, que ya puede declararse. La segunda parte está sin completar a propósito: no hay en el
-repositorio ningún registro de quién etiquetó ni con qué criterio, y escribirlo sin esa fuente
-sería inventarlo. Hasta que se complete, la ausencia de protocolo es una **limitación declarada**
-del trabajo (sección 4), y así debe figurar en la tesis.
+> **Estado al 07/10/2026.** La sección 3 está completa con el formulario que devolvió la
+> veterinaria que etiquetó, Bárbara Zimmermann, fechado el 28/09/2026
+> (`docs/formulario_etiquetado_2026-09-28.docx`, la fuente primaria). Lo que sigue en este documento
+> la resume; ante cualquier diferencia, vale el formulario.
 
 Motivo: la auditoría del 25/09/2026 (`condiciones_cumplidas.pdf`, R15) marcó como no cumplido el
-anclaje del etiquetado en EquiFACS que el plan de trabajo anticipa, y `openspec/project.md` ya lo
+anclaje del etiquetado en EquiFACS que el plan de trabajo anticipa, y `openspec/project.md` lo
 registraba: «No hay registro de quién etiquetó, con qué criterio ni acuerdo inter-observador».
 
 ---
@@ -66,35 +63,131 @@ más compatible con una etiqueta discutible que con ruido del modelo.
 cercana semánticamente. Sin acuerdo entre anotadores no se puede saber cuánto de eso es error del
 modelo y cuánto es ambigüedad de la etiqueta.
 
-## 3. Lo que falta declarar (a completar por los autores)
+## 3. Lo que declara quien etiquetó (formulario del 28/09/2026)
 
-| Pregunta | Respuesta |
+**Quién.** Bárbara Zimmermann, veterinaria con especialización en producción equina y experiencia
+en haras de Sangre Pura de Carrera; curso de posgrado «Comportamiento y Bienestar animal» (UNT);
+**codificadora certificada de EquiFACS** (Animal FACS, Reino Unido). Hizo el muestreo, la filmación,
+la selección de tramos y la clasificación.
+
+**Criterio por clase.** Se consideraron las condiciones ambientales, el comportamiento y la postura
+corporal, además de la cara. Entre paréntesis, los códigos EquiFACS tal como figuran en el
+formulario:
+
+| Clase | Rasgos |
 |---|---|
-| ¿Quién asignó las etiquetas? (nombre y rol; formación en etología o veterinaria) | Un profesional veterinario (según los autores). **[COMPLETAR nombre y formación]** |
-| ¿Hubo un criterio escrito? ¿Qué rasgos definen cada clase? (orejas, ojos, ollares, boca, postura) | **[COMPLETAR]** |
-| ¿Se usaron unidades de acción de EquiFACS (Wathan et al., 2015) u otra referencia? | **[COMPLETAR]** |
-| ¿Se etiquetó mirando el video completo, un tramo, o el contexto de filmación? | **[COMPLETAR]** |
-| ¿Cuántas personas etiquetaron cada video? ¿Se midió el acuerdo? | **[COMPLETAR]** |
-| ¿Qué significan `Seleccionar cabeza?`, `Se tapa una parte de la cara` y `Separar cabeza?`, y por qué la segunda sólo existe en `Disgustado`? | **[COMPLETAR]** |
-| ¿De dónde provienen los videos (establecimientos, fechas, quién filmó) y el contexto de cada clase (p. ej., qué provocaba el disgusto)? | **[COMPLETAR]** |
+| `Sereno` | Orejas laterales o hacia caudal en línea con la nariz; ollar neutro; puede haber labio mandibular descendido (AD 160). Cabeza por debajo de la cruz o apoyada en la puerta del box. Puede incluir animales echados. |
+| `Disgustado` | Pueden estar presentes: orejas hacia caudal (EAD103), ángulo caudal del ollar elevado (AUH13), esclerótica visible (AD1). Puede incluir movimientos amenazantes de cabeza (rostrales o dorsoventrales), boca abierta con dientes expuestos (AU10, AU16, AU17, AU18) y tensión lateral de la cara —regiones infraorbitaria, maxilar, bucal y masetérica— (AUH21). |
+| `Interesado` | Orejas hacia craneal (EAD101), posiblemente aducidas (EAD102). Cabeza y cuello neutros o elevados. Puede haber ollares dilatados (AD38) o esclerótica visible (AD1), sobre todo en animales atados. |
 
-## 4. Texto de limitación para la tesis
+**Referencias.** EquiFACS (Wathan et al., 2015) para codificar los movimientos faciales; como
+EquiFACS no asigna emociones, el vínculo gesto → emoción se tomó de etogramas: Lewis et al. (2025),
+Torres Borda et al. (2024), Mullard et al. (2016), McDonnell y Poulin (2002) y Waring (1983). Se
+marcaron las tres opciones: EquiFACS, otra referencia y criterio propio.
 
-Mientras la sección 3 no esté completa, la tesis debería decir, en sustancia:
+**Qué se miró.** Una combinación de criterios. Los videos se filmaron en el hábitat, con expresión
+espontánea —muchas veces como parte de la comunicación entre animales—. Después de cada muestreo se
+revisaron todos los videos y **se recortaron los tramos que correspondían a cada expresión**; esos
+tramos son los videos del dataset.
 
-> Las etiquetas fueron asignadas por video por un profesional veterinario, sin un protocolo escrito
-> basado en unidades de acción faciales y sin medir el acuerdo entre anotadores. En consecuencia, el modelo aprende a reproducir las etiquetas de este conjunto, y no
-> puede afirmarse que mida estados emocionales en un sentido etológico; tampoco se conoce el techo
-> de rendimiento que impone la ambigüedad de las etiquetas.
+**Cuántas personas y acuerdo.** Hubo un **estudio piloto sobre imágenes** con investigadores en
+comportamiento animal del DIVAS (Universidad de Milán): kappa de Fleiss = 0,9877. **Los videos del
+dataset los clasificó una sola persona**, la misma que los filmó y observó el contexto. Las clases
+sin coincidencia entre observadores en el piloto se dejaron fuera del dataset: la clase Miedo, las
+expresiones de intensidad elevada, las conductas repetitivas y los caballos atados.
+
+**Subcarpetas.**
+
+- `Seleccionar cabeza?` y `Separar cabeza?` **significan lo mismo**: en el video aparecen varios
+  animales. Se apartaron para, si daban errores, procesarlos aislando la cabeza de interés o
+  descartarlos.
+- `Se tapa una parte de la cara`: otro animal tapa parte de la cabeza del que expresa. Ocurre en
+  `Disgustado` porque esa expresión surge de la competencia por alimento, agua, espacio o jerarquía,
+  en espacios reducidos y con movimientos bruscos y breves. Se conservaron por lo difícil que es
+  conseguir esa clase, aparte para poder descartarlos rápido si fallaban.
+
+**Procedencia.** Todo lo filmó la misma persona en: Hipódromo de Tandil (03/03/2023, 03/07/2023,
+10/10/2024), Haras Maryland (14/03/2023), Haras General Lavalle (20/04/2023, 16/04/2026,
+18/08/2026, 03/09/2026), Hipódromo de Azul (28/04/2023, 04/10/2025), quintas de particulares cerca de
+la UNCPBA (30/06/2023, 08/2026), campus de la UNCPBA (07 a 09/2026) y Estancia «Los Molles», San
+Cayetano (02/07/2026). Contexto por clase:
+
+- `Interesado`: la clase más frecuente, presente en todos los establecimientos. En los hipódromos,
+  los caballos estaban en box y se filmó al abrir la puerta superior, por eso casi todo lo de
+  hipódromo es `Interesado`.
+- `Sereno`: presente en todos los establecimientos. En hipódromos, en el horario de descanso del
+  personal, con los animales alimentados; en cría extensiva, en los lotes o en corrales tras un
+  encierro.
+- `Disgustado`: sobre todo en cría extensiva, entre animales de la manada (los dominantes desplazan
+  a otros de la comida o la bebida), también en encierros a corral. Pocos casos en box.
+
+## 4. Consecuencias para el trabajo
+
+**Lo que queda resuelto.** Hay autoría identificada, un criterio escrito por clase referido a
+unidades de acción de EquiFACS y a etogramas publicados, y criterios de exclusión. La observación de
+R15 queda atendida en lo documental.
+
+**Lo que no cambia.**
+
+1. **El acuerdo medido no es el del dataset.** El kappa de 0,99 es del piloto, sobre imágenes y con
+   otros observadores; los videos del dataset tienen un solo etiquetador, no ciego al contexto. El
+   techo de rendimiento que impone la ambigüedad de las etiquetas sigue sin conocerse (sección 5).
+2. **La etiqueta no es sólo facial.** El criterio usa ambiente, comportamiento, postura y movimientos
+   de cabeza —amenazas en `Disgustado`, cabeza baja o apoyada en `Sereno`, elevada en
+   `Interesado`—. Que la cinemática de cabeza informe la clase es coherente con el criterio, no un
+   atajo espurio; pero el modelo, que ve un recorte de la cara, no tiene acceso a todo lo que
+   decidió la etiqueta.
+3. **Las unidades de acción son indicativas, no obligatorias** («pueden estar presentes»). No hay
+   codificación EquiFACS por video, así que no puede verificarse qué rasgos tenía cada uno.
+
+**Lo que el formulario confirma de la sección 2.**
+
+- **Contexto ligado a la clase.** `Disgustado` sale de interacciones en manada en cría extensiva;
+  lo de box de hipódromo es casi todo `Interesado`. Un recuento aproximado sobre los archivos de
+  `~/videos_de_prueba`, fechando cada uno por su nombre y asignándole el establecimiento del
+  formulario, da para los hipódromos 12 `Interesado`, 2 `Disgustado` y 0 `Sereno`. El resto del
+  material está repartido entre los mismos establecimientos de cría, así que el confusor existe pero
+  es parcial; es coherente con que los metadatos de filmación solos den 0,618.
+- **`Seleccionar cabeza?` marca «varios animales en cuadro»**, y en `Disgustado` eso es parte de la
+  situación que produce la expresión. Explica por qué esa subcarpeta es casi toda `Disgustado` y por
+  qué el modelo la acierta más (85 % contra 66 %): la presencia de otros caballos es una pista de
+  contexto.
+- **El recorte por tramos sostiene el supuesto** de que la expresión dura toda la toma y puede
+  heredarse a los clips.
+
+**Pendientes que abre el formulario.**
+
+- **`Separar cabeza?` queda fuera del catálogo sin fundamento de etiqueta**: significa lo mismo que
+  `Seleccionar cabeza?`, que sí se incluye. Incluirla cambia el dataset y obliga a re-ejecutar el
+  pipeline; queda a decidir.
+- **Caballos atados.** Se declaran excluidos, pero el criterio de `Interesado` menciona la esclerótica
+  visible «especialmente en animales atados». Conviene preguntarle si hay videos de animales atados
+  en el dataset.
+- **Videos posteriores a la composición vigente.** Hay filmaciones del 03/09/2026 y del campus
+  hasta 09/2026; la composición vigente es del 25/08/2026. Hay que verificar si quedaron videos sin
+  incorporar.
+
+**Texto de limitación para la tesis**, en sustancia:
+
+> Las etiquetas las asignó por video una veterinaria codificadora certificada de EquiFACS, con un
+> criterio escrito por clase referido a unidades de acción de EquiFACS y a etogramas publicados, y a
+> partir de tramos recortados donde la expresión estaba presente. El criterio incluye el contexto,
+> el comportamiento y la postura, no sólo la cara. Un estudio piloto sobre imágenes con
+> observadores externos dio un acuerdo alto (kappa de Fleiss 0,99), pero los videos del dataset los
+> etiquetó una sola persona, que además los filmó; no se midió el acuerdo sobre este conjunto. En
+> consecuencia, el modelo aprende a reproducir el criterio de esta etiquetadora, y no se conoce el
+> techo de rendimiento que impone la ambigüedad de las etiquetas. Parte de las clases se asocia a
+> contextos de filmación distintos (box de hipódromo para `Interesado`, interacción en manada para
+> `Disgustado`), lo que el modelo puede aprovechar como pista.
 
 ## 5. Verificación propuesta (no realizada)
 
-Una forma barata de acotar el problema, sin re-etiquetar todo:
+El piloto mide el acuerdo sobre imágenes; falta medirlo sobre este dataset, sin re-etiquetar todo:
 
 1. Tomar una muestra estratificada por clase de unos 60 clips, incluidos los de los caballos que el
    modelo falla siempre.
-2. Que dos personas los etiqueten **a ciegas** (sin ver la carpeta ni la predicción), con un
-   criterio escrito basado en EquiFACS.
-3. Informar el acuerdo (kappa de Cohen) entre ellas y contra la etiqueta original.
+2. Que una segunda persona —idealmente del grupo del piloto— los etiquete **a ciegas** (sin ver la
+   carpeta ni la predicción) con el criterio de la sección 3.
+3. Informar el kappa de Cohen contra la etiqueta original.
 
 Ese kappa dice cuánto del 0,74 es el techo de las etiquetas y cuánto es margen del modelo.
