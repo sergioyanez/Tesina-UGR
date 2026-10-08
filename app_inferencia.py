@@ -103,8 +103,7 @@ st.error(
     "cada 100 videos**. Acierta más con unas expresiones que con otras: debajo de cada resultado "
     "vas a ver cuánto confiar en esa respuesta en particular.\n\n"
     "**Por qué tomarlo con cautela:** son pocos caballos, y parte de los aciertos puede deberse a "
-    "cómo se filmaron los videos y no a la expresión del animal. Con videos nuevos podría acertar "
-    "algo menos."
+    "cómo se filmaron los videos y no a la expresión del animal."
 )
 
 st.markdown(
@@ -115,17 +114,17 @@ st.markdown(
 with st.expander("Antes de subir: qué esperar"):
     st.markdown(
         f"""
-- **Duración:** una toma de **5 a 7 segundos** (máximo {inferencia.DURACION_MAXIMA_SEG:.0f} s).
-  Es lo que el modelo vio al entrenarse; sobre un video largo mediría otra cosa.
-- **Formatos:** {", ".join(FORMATOS)}.
-- **Tarda entre 1 y 3 minutos** con GPU, y el costo crece con la duración del video: la pose se
-  estima sobre TODOS los fotogramas, que es lo que permite elegir el mejor tramo en vez de
-  muestrear a ciegas. Medido en una RTX 3070: 82 s para una toma de 7 s, 147 s para una de 13 s.
-  La clasificación en sí es instantánea; lo lento es el preprocesamiento.
-- **El sistema puede negarse a responder.** Necesita un tramo continuo del video —de hasta
-  {secuencia.VENTANA_MAXIMA_SEG:.0f} s— donde el ojo y el hocico se midan con claridad
-  en 16 fotogramas. Sobre el propio conjunto de datos del trabajo lo consigue el **91 %** de las
-  tomas. Que se niegue es un resultado normal, no un error del video.
+- **Qué video subir:** uno corto, de **5 a 7 segundos** (como máximo
+  {inferencia.DURACION_MAXIMA_SEG:.0f} s), donde se vea bien la cara del caballo. Así eran los
+  videos con los que aprendió el modelo; con videos más largos no funciona bien.
+- **Formatos que acepta:** {", ".join(FORMATOS)}.
+- **Cuánto tarda:** entre **1 y 3 minutos**, y más cuanto más largo sea el video. Primero ubica la
+  cara y sus puntos clave cuadro por cuadro, y eso es lo que lleva tiempo; la respuesta en sí es
+  inmediata.
+- **Puede que no responda.** Necesita ver el ojo y el hocico con claridad durante unos segundos
+  seguidos. Si el caballo mueve mucho la cabeza o
+  algo la tapa, prefiere no dar una respuesta antes que inventarla. Con los videos de este trabajo
+  pudo responder en **9 de cada 10**. Que no responda es normal, no es un error del video.
 """
     )
 
