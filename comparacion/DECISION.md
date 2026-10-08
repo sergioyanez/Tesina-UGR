@@ -135,3 +135,22 @@ los F1 por clase de los otros tres están en el JSON.
   como sesiones distintas; las sesiones se asocian con la clase en parte (S023 y S024 sólo tienen
   Disgustado), y el IC de la fusión sigue siendo ancho ([0,793; 0,921]). El análisis usa sólo el
   desarrollo; el único número fuera de muestra sigue siendo el de la reserva (0,834).
+
+## Identidad duplicada: caballos 123 y 169 (08/10/2026)
+
+La devolución del docente (observación D3) señaló que `123` y `169` podían ser el mismo caballo con
+dos identificadores. Los dos videos son «Interesado» y se filmaron el 04/10/2025 con 34 s de
+diferencia. Sergio comparó fotogramas de ambos y **confirmó que son el mismo caballo**.
+
+No se rehacen las particiones, que estaban fijadas antes de comparar. Se mide el efecto:
+
+- En el 5×4, el par quedó separado entre train y test en 4 de las 5 repeticiones (folds de 123 / 169:
+  2/1, 2/2, 0/1, 3/2, 1/0).
+- Quitar sus 5 clips del F1 agrupado fuera de muestra (media de las 5 repeticiones) lo cambia en:
+  fusión 0,8620 → 0,8633 (+0,001); RF de pose 0,8361 → 0,8366 (+0,001); MIL 0,7152 → 0,7115
+  (−0,004); baseline 0,6957 → 0,6930 (−0,003). El ranking y la elección no cambian.
+- No afecta a la reserva (ninguno de los dos está en ella), a la validación por sesión (los dos son
+  de la sesión S011, que siempre se prueba entera y cuyos caballos se excluyen del train) ni al
+  modelo final de la app (se entrena con todos los clips).
+- No se revisaron visualmente otros pares de identificadores.
+

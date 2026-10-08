@@ -551,7 +551,7 @@ F1 por clase: Disgustado {n(ses_c[FUS]['metricas']['f1']['Disgustado'])}, Intere
          "Se habla de «agregación espacial de varios fotogramas», no de modelo espacio-temporal."],
         ["<b>8. Sobreajuste.</b>", f"F1 de train de la fusión {n(G[FUS]['f1_macro_train']['media'])}; gap {sg(G[FUS]['gap_train_test_f1']['media'], 2)}.",
          "El Random Forest memoriza el train; el desempeño de test es el honesto, pero conviene no extrapolar."],
-        ["<b>9. Identidad de los caballos.</b>", "El ID es el prefijo numérico del nombre de archivo, asignado a mano; el par 123/169 es visualmente similar.", "Riesgo bajo pero no descartado de fuga por un caballo con dos IDs."],
+        ["<b>9. Identidad de los caballos.</b>", "El ID es el prefijo numérico del nombre de archivo, asignado a mano; Sergio confirmó que 123 y 169 son el mismo caballo.", "Efecto medido y despreciable (≤ 0,004 de F1, mismo ranking); no se revisaron otros pares."],
         ["<b>10. Repeticiones y sesiones.</b>", "Las 5 repeticiones remuestrean la partición, no los datos; las sesiones son 20 y muy desiguales.", "El desvío entre repeticiones no es un error estándar; se usa el bootstrap por caballo."],
         ["<b>11. Utilidad no medida.</b>", "No hay validación con veterinarios; la prueba de textos con una persona ajena fue n = 1.", "No es una herramienta de diagnóstico: es la demostración de un pipeline."],
     ], "compacta fija"))
@@ -631,7 +631,7 @@ y que un resultado negativo bien medido es un resultado (L-11).</p>""")
 <ul>
 <li><b>Informe final (entrega prevista: 29/10/2026).</b> Redacción en formato APA (<code>.tex</code> para Overleaf). Debe llevar las limitaciones de la sección 6, incluir el relevamiento bibliográfico que el docente señaló como no encontrado
 y presentar la fusión sin afirmar superioridad sobre el RF de pose.</li>
-<li><b>Observaciones abiertas del docente</b> (sección 2.3): revisar el par de identidades 123/169, la utilidad con veterinarios y el relevamiento bibliográfico.</li>
+<li><b>Observaciones abiertas del docente</b> (sección 2.3): la utilidad con veterinarios y el relevamiento bibliográfico.</li>
 <li><b>Trabajo futuro, sin ejecutar:</b> medir el acuerdo interobservador sobre el dataset con un panel de expertos; recortar los clips a igual duración (o filmar nuevas tomas con un protocolo parejo) para neutralizar el confusor de formato;
 evaluar un modelo de pose específico de caballos; un test externo con otra población.</li>
 </ul>

@@ -1090,6 +1090,10 @@ los explica del todo, así que se dejó la nota correspondiente:
 
 ### Notas menores
 
+- **Caballos 123 y 169 (observación D3 del docente):** Sergio confirmó el 08/10/2026 que son el mismo
+  caballo. El efecto medido sobre la comparación es despreciable (≤ 0,004 de F1, mismo ranking); detalle
+  en `comparacion/DECISION.md`.
+
 1. **Tres commits que no estaban en ninguna rama** (`4c13c20`, `1a3859b`, `5ad6b64`; advertencia 3 de
    la sección 1): **resuelto el 08/10/2026**, se preservaron en la rama `rescate/otro-camino-2026-09-08`.
 2. **Diferencia de 93 % contra 91,3 % (C-14):** el 93 % es el aprovechamiento medido para el criterio de
