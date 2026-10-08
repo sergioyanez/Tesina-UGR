@@ -1,6 +1,6 @@
 # Caminos explorados y decisiones de la tesina
 
-Documento de trazabilidad metodológica. Estado del repositorio al 08/10/2026 (`main` @ `d5bac86`).
+Documento de trazabilidad metodológica. Estado del repositorio al 08/10/2026 (`main` @ `20af58b`, más la rama `feat/validacion-por-sesion`).
 Reconstruido a partir del historial de Git (todas las ramas y el reflog local), los changes de
 OpenSpec, los informes de `docs/`, la auditoría v2, el experimento SimBA, el protocolo de comparación
 y las notas de trabajo del asistente.
@@ -45,8 +45,8 @@ notas de trabajo, no verificado en el repo»**.
 3. **Evidencia solo recuperable por el reflog local.** Los commits `4c13c20` (cierre de la vía C),
    `1a3859b` (registro «caminos e impedimentos») y `5ad6b64` (plan de filmación) **no pertenecen a
    ninguna rama**: solo son alcanzables desde el reflog local (`feat2/otro-camino@{8}`, `@{9}`, `@{7}`).
-   Si el reflog expira o se ejecuta `git gc`, se pierden. Conviene preservarlos (rama o etiqueta) antes
-   de la entrega; este documento no lo hizo.
+   Se preservaron el 08/10/2026 en la rama `rescate/otro-camino-2026-09-08` (apunta a `5ad6b64`, que
+   contiene a los otros dos).
 4. **Archivos de resultados fuera del control de versiones.** `datos_equinos/resultados/*` está
    ignorado por Git. Las cifras citadas de esos JSON se verificaron en el disco local el 08/10/2026
    (por ejemplo `via_c_evaluacion.json`, `objetivo3_finetuning_evaluacion.json`).
@@ -255,8 +255,8 @@ notas de trabajo, no verificado en el repo»**.
   caballos.
 - **Decisión:** **Adoptado.** Descartadas: derivar la cabeza como fracción de la caja del cuerpo
   (**otra razón**: no hay relación geométrica estable entre caja y cara; sin medición), detector
-  propio entrenado (**sin medición**, por costo), modelo ajustado con Horse-30 (**pendiente**: no
-  evaluado; no hay referencias en el repo).
+  propio entrenado (**sin medición**, por costo), modelo ajustado con Horse-30 (**descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición**; no hay
+  referencias en el repo).
 - **Evidencia:** change `roi-normalizacion-pose` (design); commit `cf23ded`; `auditoria/secciones/12_preprocesamiento_inferencia.md`
   §12.1 y §12.3; `auditoria/secciones/01_plan_de_trabajo.md` §1.5.
 
@@ -434,7 +434,7 @@ notas de trabajo, no verificado en el repo»**.
 - **Decisión:** (a) **adoptado**. (b) **Descartado: sin diferencia**, y por costo (multiplica los
   parámetros entrenables); decisión de los autores del 25/09. (c) **Descartado: sin sustento de
   datos, sin medición** (memoriza con pocas muestras). Fine-tuning parcial con más capas o con un
-  backbone mejor: **pendiente** (vía 4 de la bitácora, no ejecutada).
+  backbone mejor: **descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición** (vía 4 de la bitácora, no ejecutada).
 - **Evidencia:** change `clasificacion-orientada-a-video` (design, decisión 1); rama `feat/finetuning-visual`
   (`c6d6f80`, `544d323`, `docs/informe_finetuning.md`); `docs/registro_de_experimentos.md`; change
   `mejoras-prioridad-alta` (D7).
@@ -450,8 +450,8 @@ notas de trabajo, no verificado en el repo»**.
   F1. Conclusión: el problema es la pregunta, no el modelo.
 - **Decisión:** como respuesta a la hipótesis temporal, cambiar el extractor quedó **descartado:
   otra razón** (no contesta la pregunta). Como mejora del acierto crudo con un extractor moderno
-  (auto-supervisado) sigue **pendiente**, sin medir; la bitácora lo califica como el experimento más
-  barato.
+  (auto-supervisado): **descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición**; la bitácora lo calificaba como el
+  experimento más barato.
 - **Evidencia:** commit `f0de34d` (`diagnosticos/`); `openspec/bitacora/2026-09-05-y-06.md` (Parte VI,
   vía 1).
 
@@ -482,7 +482,8 @@ notas de trabajo, no verificado en el repo»**.
   0,39–0,43) y la garganta están bajo el umbral del proyecto, y no existe un keypoint de ollar.
   No se afirma que sea peor (la diferencia de −0,042 cae dentro del desvío).
 - **Decisión:** **Descartado: sin diferencia / no mejora.** Hipótesis abierta no ejecutada: reemplazar
-  la máscara binaria por la confianza como peso (**pendiente**; «dos minutos de corrida»).
+  la máscara binaria por la confianza como peso (**descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición**; «dos minutos de
+  corrida»).
 - **Evidencia:** rama `feat/enriquecer-canal-geometrico`; `docs/registro_de_experimentos.md`;
   `objetivo3_canal_*_evaluacion.json` (verificados localmente).
 
@@ -780,7 +781,7 @@ notas de trabajo, no verificado en el repo»**.
   mismo test, así que sería optimista. Observación: el modelo de producción se entrena sobre el 100 %
   de los clips, como el modo `reentrenado`, por lo que el 0,740 probablemente subestima al desplegado.
 - **Decisión:** **Descartado: peor** (el anidado empeora la selección de época). No se probó la regla
-  de un error estándar (**pendiente**; «la mejora no justificaba seguir»). El 0,755 de `reentrenado`
+  de un error estándar (**descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición**; «la mejora no justificaba seguir»). El 0,755 de `reentrenado`
   no se adoptó como cifra de referencia (decisión de alcance mayor).
 - **Evidencia:** rama `feat/validacion-cruzada-anidada-NestedCV` (`23d4b25`,
   `docs/informe_validacion_cruzada_anidada.md`); `objetivo3_nested_*_evaluacion.json` (local).
@@ -918,7 +919,8 @@ notas de trabajo, no verificado en el repo»**.
   importancia al cartel rojo.
 - **Resultado:** n = 1: hipótesis de diseño, no medición. En `main` los textos de la fusión se
   reescribieron en lenguaje llano y la confiabilidad se da como rango entre desarrollo y reserva.
-- **Decisión:** **Adoptado.** Repetir la prueba con otra persona: **pendiente** (no bloquea).
+- **Decisión:** **Adoptado.** Repetir la prueba con otra persona: **no se realiza** (decisión de Sergio del 08/10/2026 de cerrar el
+  trabajo; los textos se reescribieron después con su revisión directa).
 - **Evidencia:** commits `d6fb240`, `c15aac7`, `f4071ac` (rama `nuevo-intento-con-enmascarado-y-geometria`,
   `prueba_con_persona_ajena.md`); commits de `main` `4e39d58`, `51777b1`, `0860b75`, `5e69bfc`, `e38d5b7`, `1c543ee` y `760a276`;
   `openspec/bitacora/2026-09-06-y-07.md`.
@@ -947,7 +949,7 @@ notas de trabajo, no verificado en el repo»**.
 | C-16 | Enmascarado 254×12 | Datos/Modelo | Descartado: sin diferencia; Abandonado | No cumple su criterio (0,736 contra 0,7847); mismo objetivo logrado por C-14; no se retomó (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | bitácora D-29 |
 | C-17 | Oreja medible en N fotogramas (177×8) | Datos | Descartado (diseños peores); construido | La fuga pasa de «cuántos» a «cuáles» (+0,143); no se retomó (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | `clasificar-desde-la-geometria-facial` |
 | C-18 | Backbone: congelado / fine-tuning / red de video | Representación | Congelado adoptado; fine-tuning descartado: sin diferencia | 0,747 ± 0,057 contra 0,740 ± 0,052 | `feat/finetuning-visual` |
-| C-19 | Cambiar el extractor visual | Representación | Pendiente | El diagnóstico 0 lo descartó como respuesta a la hipótesis temporal | `f0de34d` |
+| C-19 | Cambiar el extractor visual | Representación | Descartado: no forma parte del modelo final (sin medición) | El diagnóstico 0 lo descartó como respuesta a la hipótesis temporal | `f0de34d` |
 | C-20 | Retirar el canal geométrico v1 | Representación | Descartado: peor | 0,686 sin canal; el canal le gana al ruido por +0,059 | `informe_mejora_pipeline_mil.md` §7 |
 | C-21 | Canal enriquecido de 21 dimensiones | Representación | Descartado: sin diferencia | 0,698 ± 0,103; margen sobre ruido +0,018 | `feat/enriquecer-canal-geometrico` |
 | C-22 | Comisuras y ollares (15 dimensiones) | Representación | Descartado: peor (sin fusionar) | 0,669 ± 0,077; ruido de pose mayor que la señal; no fusionado (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | `origin/feat/microexpresiones-ollares` |
@@ -975,7 +977,7 @@ notas de trabajo, no verificado en el repo»**.
 | C-44 | Persistencia y orquestación (papermill) | Entorno | Adoptado | Cortes de sesión; reanudar con otra configuración mezcla corridas | `persistencia-y-orquestacion-colab` |
 | C-45 | Modelo servido por la app | App | Fusión adoptada; anteriores Reemplazados | Cada reemplazo se apoya en una medición | `app-modelo-fusion` |
 | C-46 | Videos largos en la app (recortes de 5 s) | App | Abandonado | Rama sin fusionar; respuesta de Sergio (08/10/2026): «se fueron probando nuevos modelos pero no daban mejoras o eran peores» (la función no es un modelo) | `7803e90` |
-| C-47 | Textos de confiabilidad / prueba con persona ajena | App | Adoptado; repetición Pendiente | n = 1 | `f4071ac` |
+| C-47 | Textos de confiabilidad / prueba con persona ajena | App | Adoptado; repetición no realizada | n = 1 | `f4071ac` |
 
 ## 6. Lecciones de método
 
@@ -1081,14 +1083,14 @@ los explica del todo, así que se dejó la nota correspondiente:
   0,060). El commit de cierre `4c13c20` y el registro «caminos e impedimentos» usaron «atajo de cámara»
   para designar el mismo conjunto de cinco variables de encuadre: es un rótulo impreciso, no una cifra distinta.
 
-### Notas menores que quedan abiertas
+### Notas menores
 
-1. **Tres commits que no están en ninguna rama** (`4c13c20`, `1a3859b`, `5ad6b64`; advertencia 3 de la
-   sección 1): conviene preservarlos con una rama o etiqueta antes de la entrega. Sergio no se pronunció.
+1. **Tres commits que no estaban en ninguna rama** (`4c13c20`, `1a3859b`, `5ad6b64`; advertencia 3 de
+   la sección 1): **resuelto el 08/10/2026**, se preservaron en la rama `rescate/otro-camino-2026-09-08`.
 2. **Diferencia de 93 % contra 91,3 % (C-14):** el 93 % es el aprovechamiento medido para el criterio de
    ventana al diseñarlo (tabla del §2 de `informe_mejora_pipeline_mil.md`) y el 91,3 % es el del conjunto
    final (359 de 393). El informe no explica la diferencia (los ajustes posteriores, como el anclaje
    por confianza, son una hipótesis no verificada). La cifra que corresponde citar es 91,3 %.
 3. **Extractor visual, fine-tuning de más capas y cifras del informe de fine-tuning (C-18, C-19):**
-   siguen anotados como vías de mejora sin decisión; la contradicción 0,7737 (una partición) contra
+   **descartados**: no forman parte del modelo final (decisión de Sergio del 08/10/2026); la contradicción 0,7737 (una partición) contra
    0,747 (cuatro folds) ya está advertida en `docs/registro_de_experimentos.md`.
