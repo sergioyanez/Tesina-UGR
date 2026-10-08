@@ -1,0 +1,37 @@
+% ============================================================
+% CAPÍTULO 1
+% ============================================================
+\capitulo{Introducción}
+
+\section{Problemática Observada}
+La evaluación del estado emocional de los animales es central para su bienestar \parencite{mendl2010}. En los equinos depende hoy casi exclusivamente de la observación humana, que puede ser subjetiva, requiere entrenamiento y es difícil de sostener de manera continua. Las herramientas estandarizadas, como el sistema de codificación de la acción facial equina EquiFACS \parencite{wathan2015} o la escala de muecas de dolor \parencite{dallacosta2014}, describen la cara con precisión, pero su aplicación manual es lenta.
+
+La visión por computadora ofrece una vía para automatizar parte de esa observación. Los trabajos recientes sobre reconocimiento de dolor y emociones animales a partir de imágenes y video muestran que el problema es abordable con aprendizaje profundo, aunque señalan como dificultades recurrentes la escasez de datos etiquetados, la definición de las etiquetas y la generalización a individuos nuevos \parencite{broome2023}. En equinos, la mayor parte de los antecedentes se concentra en el dolor: su reconocimiento automático a partir de expresiones faciales con redes convolucionales \parencite{lencioni2021,andersen2021} o de la pose a lo largo del video \parencite{rashid2022}. El reconocimiento de estados emocionales distintos del dolor está menos explorado y se ha abordado principalmente sobre imágenes aisladas \parencite{corujo2021}. En el caso del dolor equino, además, se reportó que la dinámica temporal del video aporta información que una imagen aislada no contiene \parencite{broome2019}.
+
+Este trabajo estudia la factibilidad de un sistema que, a partir de un video corto de la cara de un caballo, produzca una clasificación automática de su expresión. No busca reemplazar la evaluación de un especialista sino explorar si la información visual de una secuencia breve puede convertirse en una predicción reproducible y cuantificable que sirva de apoyo.
+
+\section{Hipótesis de Investigación}
+El plan de trabajo formuló la siguiente hipótesis general:
+
+\begin{quote}
+Es factible desarrollar un modelo computacional basado en arquitecturas de aprendizaje profundo capaz de identificar y clasificar automáticamente expresiones faciales asociadas a diferentes estados emocionales en equinos a partir de secuencias de video cortas, logrando un nivel de precisión útil para la asistencia de expertos humanos.
+\end{quote}
+
+Para hacerla verificable, antes de entrenar el modelo final se fijó como criterio de aceptación un \fmacro{} de 0,691, equivalente al rendimiento del modelo de referencia más un desvío estándar.
+
+Durante el desarrollo se formuló además una hipótesis temporal más específica: \textit{modelar explícitamente el orden de los fotogramas mejora la clasificación respecto de modelos que usan varios fotogramas pero son invariantes al orden}. La distinción importa porque un modelo puede procesar 16 fotogramas e ignorar por completo su orden si los promedia, los vota o los pondera con atención sin información posicional. Para sostener la hipótesis temporal, un modelo sensible al orden debería superar de manera consistente a una alternativa equivalente que no lo utilice.
+
+\section{Objetivos}
+\subsection{Objetivo General}
+Construir un sistema informático para la detección automatizada de expresiones faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
+
+\subsection{Objetivos Específicos}
+\begin{enumerate}
+  \item Conformar una base de datos de videos cortos de rostros de equinos.
+  \item Desarrollar un \textit{pipeline} que permita el preprocesamiento de los videos, incluyendo la extracción de fotogramas clave y la detección de la región de interés.
+  \item Aplicar técnicas de clasificación de aprendizaje automático orientadas a video para identificar estados emocionales.
+  \item Desarrollar una aplicación o interfaz para el uso del modelo resultante.
+\end{enumerate}
+
+\section{Organización del Informe}
+El Capítulo 2 presenta los aspectos de la etología equina relevantes para el problema y el criterio con que se etiquetó el conjunto de datos. El Capítulo 3 introduce las técnicas de ciencia de datos y visión por computadora utilizadas. El Capítulo 4 describe el desarrollo experimental: materiales, métodos y algoritmos. El Capítulo 5 reúne los resultados y su discusión, y el Capítulo 6 las conclusiones y el trabajo futuro. Siguen la bibliografía y los anexos.

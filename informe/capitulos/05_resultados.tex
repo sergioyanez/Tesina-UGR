@@ -1,0 +1,106 @@
+% ============================================================
+% CAPÍTULO 5
+% ============================================================
+\capitulo{Resultados y Discusión}
+
+\section{Rendimiento del Modelo}
+Sobre 359 clips de 133 caballos, el modelo MIL multimodal obtuvo un \fmacro{} de 0,740 ($DE = 0{,}052$ entre particiones; IC 95~\% por \textit{bootstrap} de caballos [0,677; 0,797]) y una exactitud de 0,744. Supera el criterio de aceptación fijado antes de entrenar (0,691). La Tabla~\ref{tab:porclase} detalla las métricas por clase y la Tabla~\ref{tab:confusion}, la matriz de confusión.
+
+\begin{table}[H]
+\caption{Métricas por clase del modelo MIL multimodal}\label{tab:porclase}
+{\singlespacing
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Clase & Precisión & Sensibilidad & \textit{F}\textsubscript{1} & \textit{n} \\
+\midrule
+\clase{Disgustado} & 0,740 & 0,689 & 0,714 & 103 \\
+\clase{Interesado} & 0,764 & 0,797 & 0,780 & 118 \\
+\clase{Sereno} & 0,729 & 0,739 & 0,734 & 138 \\
+\bottomrule
+\end{tabular}}
+\notatabla{Predicciones fuera de muestra de las cuatro particiones agrupadas por caballo.}
+\end{table}
+
+\begin{table}[H]
+\caption{Matriz de confusión del modelo MIL multimodal}\label{tab:confusion}
+{\singlespacing
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& \multicolumn{3}{c}{Clase predicha} \\
+\cmidrule(l){2-4}
+Clase real & \clase{Disgustado} & \clase{Interesado} & \clase{Sereno} \\
+\midrule
+\clase{Disgustado} & 71 & 13 & 19 \\
+\clase{Interesado} & 5 & 94 & 19 \\
+\clase{Sereno} & 20 & 16 & 102 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+El error dominante es la confusión entre \clase{Sereno} y \clase{Disgustado} (20 y 19 clips), más frecuente que la que parecería semánticamente más cercana. Algunos caballos son clasificados mal en todos sus clips; un error sistemático sobre un mismo animal es más compatible con una etiqueta discutible o con una apariencia atípica que con ruido del modelo, pero sin una segunda opinión sobre las etiquetas no es posible distinguir entre ambas causas.
+
+\section{Variabilidad entre Particiones}
+El \fmacro{} de prueba fue de 0,718, 0,769, 0,677 y 0,795 en las cuatro particiones. La dispersión indica que el rendimiento depende de qué caballos quedan en prueba, lo esperable cuando el tamaño efectivo de la muestra son 133 animales y no 359 clips independientes.
+
+\section{Líneas de Base}
+La Tabla~\ref{tab:lineas} compara el modelo con las líneas de base evaluadas sobre las mismas particiones.
+
+\begin{table}[H]
+\caption{Comparación con líneas de base}\label{tab:lineas}
+{\singlespacing
+\begin{threeparttable}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Modelo & \fmacro{} (\textit{DE}) & Exactitud \\
+\midrule
+Clase mayoritaria & 0,183 (0,033) & 0,384 \\
+Azar estratificado\tnote{a} & 0,325 (0,025) & --- \\
+Duración del clip & 0,544 (0,035) & 0,532 \\
+Geometría sola (media y desvío) & 0,607 (0,033) & 0,618 \\
+Metadatos de filmación & 0,618 (0,034) & 0,635 \\
+Visual, un fotograma central & 0,679 (0,024) & 0,688 \\
+Visual, promedio de 16 fotogramas & 0,741 (0,020) & 0,749 \\
+MIL multimodal (modelo final) & 0,740 (0,052) & 0,744 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item[a] Esperanza del \fmacro{} de predicciones aleatorias con las proporciones de clase; percentil 95: 0,367.
+\end{tablenotes}
+\end{threeparttable}}
+\notatabla{Todas las líneas de base son regresiones logísticas evaluadas con las mismas cuatro particiones por caballo que el modelo final. \textit{DE} = desvío estándar entre particiones.}
+\end{table}
+
+Tres resultados se desprenden de la comparación. Primero, el modelo supera con amplitud al azar y a la clase mayoritaria. Segundo, los metadatos de filmación por sí solos alcanzan 0,618: la forma en que se filmó cada clase contiene señal. El modelo los supera por 0,121 (IC 95~\% [0,031; 0,211]), de modo que su rendimiento no se reduce a esos metadatos. Tercero, y más importante, un clasificador lineal sobre el \textit{promedio} de las características visuales de los 16 fotogramas obtiene 0,741, prácticamente lo mismo que el modelo final: la diferencia es de $-0{,}005$ con IC 95~\% [$-0{,}068$; 0,058], que incluye el cero. Usar 16 fotogramas sí aporta respecto de uno solo (diferencia de 0,059, IC 95~\% [0,001; 0,116]), pero no se demuestra que la atención, la geometría ni el orden agreguen algo sobre un resumen estático de esos fotogramas.
+
+\section{Control del Contexto de Filmación}
+Para estimar cuánto del rendimiento depende de rasgos de la filmación, se restringió la evaluación a los clips que comparten resolución ($1080 \times 1920$) y tienen al menos 5~s de duración, sin reentrenar. Sobre esos 236 clips el modelo conserva un \fmacro{} de 0,705 y una exactitud de 0,746. El subconjunto contiene sólo 28 clips de \clase{Disgustado}, por lo que el resultado es indicativo; aun así, la caída es moderada y sugiere que el modelo no depende principalmente de la duración ni de la resolución.
+
+Este control no alcanza al contexto que la etiquetadora describe (box de hipódromo para \clase{Interesado}, interacción en manada para \clase{Disgustado}). Que la clase se asocie al entorno es inherente al fenómeno, pero el modelo puede aprovecharlo como pista: los videos con varios animales en cuadro pertenecen casi siempre a \clase{Disgustado} y el modelo los clasifica mejor que al resto de esa clase.
+
+\section{Sobreajuste}
+El registro por época del entrenamiento interno muestra un sobreajuste marcado: el \fmacro{} medio fue de 0,979 en entrenamiento, 0,712 en validación y 0,740 en prueba (Anexo~C). La parada temprana contiene el problema: el rendimiento de prueba se mantiene en línea con el de validación. Con 132\,355 parámetros y unos 200 clips de entrenamiento por partición, la memorización del conjunto de entrenamiento es esperable.
+
+\section{Evaluación de la Hipótesis Temporal}
+La hipótesis temporal no queda respaldada. La GRU y la atención con codificación posicional, sensibles al orden, no superaron de manera consistente a las variantes invariantes. En el modelo de promedio, permutar los fotogramas no cambia el resultado por construcción, y el modelo final, cuya atención no usa la posición, es igualmente invariante al orden. La comparación con el promedio estático refuerza la conclusión: un resumen sin orden ni atención alcanza el mismo rendimiento.
+
+La conclusión es acotada. No implica que la dinámica sea irrelevante en la expresión equina ---en dolor equino se reportó lo contrario \parencite{broome2019}---, sino que \textit{con este conjunto, esta ventana de hasta 7~s y estas representaciones, no se encontró evidencia de que el orden de los 16 fotogramas mejore la clasificación}.
+
+\section{Variantes No Adoptadas}
+El ajuste fino parcial de la ResNet18 (última etapa convolucional) obtuvo 0,747 ($DE = 0{,}057$), una diferencia pequeña frente a la variabilidad entre particiones que no justificaba el costo ni el riesgo adicional de sobreajuste. Tampoco mejoraron el modelo un canal geométrico con más puntos anatómicos, puntos de boca y ollares, la validación cruzada anidada para elegir la época, el enmascarado de clips incompletos ni una representación del movimiento de la cabeza. La geometría resultó útil sólo como complemento: el MIL visual sin geometría obtuvo 0,686.
+
+\section{Limitaciones}
+\begin{enumerate}
+  \item \textbf{Un único observador.} El acuerdo se midió en un piloto sobre imágenes, no sobre este conjunto. Se desconoce el techo de rendimiento que impone la ambigüedad de las etiquetas.
+  \item \textbf{El criterio de etiquetado no es sólo facial.} Incluye ambiente, comportamiento y postura, información a la que el modelo, que ve un recorte de la cara, no accede por completo.
+  \item \textbf{Asociación entre clase y contexto.} La clase se relaciona parcialmente con el establecimiento, la situación y la duración de la toma.
+  \item \textbf{Tamaño efectivo.} Los 133 caballos limitan la precisión de las estimaciones, como muestra la variabilidad entre particiones.
+  \item \textbf{Sin validación externa.} No se evaluó el modelo con videos de otras fuentes, cámaras o regiones.
+  \item \textbf{Validación interna pequeña.} La elección de la época se apoya en pocos caballos por partición.
+  \item \textbf{Pose sin adaptación.} DeepLabCut se usa sin entrenamiento adicional sobre este conjunto.
+  \item \textbf{Costo de inferencia.} Procesar un video nuevo demora de uno a tres minutos con GPU.
+\end{enumerate}
+
+\section{Discusión General}
+Los resultados muestran que la cara del caballo, tal como la captura un video corto de celular, contiene señal suficiente para discriminar las tres clases definidas en el conjunto, y que esa señal se generaliza a animales no vistos durante el entrenamiento. El rendimiento es comparable entre clases y supera claramente a las líneas de base que no miran la cara.
+
+Al mismo tiempo, el trabajo muestra que la complejidad del modelo no fue lo que determinó el resultado. Los avances más grandes provinieron de decisiones metodológicas: eliminar la fuga por identidad, corregir la orientación de los videos, ampliar el encuadre para incluir las orejas, rediseñar la selección de fotogramas y unificar entrenamiento e inferencia. Un clasificador lineal sobre un resumen estático de varios fotogramas iguala a la arquitectura final. Con un conjunto de este tamaño, la calidad de los datos y el control de sesgos pesan más que la arquitectura.

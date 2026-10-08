@@ -1,0 +1,46 @@
+% ============================================================
+% CAPÍTULO 6
+% ============================================================
+\capitulo{Conclusiones}
+
+\section{Cumplimiento de los Objetivos}
+\subsection{Conjunto de Datos}
+Se conformó un conjunto propio de 274 videos y 393 clips de equinos, de los cuales el sistema utiliza 359, correspondientes a 133 caballos, con un criterio de etiquetado documentado y referido a EquiFACS.
+
+\subsection{Preprocesamiento}
+Se implementó un \textit{pipeline} reproducible que estima la pose, elige una ventana temporal medida, selecciona 16 fotogramas, alinea la cara y genera representaciones visuales y geométricas, con un aprovechamiento del 91,3~\% de los clips.
+
+\subsection{Clasificación}
+El modelo MIL multimodal alcanza un \fmacro{} de 0,740 y una exactitud de 0,744 con evaluación agrupada por caballo, por encima del criterio de aceptación fijado de antemano.
+
+\subsection{Aplicación}
+Se implementó una aplicación de inferencia que usa el mismo código que el entrenamiento, verificado por pruebas automatizadas, y que se niega a clasificar cuando el video no permite una medición suficiente.
+
+\section{Conclusión sobre la Hipótesis General}
+La hipótesis general se considera respaldada dentro de los límites del conjunto: es factible clasificar automáticamente las tres expresiones definidas a partir de videos cortos, con generalización a caballos no observados y un rendimiento por encima del criterio establecido. La afirmación se refiere a las categorías y al criterio de una etiquetadora; no constituye una validación clínica ni etológica externa.
+
+\section{Conclusión sobre la Hipótesis Temporal}
+La hipótesis temporal no fue demostrada. Los modelos sensibles al orden no superaron a los invariantes, y un resumen estático de los 16 fotogramas alcanza el mismo rendimiento que el modelo final. Utilizar varios fotogramas sí resultó útil; ordenarlos o ponderarlos, no.
+
+\section{Aportes}
+\begin{itemize}
+  \item Un conjunto de datos propio de expresiones faciales equinas con criterio de etiquetado documentado.
+  \item La identificación y el control de la fuga de información por identidad.
+  \item Un método de selección de fotogramas que mide antes de elegir y más que duplicó el aprovechamiento de los clips.
+  \item Un sistema de líneas de base que permite atribuir el rendimiento a sus fuentes y detectar atajos.
+  \item La equivalencia verificada entre el procesamiento de entrenamiento y el de inferencia.
+  \item El registro de resultados negativos y de variantes descartadas.
+\end{itemize}
+
+\section{Trabajo Futuro}
+\begin{enumerate}
+  \item Medir el acuerdo entre observadores sobre una muestra del conjunto: que una segunda persona etiquete a ciegas unos 60 clips con el criterio documentado y se calcule el $\kappa$ de Cohen \parencite{cohen1960}.
+  \item Incorporar más caballos, en particular de \clase{Disgustado} en contextos distintos de la manada.
+  \item Validar el modelo con videos de otras fuentes y establecimientos.
+  \item Equilibrar el contexto de filmación entre clases o controlarlo explícitamente.
+  \item Estudiar representaciones temporales sólo si nuevos datos muestran señal temporal que el esquema actual no captura.
+  \item Reducir el costo de la estimación de pose en inferencia.
+\end{enumerate}
+
+\section{Conclusión Final}
+Un sistema de clasificación de expresiones faciales equinas puede construirse con un \textit{pipeline} reproducible y evaluarse con rigor evitando la fuga por identidad. El mejor resultado no provino de aumentar la complejidad del modelo sino de mejorar el aprovechamiento de los datos, la coherencia metodológica y el control de sesgos. La información de varios fotogramas resulta útil, pero con los datos y escalas estudiados no se encontró evidencia de que su orden sea determinante. El trabajo futuro debería orientarse a ampliar y diversificar el conjunto y a medir la confiabilidad de sus etiquetas antes que a arquitecturas temporales más complejas.

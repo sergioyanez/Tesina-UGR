@@ -1,0 +1,99 @@
+% ============================================================
+% CAPÍTULO 4
+% ============================================================
+\capitulo{Desarrollo Experimental: Materiales, Métodos y Algoritmos}
+
+\section{Materiales}
+El sistema se implementó en Python con PyTorch \parencite{paszke2019}, scikit-learn \parencite{pedregosa2011}, OpenCV \parencite{bradski2000} y DeepLabCut \parencite{mathis2018}. La estimación de pose se ejecutó con una GPU NVIDIA RTX 3070 de 8 GB; el modelado no requiere GPU porque opera sobre características precalculadas. El código, las pruebas y la documentación se versionaron en un repositorio Git.
+
+\section{Conjunto de Datos}
+No existía un conjunto público con estas tres clases, por lo que se construyó uno propio a partir de videos filmados con teléfono celular. Los videos se organizaron en carpetas por clase, y el identificador del caballo se tomó del prefijo numérico del nombre de archivo; ese identificador es el que permite particionar sin fuga. La Tabla~\ref{tab:tamano} resume el tamaño del conjunto y la Tabla~\ref{tab:clases}, su distribución por clase.
+
+\begin{table}[H]
+\caption{Tamaño del conjunto de datos}\label{tab:tamano}
+{\singlespacing
+\begin{tabular}{@{}lr@{}}
+\toprule
+Elemento & Cantidad \\
+\midrule
+Videos originales catalogados & 274 \\
+Clips candidatos & 393 \\
+Clips utilizados & 359 \\
+Caballos distintos & 133 \\
+\bottomrule
+\end{tabular}}
+\notatabla{Un clip candidato se descarta cuando no contiene una ventana con suficientes fotogramas medidos (ver la sección sobre selección de fotogramas). Se utiliza el 91,3~\% de los candidatos.}
+\end{table}
+
+\begin{table}[H]
+\caption{Distribución por clase del conjunto utilizado}\label{tab:clases}
+{\singlespacing
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Clase & Clips & Caballos \\
+\midrule
+\clase{Disgustado} & 103 & 57 \\
+\clase{Interesado} & 118 & 60 \\
+\clase{Sereno} & 138 & 52 \\
+\midrule
+Total & 359 & 133 \\
+\bottomrule
+\end{tabular}}
+\notatabla{La suma de caballos por clase supera 133 porque 29 animales aparecen en más de una clase: la etiqueta describe un momento, no al individuo.}
+\end{table}
+
+\section{Problemas Detectados en los Datos}
+Durante la construcción del conjunto se detectaron y corrigieron: un video duplicado en dos clases, videos con la orientación guardada como metadato, una copia local incompleta de la fuente de datos, archivos auxiliares de DeepLabCut mezclados con los clips, desenfoque de movimiento y cabezas parcialmente fuera de cuadro. Se adoptó una única fuente de datos declarada, corrección automática de la orientación y controles de duplicados.
+
+Persiste una diferencia de duración entre clases: la mediana de duración de los clips es de 3,2~s en \clase{Disgustado} y de 6,0~s en \clase{Interesado} y \clase{Sereno}. Es coherente con el contexto de filmación ---las interacciones que originan \clase{Disgustado} son breves y bruscas---, pero constituye una señal que el modelo podría aprovechar sin mirar la cara. Se la controla en el Capítulo 5.
+
+\section{Generación de Clips}
+Los videos se segmentan en ventanas de alrededor de 6~s sin solapamiento, absorbiendo un resto final de hasta 7~s. La duración mínima para conservar un video corto se fijó en 1~s para no descartar de manera preferencial la clase \clase{Disgustado}.
+
+\section{Estimación de Pose sobre Todos los Fotogramas}
+DeepLabCut se ejecutó sobre todos los fotogramas de los 393 clips candidatos, alrededor de 73\,000. Es la etapa más costosa, pero se ejecuta una sola vez y su resultado se almacena, lo que permite cambiar el criterio de selección de fotogramas sin repetir el cálculo.
+
+\section{Selección de los 16 Fotogramas}
+La versión inicial fijaba 16 posiciones equiespaciadas antes de saber qué fotogramas tenían mediciones válidas; un fotograma fallido se recuperaba por interpolación o anotación manual. Con ese enfoque sólo 153 de los 393 clips resultaban utilizables.
+
+La versión vigente invierte el orden: primero mide y después elige. El algoritmo (a) busca la ventana temporal más larga, de hasta 7~s, que contenga al menos 16 fotogramas válidos y ningún hueco sin medición mayor a 0,5~s; (b) distribuye 16 posiciones equiespaciadas en esa ventana, y (c) ancla cada posición al fotograma válido de mayor confianza dentro de una tolerancia de 0,10~s. No se interpolan puntos ni se anotan fotogramas a mano: si un clip no ofrece una ventana suficiente, se descarta. Este cambio elevó los clips utilizables de 153 a 359 sin filmar videos nuevos.
+
+\section{Representaciones Visual y Geométrica}
+Cada fotograma seleccionado se alinea, se guarda en JPEG con calidad 95 y se procesa con la ResNet18 congelada, que produce 512 características. La aplicación de inferencia reproduce exactamente este recorrido, incluida la compresión, para que el modelo reciba en producción la misma distribución de imágenes que en el entrenamiento. En paralelo se calcula el vector geométrico de 9 valores.
+
+\section{Arquitectura del Modelo}
+Para cada fotograma, el vector geométrico pasa por un perceptrón multicapa ($9 \rightarrow 64 \rightarrow 128$) y se concatena con las 512 características visuales, lo que da una representación de 640 dimensiones. Un mecanismo de atención asigna un peso a cada uno de los 16 fotogramas; la suma ponderada forma la representación del clip, que una capa lineal convierte en puntuaciones para las tres clases. El modelo tiene 132\,355 parámetros entrenables, sin contar la ResNet18.
+
+\section{Protocolo de Evaluación}
+La evaluación usa validación cruzada con cuatro particiones externas agrupadas por caballo. Dentro de cada partición, el conjunto de entrenamiento se divide otra vez por caballo en entrenamiento interno y validación interna. La validación interna selecciona la época mediante parada temprana \parencite{prechelt2012}: hasta 100 épocas, con paciencia de 10, conservando el punto de control de mejor \fmacro{} en validación. El conjunto de prueba de cada partición se evalúa una sola vez. Las predicciones fuera de muestra de las cuatro particiones se combinan para calcular las métricas globales.
+
+Para interpretar el resultado se evaluaron, sobre las mismas particiones, líneas de base que aíslan cada fuente de señal: la clase mayoritaria, el azar estratificado, la duración del clip, los metadatos de filmación (duración, cuadros por segundo, resolución y ventana), la geometría sola, un único fotograma central y el promedio de las características visuales de los 16 fotogramas. Las líneas de base usan regresión logística con hiperparámetros fijados de antemano y estandarización ajustada sólo con el entrenamiento de cada partición.
+
+El modelo de producción se reentrenó con todos los datos durante 29 épocas, valor cercano a la media de las mejores épocas observadas (28,5).
+
+\section{Aplicación de Inferencia}
+Se implementó una aplicación web con Streamlit que comparte con el entrenamiento el mismo código de selección, alineación y extracción. Una prueba automatizada verifica sobre clips reales que ambas ramas eligen los mismos fotogramas y producen recortes idénticos píxel a píxel; esa prueba detectó durante el desarrollo un cambio de umbral que había desalineado la aplicación respecto del modelo entrenado. La aplicación procesa un video nuevo, informa la clase estimada con su confianza y el peso de atención de cada fotograma, y se niega a clasificar ---indicando el motivo--- cuando el video no ofrece una secuencia válida.
+
+\section{Evolución del Desarrollo}
+La Tabla~\ref{tab:hitos} resume los hitos principales.
+
+\begin{table}[H]
+\caption{Hitos principales del desarrollo}\label{tab:hitos}
+{\singlespacing\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}X@{}}
+\toprule
+Fecha (2026) & Hito \\
+\midrule
+Mayo & Plan de trabajo, objetivos e hipótesis general. \\
+13--17/08 & Primer \textit{pipeline}: preparación del conjunto, detección con YOLO y pose con DeepLabCut. \\
+18--21/08 & Diagnóstico de cobertura, orientación de los videos y encuadre. \\
+28/08 & Primera evaluación de la clasificación sobre 141 clips. \\
+05/09 & Ampliación a 153 clips; modelo de promedio con \fmacro{} 0,704. \\
+15/09 & Modelo MIL multimodal. \\
+17--18/09 & Auditoría del \textit{pipeline}; selección por ventana temporal, 359 clips, validación interna y parada temprana. \\
+19--23/09 & Ablaciones y experimentos de mejora. \\
+25/09 & Líneas de base del conjunto vigente, control del confusor de filmación y registro del sobreajuste. \\
+28/09--07/10 & Documentación del protocolo de etiquetado y verificación de la equivalencia entre entrenamiento e inferencia. \\
+\bottomrule
+\end{tabularx}}
+\end{table}

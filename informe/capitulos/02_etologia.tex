@@ -1,0 +1,47 @@
+% ============================================================
+% CAPÍTULO 2
+% ============================================================
+\capitulo{Descripción y Etología del Equino}
+
+\section{La Expresión Facial Equina}
+El caballo es una especie social cuya comunicación depende en buena medida de señales visuales. Su cara presenta una musculatura capaz de producir un repertorio amplio de movimientos: EquiFACS identifica 17 unidades de acción facial, además de descriptores de acción y de movimientos de orejas, y fue desarrollado a partir de la anatomía muscular de la especie \parencite{wathan2015}. Las orejas, por su movilidad, son una fuente de información especialmente rica.
+
+EquiFACS describe movimientos, no emociones: codifica qué músculo se contrae, sin atribuirle un significado. El vínculo entre una configuración facial y un estado afectivo proviene de los etogramas, que describen las conductas observadas en la especie y el contexto en que aparecen \parencite{waring1983,mcdonnell2002,mullard2017,torresborda2024,lewis2025}. Este trabajo se apoya en esa combinación: EquiFACS como vocabulario para describir la cara y los etogramas como marco para interpretarla.
+
+\section{Clases de Expresión Consideradas}
+El conjunto de datos distingue tres clases. La etiquetadora, la médica veterinaria Bárbara Zimmermann, especialista en producción equina y codificadora certificada de EquiFACS, documentó por escrito el criterio de cada una (Tabla~\ref{tab:criterio}). Las unidades de acción figuran como rasgos que \textit{pueden} estar presentes, no como condiciones obligatorias.
+
+\begin{table}[H]
+\caption{Criterio de etiquetado por clase}\label{tab:criterio}
+{\singlespacing\small
+\begin{tabularx}{\textwidth}{@{}p{2.4cm}X@{}}
+\toprule
+Clase & Rasgos observables \\
+\midrule
+\clase{Sereno} & Orejas laterales o hacia caudal, en línea con la nariz; ollar neutro; puede haber labio mandibular descendido (AD160). Cabeza por debajo de la cruz o apoyada en la puerta del box. Puede incluir animales echados. \\
+\addlinespace
+\clase{Disgustado} & Pueden presentarse orejas hacia caudal (EAD103), ángulo caudal del ollar elevado (AUH13) o esclerótica visible (AD1). Puede incluir movimientos amenazantes de la cabeza, apertura bucal con dientes expuestos (AU10, AU16, AU17, AU18) y tensión en el lateral de la cara (AUH21). \\
+\addlinespace
+\clase{Interesado} & Orejas hacia craneal (EAD101), posiblemente aducidas (EAD102). Cabeza y cuello neutros o elevados. Puede presentar ollares dilatados (AD38) o esclerótica visible (AD1). \\
+\bottomrule
+\end{tabularx}}
+\notatabla{Códigos de EquiFACS \parencite{wathan2015} tal como los consignó la etiquetadora. AU = unidad de acción; AD = descriptor de acción; EAD = descriptor de acción de las orejas. Además de la cara, el criterio considera las condiciones ambientales, el comportamiento y la postura corporal.}
+\end{table}
+
+\section{Contexto de Filmación de Cada Clase}
+Todos los videos fueron filmados por la misma etiquetadora entre 2023 y 2026 en hipódromos (Tandil y Azul), haras (Maryland y General Lavalle), quintas particulares y el campus de la Universidad Nacional del Centro de la Provincia de Buenos Aires, y una estancia en San Cayetano. Las expresiones son espontáneas y surgen, en muchos casos, de la comunicación entre animales. El contexto difiere entre clases:
+
+\begin{itemize}
+  \item \clase{Interesado}, la clase más frecuente, aparece en todos los establecimientos. En los hipódromos los caballos estaban en box y se filmaron al abrir la puerta superior, por lo que casi todo el material de hipódromo pertenece a esta clase.
+  \item \clase{Sereno} se filmó en hipódromos durante el horario de descanso del personal, con los animales alimentados, y en cría extensiva en lotes o corrales.
+  \item \clase{Disgustado} proviene sobre todo de la cría extensiva, de interacciones dentro de la manada en las que los animales dominantes desplazan a otros del alimento o del agua. Hubo pocos casos en box.
+\end{itemize}
+
+Esta asociación entre clase y contexto es parte de la naturaleza del fenómeno, pero también una fuente potencial de atajos para un modelo, que podría aprender el contexto en lugar de la cara \parencite{geirhos2020}. El Capítulo 5 la cuantifica.
+
+\section{Procedimiento de Etiquetado y su Alcance}
+Después de cada sesión de filmación, la etiquetadora revisó todos los videos y recortó los tramos en que se manifestaba cada expresión; esos tramos son los videos del conjunto. La etiqueta se asigna al video entero y se hereda a sus clips, un supuesto que el recorte por tramos sostiene.
+
+En un estudio piloto previo, investigadores en comportamiento animal de la Universidad de Milán clasificaron imágenes con el mismo criterio y obtuvieron un acuerdo de $\kappa = 0{,}99$ \parencite{fleiss1971}. Las clases sin coincidencia entre observadores en ese piloto se excluyeron del conjunto: miedo, expresiones de intensidad elevada, conductas repetitivas y caballos atados. Los videos del conjunto, en cambio, los etiquetó una sola persona, la misma que los filmó y observó el contexto. El acuerdo entre observadores sobre este conjunto no se midió.
+
+En consecuencia, el modelo aprende a reproducir el criterio de esta etiquetadora y debe interpretarse como un clasificador de las categorías definidas en el conjunto, no como una herramienta diagnóstica de estados emocionales en sentido clínico o etológico estricto.

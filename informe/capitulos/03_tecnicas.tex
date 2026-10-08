@@ -1,0 +1,35 @@
+% ============================================================
+% CAPÍTULO 3
+% ============================================================
+\capitulo{Técnicas de Ciencia de Datos y Visión por Computadora}
+
+\section{Visión General del Sistema}
+El sistema transforma cada clip en una \textit{bolsa} de 16 instancias. Cada instancia es un fotograma facial alineado, descrito por un vector visual de 512 dimensiones y uno geométrico de 9. La secuencia de procesamiento es: (a) segmentación del video en clips; (b) estimación de pose sobre todos los fotogramas; (c) selección de 16 fotogramas válidos; (d) alineación espacial de la cara; (e) extracción de características visuales y geométricas, y (f) fusión y clasificación mediante aprendizaje de múltiples instancias con atención.
+
+\section{Estimación de Pose}
+DeepLabCut estima la posición de puntos anatómicos sin marcadores mediante redes profundas \parencite{mathis2018}. Este trabajo usa el modelo preentrenado SuperAnimal-Quadruped, entrenado sobre una gran colección de cuadrúpedos y aplicable sin anotar datos propios \parencite{ye2024}. El modelo devuelve 39 puntos con una confianza para cada uno. Un fotograma se considera válido cuando el ojo y el hocico superan una confianza de 0,50.
+
+En las primeras versiones del sistema se usaba además un detector de objetos YOLO \parencite{redmon2016,jocher2024} para localizar al caballo antes de estimar la pose. Se retiró del sistema final porque DeepLabCut ya localiza al animal y la combinación de ambos agregaba costo sin una mejora proporcional.
+
+\section{Normalización Espacial}
+Con el ojo y el hocico de cada fotograma se estima una transformación de similitud que corrige rotación, escala y traslación, y lleva la cara a una posición canónica. El recorte resultante mide $224 \times 343$ píxeles; la altura adicional respecto del formato cuadrado habitual conserva las orejas. Los bordes se rellenan replicando los píxeles vecinos para no introducir bandas negras cuyo tamaño dependa del encuadre. El objetivo es reducir la posibilidad de que el modelo aprenda diferencias de encuadre en lugar de diferencias de expresión.
+
+\section{Aprendizaje por Transferencia con ResNet18}
+Las redes residuales permiten entrenar redes convolucionales profundas mediante conexiones de atajo entre capas \parencite{he2016}. Una ResNet18 entrenada sobre ImageNet \parencite{deng2009} se utiliza como extractor de características: se elimina su clasificador y se conserva la salida del \textit{pooling} global, un vector de 512 dimensiones por fotograma. Las capas convolucionales aprenden representaciones generales que se transfieren a tareas nuevas \parencite{yosinski2014}.
+
+La red se mantiene congelada: sus parámetros no se actualizan. Con 133 caballos, entrenar sus 11 millones de parámetros favorecería la memorización de los individuos. Congelada, permite además precalcular las características una sola vez.
+
+\section{Características Geométricas}
+Para cada fotograma se calculan las coordenadas del ojo, el hocico y la oreja, expresadas respecto del punto medio ojo--hocico y escaladas por la distancia entre ambos, más un indicador de validez por punto: 9 valores en total. La representación es aproximadamente invariante al tamaño y a la posición de la cara en la imagen.
+
+\section{Agregación de Fotogramas}
+Se compararon varias formas de combinar los fotogramas de un clip: el voto entre clasificaciones individuales, el promedio de representaciones, redes recurrentes sensibles al orden ---GRU \parencite{cho2014} y CNN--LSTM \parencite{hochreiter1997}---, atención con codificación posicional y aprendizaje de múltiples instancias. La comparación entre modelos sensibles e invariantes al orden es la base de la evaluación de la hipótesis temporal.
+
+\section{Aprendizaje de Múltiples Instancias}
+En el aprendizaje de múltiples instancias (MIL, por sus siglas en inglés), cada ejemplo es una bolsa de instancias con una única etiqueta \parencite{dietterich1997}. La variante con atención aprende un peso para cada instancia y forma la representación de la bolsa como un promedio ponderado \parencite{ilse2018}. Aquí cada clip es una bolsa de 16 fotogramas. La atención sin información posicional es, por construcción, invariante al orden de las instancias.
+
+\section{Validación Agrupada por Caballo}
+Si clips del mismo caballo aparecen en entrenamiento y en prueba, el modelo puede reconocer al animal en lugar de la expresión, una forma de fuga de información que infla las métricas \parencite{kaufman2012}. Cuando los datos tienen estructura jerárquica, la validación cruzada debe respetarla \parencite{roberts2017}. Por eso todas las particiones agrupan los clips por caballo: ningún animal aparece a la vez en entrenamiento y en prueba.
+
+\section{Métricas}
+La métrica principal es el \fmacro{}, el promedio no ponderado del \textit{F}\textsubscript{1} de cada clase, adecuado ante clases desbalanceadas porque les da el mismo peso \parencite{sokolova2009}. Se informan también la exactitud, la precisión, la sensibilidad y la matriz de confusión. La incertidumbre de las diferencias entre modelos se estima con intervalos de confianza por \textit{bootstrap} \parencite{efron1993}, remuestreando caballos y no clips.

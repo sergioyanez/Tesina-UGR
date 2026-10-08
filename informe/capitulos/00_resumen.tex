@@ -1,0 +1,11 @@
+% ============================================================
+% RESUMEN (APA 7, sección 2.9)
+% ============================================================
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+\noindent Este trabajo desarrolla y evalúa un sistema de clasificación automática de expresiones faciales equinas a partir de videos cortos, en tres clases: \clase{Sereno}, \clase{Interesado} y \clase{Disgustado}. Ante la falta de un conjunto público adecuado, se construyó uno propio de 274 videos filmados en establecimientos de la provincia de Buenos Aires y etiquetados por una médica veterinaria codificadora certificada de EquiFACS. Cada video se segmenta en clips; la pose facial se estima con DeepLabCut SuperAnimal-Quadruped sobre todos los fotogramas, se eligen 16 fotogramas medidos dentro de la mejor ventana temporal y se alinea la cara con el eje ojo--hocico. Cada fotograma se describe con 512 características de una ResNet18 congelada y 9 geométricas, y un modelo de aprendizaje de múltiples instancias con atención produce la clase. Con validación cruzada de cuatro particiones agrupadas por caballo sobre 359 clips de 133 animales, el modelo obtuvo un \fmacro{} de 0,740 ($DE = 0{,}052$), por encima del criterio fijado de antemano (0,691) y de las líneas de base de azar (0,325) y de metadatos de filmación (0,618). Sin embargo, una regresión logística sobre el promedio de las características de los 16 fotogramas alcanzó 0,741, sin diferencia apreciable. Se concluye que la clasificación es factible con este conjunto, pero no se demostró que modelar el orden temporal ni la arquitectura de atención aporten sobre un resumen estático de varios fotogramas. Las principales limitaciones son el etiquetado por un único observador y la asociación parcial entre clase y contexto de filmación.
+
+\medskip
+\noindent\hspace{1.27cm}\textit{Palabras clave:} equinos, expresiones faciales, aprendizaje profundo, visión por computadora, bienestar animal, aprendizaje de múltiples instancias
+
+\clearpage

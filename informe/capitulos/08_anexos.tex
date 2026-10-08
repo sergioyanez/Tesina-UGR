@@ -1,0 +1,92 @@
+% ============================================================
+% CAPÍTULO 8 — ANEXOS
+% ============================================================
+\clearpage
+\chapter*{Anexos}
+\addcontentsline{toc}{chapter}{Capítulo 8. Anexos}
+
+\section{Anexo A. Parámetros del Sistema}
+\begin{table}[H]
+\caption{Parámetros principales}\label{tab:parametros}
+{\singlespacing
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Parámetro & Valor \\
+\midrule
+Fotogramas por clip & 16 \\
+Ventana temporal máxima & 7,0~s \\
+Hueco máximo entre mediciones & 0,5~s \\
+Tolerancia de anclaje & 0,10~s \\
+Confianza mínima de ojo y hocico & 0,50 \\
+Tamaño del recorte & $224 \times 343$ píxeles \\
+Extractor visual & ResNet18 preentrenada en ImageNet, congelada \\
+Dimensión visual / geométrica & 512 / 9 \\
+Proyección geométrica & $9 \rightarrow 64 \rightarrow 128$ \\
+Particiones externas & 4, agrupadas por caballo \\
+Épocas máximas / paciencia & 100 / 10 \\
+Épocas del modelo de producción & 29 \\
+Parámetros entrenables & 132\,355 \\
+\bottomrule
+\end{tabularx}}
+\end{table}
+
+\section{Anexo B. Componentes del Software}
+\begin{itemize}
+  \item \texttt{equinos/catalogo.py}: catálogo de videos por clase.
+  \item \texttt{equinos/reproceso.py}: estimación de pose sobre todos los fotogramas.
+  \item \texttt{equinos/secuencia.py}: selección temporal de fotogramas.
+  \item \texttt{equinos/alineado.py}: alineación de la cara.
+  \item \texttt{equinos/dataset.py}: construcción de los recortes.
+  \item \texttt{equinos/caracteristicas.py}: extracción con ResNet18.
+  \item \texttt{equinos/clasificacion.py}: modelo, entrenamiento y evaluación.
+  \item \texttt{equinos/particion.py}: particiones por caballo.
+  \item \texttt{equinos/inferencia.py} y \texttt{app\_inferencia.py}: aplicación de inferencia.
+  \item \texttt{scripts/evaluar\_v2.py} y \texttt{scripts/evaluar\_lineas\_de\_base.py}: evaluación del modelo y de las líneas de base.
+  \item \texttt{tests/}: pruebas automatizadas, entre ellas la de equivalencia entre entrenamiento e inferencia.
+\end{itemize}
+
+\section{Anexo C. Resultados por Partición}
+\begin{table}[H]
+\caption{Entrenamiento, validación y prueba por partición}\label{tab:folds}
+{\singlespacing
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Partición & Mejor época & \textit{F}\textsubscript{1} entrenamiento & \textit{F}\textsubscript{1} validación & \textit{F}\textsubscript{1} prueba \\
+\midrule
+1 & 28 & 0,973 & 0,700 & 0,718 \\
+2 & 26 & 0,994 & 0,766 & 0,769 \\
+3 & 20 & 0,969 & 0,641 & 0,677 \\
+4 & 40 & 0,981 & 0,742 & 0,795 \\
+\midrule
+Media & 28,5 & 0,979 & 0,712 & 0,740 \\
+\bottomrule
+\end{tabular}}
+\notatabla{\textit{F}\textsubscript{1} macro. El entrenamiento se evalúa sin \textit{dropout} con los pesos de la mejor época.}
+\end{table}
+
+\section{Anexo D. Variantes Evaluadas}
+\begingroup\singlespacing\small
+\setlength{\LTleft}{0pt}
+\begin{longtable}{@{}p{0.27\textwidth}p{0.42\textwidth}p{0.23\textwidth}@{}}
+\caption{Modelos y variantes evaluados}\label{tab:modelos}\\
+\toprule
+Modelo & Descripción & Resultado \\
+\midrule
+\endfirsthead
+\toprule
+Modelo & Descripción & Resultado \\
+\midrule
+\endhead
+Un fotograma y voto & Regresión logística por fotograma y voto entre 16 predicciones. & 0,660 sobre 153 clips. \\
+Modelo de promedio & Proyección compartida y promedio de 16 fotogramas. & 0,704 sobre 153 clips. \\
+GRU & Recurrente, sensible al orden. & No superó a los invariantes. \\
+Atención con posición & Atención con codificación posicional. & Sin mejora consistente. \\
+CNN--LSTM & ResNet18 seguida de LSTM. & No integrada. \\
+MIL visual & MIL sólo con características visuales. & 0,686. \\
+MIL multimodal & Visual, geometría y atención. & Modelo final: 0,740. \\
+Ajuste fino parcial & Última etapa de la ResNet18 entrenable. & 0,747; no adoptado. \\
+Canal geométrico ampliado & Más puntos anatómicos. & Peor o más inestable. \\
+Puntos de boca y ollares & Puntos faciales adicionales. & Sin mejora. \\
+\bottomrule
+\end{longtable}
+\endgroup
