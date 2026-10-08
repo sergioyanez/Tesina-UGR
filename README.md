@@ -20,6 +20,7 @@ tocar el código.
 
 El plan de trabajo vigente está en [`docs/plan_de_trabajo_corregido.pdf`](docs/plan_de_trabajo_corregido.pdf).
 Qué número sale de qué código y rama: [`docs/registro_de_experimentos.md`](docs/registro_de_experimentos.md).
+Cada camino que se siguió, por qué se adoptó o se descartó y con qué evidencia: [`docs/caminos_explorados.md`](docs/caminos_explorados.md).
 
 ## Estructura
 
