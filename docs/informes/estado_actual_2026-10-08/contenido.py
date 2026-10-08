@@ -629,9 +629,9 @@ y que un resultado negativo bien medido es un resultado (L-11).</p>""")
     A(h2("Qué queda", "queda"))
     A("""
 <ul>
-<li><b>Informe final (entrega prevista: 29/10/2026).</b> Redacción en formato APA (<code>.tex</code> para Overleaf). Debe llevar las limitaciones de la sección 6, incluir el relevamiento bibliográfico que el docente señaló como no encontrado
+<li><b>Informe final (entrega prevista: 29/10/2026).</b> Redacción en formato APA (<code>.tex</code> para Overleaf). Debe llevar las limitaciones de la sección 6, reflejar el relevamiento bibliográfico ya incorporado (Capítulos 2 y 3)
 y presentar la fusión sin afirmar superioridad sobre el RF de pose.</li>
-<li><b>Observaciones abiertas del docente</b> (sección 2.3): la utilidad con veterinarios y el relevamiento bibliográfico.</li>
+<li><b>Observación abierta del docente</b> (sección 2.3): la utilidad con veterinarios y el test externo (D5).</li>
 <li><b>Trabajo futuro, sin ejecutar:</b> medir el acuerdo interobservador sobre el dataset con un panel de expertos; recortar los clips a igual duración (o filmar nuevas tomas con un protocolo parejo) para neutralizar el confusor de formato;
 evaluar un modelo de pose específico de caballos; un test externo con otra población.</li>
 </ul>

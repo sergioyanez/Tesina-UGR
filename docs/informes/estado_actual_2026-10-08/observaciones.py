@@ -84,7 +84,7 @@ def observaciones(D, ic_res):
              resultado=f"Sin validación con veterinarios ni test externo. Reserva: F1 {n(D['reserva']['metricas']['f1_macro'])}, IC95 {ic(ic_res)}.",
              estado="Abierta"),
         dict(obs="<b>D6.</b> Resaltado: no se encontró un relevamiento bibliográfico formal en el repositorio.",
-             accion="No se atendió en este tramo: corresponde al informe final.",
-             resultado="Pendiente.",
-             estado="Abierta"),
+             accion="Se incorporó un relevamiento bibliográfico formal, con 27 referencias nuevas verificadas, a los Capítulos 2 y 3 del informe final (etología y escalas faciales; reconocimiento automático de dolor y emoción animal; estimación de pose; validación).",
+             resultado="Relevamiento incorporado al informe final; referencias verificadas una por una (informe/bibliografia/verificacion.md).",
+             estado="Resuelta"),
     ]
