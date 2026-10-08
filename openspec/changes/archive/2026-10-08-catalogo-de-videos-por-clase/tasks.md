@@ -58,3 +58,7 @@
 - [ ] 6.3 Re-ejecutar la etapa `preparar_dataset` con `LIMPIAR_ETAPA = False` y verificar que el
       checkpoint procesa sólo los videos nuevos.
 - [ ] 6.4 Registrar el conteo real por clase, que es el que va al informe final.
+
+## Cierre (08/10/2026)
+
+No se ejecutaron 6.1 a 6.4 como pasos sueltos: el catálogo se usó en todas las corridas posteriores y el conteo real por clase es el del dataset vigente (274 videos, 359 clips), documentado en `comparacion/PROTOCOLO.md`. Las tareas sin marcar quedan descartadas por decisión de Sergio de cerrar el trabajo; se dejan sin tildar para no registrarlas como hechas.

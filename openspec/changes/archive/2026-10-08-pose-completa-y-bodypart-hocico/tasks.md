@@ -90,3 +90,7 @@ los frames esperados en vez de contra los generados. Eso destapó la causa real 
 perdían por orientación de video, tratada en `orientacion-de-video-en-origen`— que vale 720 frames
 contra los 24 de esta vía. El valor del change está en la infraestructura que dejó: la pose
 persistida vuelve gratis cualquier revisión posterior de keypoints.
+
+## Cierre (08/10/2026)
+
+No se ejecutaron 6.3 a 6.5: quedaron superadas por el pipeline vigente (bodypart `nose` y selección de 16 fotogramas por ventana), que reemplazó la medición de cobertura contra el umbral de 70 % (ver `docs/caminos_explorados.md`). Las tareas sin marcar quedan descartadas por decisión de Sergio de cerrar el trabajo; se dejan sin tildar para no registrarlas como hechas.
