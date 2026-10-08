@@ -51,6 +51,23 @@ def _precisiones():
 
 
 @st.cache_resource
+def _reserva():
+    """Precisión por clase de la fusión en la reserva (20 caballos, un solo uso)."""
+    rutas.inicializar(verbose=False)
+    return fusion.precision_reserva()
+
+
+def _de_cada_diez(precision: float) -> str:
+    """«unas 7 de cada 10 veces»: la proporción en palabras, para quien no lee porcentajes."""
+    n = round(precision * 10)
+    if n >= 10:
+        return "más de 9 de cada 10 veces"
+    if n <= 0:
+        return "casi nunca"
+    return f"unas {n} de cada 10 veces"
+
+
+@st.cache_resource
 def _metricas():
     """Las métricas del modelo que esta app está ejecutando. **Ningún número escrito a mano.**
 
@@ -142,19 +159,34 @@ if archivo is not None:
         st.markdown("---")
         izquierda, derecha = st.columns(2)
         with izquierda:
-            st.caption("Expresión predicha")
+            st.caption("Expresión que detectó el modelo")
             st.markdown(f"# {resultado.clase}")
         with derecha:
             confianza = max(resultado.probabilidades.values())
-            st.caption("Confianza del modelo en esta toma")
+            st.caption("Qué tan seguro está el modelo con este video")
             st.markdown(f"# {confianza:.0%}")
-            st.caption(f"Cuando dice «{resultado.clase}» acierta {resultado.precision:.0%}: "
-                       f"{resultado.acertadas} de {resultado.veces_que_lo_dijo} veces, "
-                       "en validación cruzada por caballo (tomas de desarrollo, fuera de muestra)")
-            if resultado.detalle:
-                pr = resultado.detalle["precision_reserva"]
-                st.caption(f"En la reserva (20 caballos, 68 tomas, un solo uso): "
-                           f"{pr['precision']:.0%}, {pr['acertadas']} de {pr['veces_que_lo_dijo']} veces")
+
+        # Cuánto confiar en la etiqueta, en palabras. Con la fusión, la cifra principal es la de la
+        # reserva: caballos que el modelo no vio al elegirse. La de desarrollo queda como contexto.
+        if resultado.detalle:
+            pr = resultado.detalle["precision_reserva"]
+            st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
+                        f"«{resultado.clase}», acierta **{_de_cada_diez(pr['precision'])}**.")
+            st.caption(
+                f"Lo comprobamos con 20 caballos que el modelo no conocía: dijo «{resultado.clase}» "
+                f"{pr['veces_que_lo_dijo']} veces y acertó {pr['acertadas']} ({pr['precision']:.0%}). "
+                f"En las pruebas anteriores, con otros caballos, acertó {resultado.acertadas} de "
+                f"{resultado.veces_que_lo_dijo} ({resultado.precision:.0%}). Son pocos caballos: "
+                "la cifra real puede ser algo mayor o menor."
+            )
+        else:
+            st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
+                        f"«{resultado.clase}», acierta **{_de_cada_diez(resultado.precision)}**.")
+            st.caption(
+                f"Lo comprobamos con caballos que el modelo no había visto al entrenar: dijo "
+                f"«{resultado.clase}» {resultado.veces_que_lo_dijo} veces y acertó "
+                f"{resultado.acertadas} ({resultado.precision:.0%})."
+            )
 
         if resultado.precision < 0.5:
             st.error(
@@ -173,11 +205,14 @@ if archivo is not None:
             + "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que "
             "elegir una etiqueta."
         )
+        # La misma cifra que el recuadro de arriba: la de la reserva si existe (fusión).
+        aciertos = _reserva() if resultado.detalle else precisiones
         for clase, probabilidad in sorted(resultado.probabilidades.items(),
                                           key=lambda kv: -kv[1]):
             st.progress(probabilidad,
                         text=f"{clase} — {probabilidad:.0%}  "
-                             f"(acierta {precisiones[clase]['precision']:.0%} cuando lo dice)")
+                             f"(cuando dice «{clase}», acierta "
+                             f"{_de_cada_diez(aciertos[clase]['precision'])})")
 
         if resultado.detalle:
             st.markdown("---")
