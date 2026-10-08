@@ -92,15 +92,19 @@ st.title("Detección de expresiones faciales en equinos")
 
 # --- Alcance, visible sin buscarlo (tarea 5.5) -------------------------------------------------
 _m = _metricas()
+# Lo primero que se ve: tiene que entenderlo alguien que no leyó la tesina. Las cifras salen del
+# mismo archivo que el resto de la pantalla; ninguna se escribe a mano.
 st.error(
-    "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
-    f"trabajo de tesina. El modelo (fusión de pose y apariencia) obtuvo F1 macro "
-    f"**{_m['f1_macro_reserva']:.3f}** sobre {_m['clips_reserva']} tomas de "
-    f"{_m['caballos_reserva']} caballos reservados, medido con una versión del modelo ajustada sin ellos "
-    f"({_m['accuracy_reserva']:.0%} de aciertos), y {_m['f1_macro_desarrollo']:.3f} en validación "
-    f"cruzada por caballo. Su acierto depende de la clase y baja si la toma no se filmó en "
-    f"condiciones parejas (F1 {_m['f1_limpio_reserva']:.3f} en la reserva, tomas parejas): "
-    "consultá el detalle que acompaña a cada resultado."
+    "### Esto NO es una herramienta de diagnóstico veterinario\n\n"
+    "Es la demostración de un trabajo de tesina y **puede equivocarse**. No uses su respuesta "
+    "para tomar decisiones sobre la salud o el manejo de un caballo.\n\n"
+    f"**¿Cuánto acierta?** En una prueba final con {_m['caballos_reserva']} caballos que nunca "
+    f"había visto, reconoció bien la expresión en unos **{round(_m['accuracy_reserva'] * 100)} de "
+    "cada 100 videos**. Acierta más con unas expresiones que con otras: debajo de cada resultado "
+    "vas a ver cuánto confiar en esa respuesta en particular.\n\n"
+    "**Por qué tomarlo con cautela:** son pocos caballos, y parte de los aciertos puede deberse a "
+    "cómo se filmaron los videos y no a la expresión del animal. Con videos nuevos podría acertar "
+    "algo menos."
 )
 
 st.markdown(
