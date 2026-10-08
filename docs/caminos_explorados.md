@@ -907,6 +907,11 @@ notas de trabajo, no verificado en el repo»**.
 - **Respuesta de Sergio (08/10/2026):** «se fueron probando nuevos modelos pero no daban mejoras o eran peores». *Nota del repositorio:* los videos largos son una
   función de la app y no un modelo; la respuesta se registra tal cual y no cambia lo que consta: sin
   medición, rama sin fusionar y la app declara su limitación.
+- **Resolución parcial de la observación D4 del docente (08/10/2026):** sin dividir en recortes, la app
+  ahora **informa el tramo analizado** («Se analizó el tramo del segundo X al segundo Y del video (de
+  Z s en total)») y, si el video dura más que la ventana de 7 s, **recomienda subir un video recortado**
+  al momento de interés (de 5 a 7 segundos). La selección de la ventana y el modelo no cambiaron.
+  Estado de D4: Resuelta. Prueba: `tests/test_tramo_analizado.py`.
 - **Evidencia:** commit `7803e90`; `app_inferencia.py` (texto de limitaciones).
 
 #### C-47. Textos de confiabilidad y prueba con una persona ajena
