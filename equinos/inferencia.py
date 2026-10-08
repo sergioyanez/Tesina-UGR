@@ -80,6 +80,9 @@ class Prediccion(NamedTuple):
     # trae en `detalle` las probabilidades de cada rama y el peso de la pose.
     modelo: str = "mil"
     detalle: dict | None = None
+    # Qué tramo del video se analizó: `inicio_seg`, `fin_seg` (de la ventana elegida) y
+    # `duracion_seg` (del video entero). Lo completa `clasificar_video`; vacío si se predijo sin video.
+    tramo: dict | None = None
 
     @property
     def hay_prediccion(self) -> bool:
@@ -427,6 +430,19 @@ def _limpiar_auxiliares(ruta_video):
             archivo.unlink(missing_ok=True)
 
 
+def tramo_analizado(ordenes, total, fps) -> dict:
+    """El tramo del video que cubren los 16 fotogramas elegidos, en segundos.
+
+    `ordenes`: índices de fotograma (los de `preparar_clip`); `total` y `fps`: los del video ya
+    normalizado, que es el que se leyó. El fin es el final del último fotograma elegido.
+    """
+    fps = fps if fps and fps > 0 else 30.0
+    duracion = total / fps
+    inicio = min(ordenes) / fps
+    fin = min((max(ordenes) + 1) / fps, duracion)
+    return {"inicio_seg": float(inicio), "fin_seg": float(fin), "duracion_seg": float(duracion)}
+
+
 def clasificar_video(ruta_video, progreso=None, normalizar=True, modelo=MODELO_POR_OMISION):
     """Punto de entrada de la interfaz: un video, una `Prediccion` o una `Negativa`.
 
@@ -446,8 +462,13 @@ def clasificar_video(ruta_video, progreso=None, normalizar=True, modelo=MODELO_P
     vectores = _caracteristicas_de(recortes)
     avisar("predecir", "clasificando")
     if modelo == "mil":
-        return predecir_desde_caracteristicas(vectores, filas_pose)
-    return predecir_con_fusion(vectores, filas_pose, info["ordenes"], info["fps"])
+        resultado = predecir_desde_caracteristicas(vectores, filas_pose)
+    else:
+        resultado = predecir_con_fusion(vectores, filas_pose, info["ordenes"], info["fps"])
+    if resultado.hay_prediccion:
+        resultado = resultado._replace(
+            tramo=tramo_analizado(info["ordenes"], info["total"], info["fps"]))
+    return resultado
 
 
 def _caracteristicas_de(recortes):

@@ -569,7 +569,7 @@ La aplicación y la inferencia comparten con el entrenamiento la misma implement
 <ul>
 <li><b>Textos en lenguaje llano.</b> La confiabilidad se explica en lenguaje llano («entre 7 y 9 de cada 10 veces») y se presenta como un <b>rango entre las dos mediciones</b> (desarrollo y reserva); los números salen de <code>comparacion/resultados/</code>, no se escriben a mano.</li>
 <li><b>Qué muestra con la fusión.</b> Las probabilidades de cada rama (pose y visual); el gráfico de atención aparece sólo si se elige el MIL.</li>
-<li><b>Límites declarados.</b> No es una herramienta de diagnóstico; no siempre responde (necesita 16 fotogramas con ojo y hocico visibles; el 91 % de los clips del dataset los tiene); no acepta videos largos (máximo 15 s); tarda alrededor de 80 s para una toma de 7 s.</li>
+<li><b>Límites declarados.</b> No es una herramienta de diagnóstico; no siempre responde (necesita 16 fotogramas con ojo y hocico visibles; el 91 % de los clips del dataset los tiene); acepta videos de hasta 15 s, analiza un tramo de hasta 7 s y lo informa al usuario; tarda alrededor de 80 s para una toma de 7 s.</li>
 </ul>
 """)
     prec_dev = {cl: G[FUS]["por_clase"][cl]["precision"]["media"] for cl in CLASES}
@@ -618,7 +618,7 @@ Un resumen de lo que se descartó y por qué:</p>""")
         ["Validación cruzada anidada (C-39)", "Triplica el desvío de la época", "Descartado: peor"],
         ["CNN-LSTM, rama <code>hector</code> (C-29)", "Una partición, sin corrida que lo respalde", "Abandonado"],
         ["SimBA real (C-34)", "Para un animal solo entrega movimiento: 0,720", "Descartado: otra razón"],
-        ["Videos largos en la app (C-46)", "Sin medición; la app declara su límite", "Abandonado"],
+        ["Videos largos en la app (C-46)", "Sin medición; la app informa el tramo analizado y recomienda recortar", "Abandonado"],
         ["Etiqueta débil y unidades de acción EquiFACS (C-07, A y B)", "No forman parte del modelo final", "Descartado por decisión de Sergio (08/10)"],
         ["Recortar todos los clips a igual duración (C-41)", "Cambia el dataset y obliga a re-ejecutar la etapa 02", "Sin medición; queda como recomendación"],
     ], "compacta fija"))
@@ -631,7 +631,7 @@ y que un resultado negativo bien medido es un resultado (L-11).</p>""")
 <ul>
 <li><b>Informe final (entrega prevista: 29/10/2026).</b> Redacción en formato APA (<code>.tex</code> para Overleaf). Debe llevar las limitaciones de la sección 6, incluir el relevamiento bibliográfico que el docente señaló como no encontrado
 y presentar la fusión sin afirmar superioridad sobre el RF de pose.</li>
-<li><b>Observaciones abiertas del docente</b> (sección 2.3): revisar el par de identidades 123/169, la ventana de los videos largos, la utilidad con veterinarios y el relevamiento bibliográfico.</li>
+<li><b>Observaciones abiertas del docente</b> (sección 2.3): revisar el par de identidades 123/169, la utilidad con veterinarios y el relevamiento bibliográfico.</li>
 <li><b>Trabajo futuro, sin ejecutar:</b> medir el acuerdo interobservador sobre el dataset con un panel de expertos; recortar los clips a igual duración (o filmar nuevas tomas con un protocolo parejo) para neutralizar el confusor de formato;
 evaluar un modelo de pose específico de caballos; un test externo con otra población.</li>
 </ul>
