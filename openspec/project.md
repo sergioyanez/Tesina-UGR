@@ -61,8 +61,11 @@ diagnóstico; las vigentes son 274 videos, 393 clips, 359 íntegros, 133 caballo
 - **Validación interna**: opción `estratificada` (por caballo, estratificada por clase, semilla
   fija); `mas_clips` sigue siendo el valor por omisión para reproducir lo medido.
 - **Inferencia**: normaliza el video con `ORIENTATION_AUTO` y `mp4v` como los clips del dataset.
-- **Sesiones**: `comparacion/sesiones_de_filmacion.csv` (a completar por Sergio) para un futuro
-  leave-session-out.
+- **Sesiones**: `comparacion/sesiones_de_filmacion.csv` (22 sesiones confirmadas por Sergio). El
+  leave-session-out se ejecutó el 08/10/2026 como análisis complementario (change
+  `validacion-por-sesion`, `comparacion/validacion_por_sesion.py`): la fusión mantiene 0,864 de F1
+  macro agrupado con sesiones no vistas y conserva el primer puesto; fusión − RF de pose ya no se
+  distingue de cero. No cambia el ganador (`comparacion/DECISION.md`).
 
 ### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
 

@@ -251,6 +251,14 @@ modelos (`comparacion/DECISION.md`), reemplaza al MIL por omisión. Se entrena c
 metadatos: versión de scikit-learn, huella del dataset, fecha, lista de clips). El MIL sigue
 disponible con `inferencia.clasificar_video(ruta, modelo="mil")`.
 
+**Comparación de modelos y validación por sesión.** `comparacion/` contiene el protocolo
+(`PROTOCOLO.md`), la decisión (`DECISION.md`), el código de los cuatro candidatos y sus resultados en
+`comparacion/resultados/`. Como análisis complementario, `comparacion/validacion_por_sesion.py` deja
+afuera una sesión de filmación por vez (sin los caballos presentes en ella) y mide los cuatro candidatos
+con la misma partición: la fusión obtiene un F1 macro agrupado de 0,864 y sigue primera
+(`TESINA_EQUINOS_RAIZ=<datos> python comparacion/validacion_por_sesion.py`). No cambia el ganador ni
+usa la reserva.
+
 **Qué necesita:** la máquina con GPU, el entorno de `requirements-local.txt`, y el modelo
 anterior (`modelos/objetivo3_v2/mil_multimodal_produccion.pt`) sólo si se pide el MIL. Corre DeepLabCut sobre todos los
 fotogramas del video, así que tarda **alrededor de 80 s para una toma de 7 s** (medido el 18/09). La
@@ -343,6 +351,9 @@ del propio notebook**, así que no hay dos copias que puedan divergir.
 `test_persistencia.py` cubre el paquete `equinos` con 46 casos: resolución de rutas entre sesiones,
 reanudación tras un corte, invalidación del checkpoint ante cambio de configuración, integridad de
 la caché y estado de las etapas.
+
+`test_validacion_por_sesion.py` verifica la partición leave-session-out: ningún caballo ni sesión cruza
+entre train y test, la reserva no aparece y cada clip de desarrollo se predice una sola vez.
 
 `test_entorno.py` verifica el chequeo de dependencias, sobre todo que las versiones se comparen
 como números y no como texto: `torch` reporta `2.5.1+cu121` y, comparado como cadena, `"1.9"` es
