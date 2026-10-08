@@ -1,0 +1,538 @@
+{
+ "origen_de_pose": "DeepLabCut SuperAnimal-Quadruped (HRNet-W32 + Faster R-CNN ResNet-50-FPN v2), 39 bodyparts; equinos/pose.py",
+ "bodyparts": [
+  "nose",
+  "upper_jaw",
+  "lower_jaw",
+  "mouth_end_right",
+  "mouth_end_left",
+  "right_eye",
+  "right_earbase",
+  "right_earend",
+  "right_antler_base",
+  "right_antler_end",
+  "left_eye",
+  "left_earbase",
+  "left_earend",
+  "left_antler_base",
+  "left_antler_end",
+  "neck_base",
+  "neck_end",
+  "throat_base",
+  "throat_end",
+  "back_base",
+  "back_end",
+  "back_middle",
+  "tail_base",
+  "tail_end",
+  "front_left_thai",
+  "front_left_knee",
+  "front_left_paw",
+  "front_right_thai",
+  "front_right_knee",
+  "front_right_paw",
+  "back_left_paw",
+  "back_left_thai",
+  "back_right_thai",
+  "back_left_knee",
+  "back_right_knee",
+  "back_right_paw",
+  "belly_bottom",
+  "body_middle_right",
+  "body_middle_left"
+ ],
+ "n_bodyparts": 39,
+ "denominador_disponibilidad": "5744 frames = 359 clips x 16 frames de pose_seleccionada_v2.csv (los 16 frames que ve el MIL; seleccionados por ventana donde ojo y hocico están medidos, por eso nose/eye son altos: es un sesgo de selección, no la tasa general del modelo)",
+ "disponibilidad_por_bodypart": {
+  "nose": {
+   "frames_conf_ge_0.50": 1.0,
+   "confianza_mediana": 0.8146,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "upper_jaw": {
+   "frames_conf_ge_0.50": 0.8758704735376045,
+   "confianza_mediana": 0.72625,
+   "clips_con_algun_frame_ge_0.50": 0.9944289693593314
+  },
+  "lower_jaw": {
+   "frames_conf_ge_0.50": 0.7909122562674095,
+   "confianza_mediana": 0.68915,
+   "clips_con_algun_frame_ge_0.50": 0.9972144846796658
+  },
+  "mouth_end_right": {
+   "frames_conf_ge_0.50": 0.4481197771587744,
+   "confianza_mediana": 0.4244,
+   "clips_con_algun_frame_ge_0.50": 0.6880222841225627
+  },
+  "mouth_end_left": {
+   "frames_conf_ge_0.50": 0.4157381615598886,
+   "confianza_mediana": 0.3943,
+   "clips_con_algun_frame_ge_0.50": 0.6880222841225627
+  },
+  "right_eye": {
+   "frames_conf_ge_0.50": 0.9660515320334262,
+   "confianza_mediana": 0.87,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "right_earbase": {
+   "frames_conf_ge_0.50": 0.6469359331476323,
+   "confianza_mediana": 0.6215,
+   "clips_con_algun_frame_ge_0.50": 0.947075208913649
+  },
+  "right_earend": {
+   "frames_conf_ge_0.50": 0.5826949860724234,
+   "confianza_mediana": 0.6716500000000001,
+   "clips_con_algun_frame_ge_0.50": 0.9080779944289693
+  },
+  "right_antler_base": {
+   "frames_conf_ge_0.50": 0.6136838440111421,
+   "confianza_mediana": 0.58545,
+   "clips_con_algun_frame_ge_0.50": 0.935933147632312
+  },
+  "right_antler_end": {
+   "frames_conf_ge_0.50": 0.0026114206128133705,
+   "confianza_mediana": 0.1723,
+   "clips_con_algun_frame_ge_0.50": 0.027855153203342618
+  },
+  "left_eye": {
+   "frames_conf_ge_0.50": 0.9408077994428969,
+   "confianza_mediana": 0.87825,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "left_earbase": {
+   "frames_conf_ge_0.50": 0.6711350974930362,
+   "confianza_mediana": 0.6507499999999999,
+   "clips_con_algun_frame_ge_0.50": 0.9498607242339833
+  },
+  "left_earend": {
+   "frames_conf_ge_0.50": 0.5934888579387186,
+   "confianza_mediana": 0.7079,
+   "clips_con_algun_frame_ge_0.50": 0.9415041782729805
+  },
+  "left_antler_base": {
+   "frames_conf_ge_0.50": 0.6310933147632312,
+   "confianza_mediana": 0.59485,
+   "clips_con_algun_frame_ge_0.50": 0.9387186629526463
+  },
+  "left_antler_end": {
+   "frames_conf_ge_0.50": 0.004004178272980502,
+   "confianza_mediana": 0.1659,
+   "clips_con_algun_frame_ge_0.50": 0.04735376044568245
+  },
+  "neck_base": {
+   "frames_conf_ge_0.50": 0.24947771587743733,
+   "confianza_mediana": 0.2953,
+   "clips_con_algun_frame_ge_0.50": 0.6685236768802229
+  },
+  "neck_end": {
+   "frames_conf_ge_0.50": 0.36176880222841223,
+   "confianza_mediana": 0.37585,
+   "clips_con_algun_frame_ge_0.50": 0.8133704735376045
+  },
+  "throat_base": {
+   "frames_conf_ge_0.50": 0.6845403899721448,
+   "confianza_mediana": 0.6417999999999999,
+   "clips_con_algun_frame_ge_0.50": 0.9303621169916435
+  },
+  "throat_end": {
+   "frames_conf_ge_0.50": 0.4073816155988858,
+   "confianza_mediana": 0.4169,
+   "clips_con_algun_frame_ge_0.50": 0.7994428969359332
+  },
+  "back_base": {
+   "frames_conf_ge_0.50": 0.3985027855153203,
+   "confianza_mediana": 0.39590000000000003,
+   "clips_con_algun_frame_ge_0.50": 0.8384401114206128
+  },
+  "back_end": {
+   "frames_conf_ge_0.50": 0.1354456824512535,
+   "confianza_mediana": 0.0818,
+   "clips_con_algun_frame_ge_0.50": 0.45403899721448465
+  },
+  "back_middle": {
+   "frames_conf_ge_0.50": 0.1451949860724234,
+   "confianza_mediana": 0.07935,
+   "clips_con_algun_frame_ge_0.50": 0.46518105849582175
+  },
+  "tail_base": {
+   "frames_conf_ge_0.50": 0.13614206128133705,
+   "confianza_mediana": 0.08174999999999999,
+   "clips_con_algun_frame_ge_0.50": 0.45403899721448465
+  },
+  "tail_end": {
+   "frames_conf_ge_0.50": 0.03238161559888579,
+   "confianza_mediana": 0.11725,
+   "clips_con_algun_frame_ge_0.50": 0.21727019498607242
+  },
+  "front_left_thai": {
+   "frames_conf_ge_0.50": 0.2722841225626741,
+   "confianza_mediana": 0.24605,
+   "clips_con_algun_frame_ge_0.50": 0.5933147632311978
+  },
+  "front_left_knee": {
+   "frames_conf_ge_0.50": 0.1589484679665738,
+   "confianza_mediana": 0.1358,
+   "clips_con_algun_frame_ge_0.50": 0.45125348189415043
+  },
+  "front_left_paw": {
+   "frames_conf_ge_0.50": 0.07486072423398328,
+   "confianza_mediana": 0.10095000000000001,
+   "clips_con_algun_frame_ge_0.50": 0.3008356545961003
+  },
+  "front_right_thai": {
+   "frames_conf_ge_0.50": 0.2358983286908078,
+   "confianza_mediana": 0.2449,
+   "clips_con_algun_frame_ge_0.50": 0.5654596100278552
+  },
+  "front_right_knee": {
+   "frames_conf_ge_0.50": 0.15633704735376044,
+   "confianza_mediana": 0.19495,
+   "clips_con_algun_frame_ge_0.50": 0.49025069637883006
+  },
+  "front_right_paw": {
+   "frames_conf_ge_0.50": 0.08130222841225626,
+   "confianza_mediana": 0.1123,
+   "clips_con_algun_frame_ge_0.50": 0.3203342618384401
+  },
+  "back_left_paw": {
+   "frames_conf_ge_0.50": 0.04247910863509749,
+   "confianza_mediana": 0.048049999999999995,
+   "clips_con_algun_frame_ge_0.50": 0.19220055710306408
+  },
+  "back_left_thai": {
+   "frames_conf_ge_0.50": 0.052054317548746516,
+   "confianza_mediana": 0.06505,
+   "clips_con_algun_frame_ge_0.50": 0.20334261838440112
+  },
+  "back_right_thai": {
+   "frames_conf_ge_0.50": 0.05658077994428969,
+   "confianza_mediana": 0.0766,
+   "clips_con_algun_frame_ge_0.50": 0.20612813370473537
+  },
+  "back_left_knee": {
+   "frames_conf_ge_0.50": 0.06772284122562675,
+   "confianza_mediana": 0.04795,
+   "clips_con_algun_frame_ge_0.50": 0.2200557103064067
+  },
+  "back_right_knee": {
+   "frames_conf_ge_0.50": 0.06580779944289694,
+   "confianza_mediana": 0.0714,
+   "clips_con_algun_frame_ge_0.50": 0.20891364902506965
+  },
+  "back_right_paw": {
+   "frames_conf_ge_0.50": 0.05153203342618384,
+   "confianza_mediana": 0.0741,
+   "clips_con_algun_frame_ge_0.50": 0.2116991643454039
+  },
+  "belly_bottom": {
+   "frames_conf_ge_0.50": 0.06389275766016714,
+   "confianza_mediana": 0.1079,
+   "clips_con_algun_frame_ge_0.50": 0.2618384401114206
+  },
+  "body_middle_right": {
+   "frames_conf_ge_0.50": 0.041434540389972144,
+   "confianza_mediana": 0.09365000000000001,
+   "clips_con_algun_frame_ge_0.50": 0.17548746518105848
+  },
+  "body_middle_left": {
+   "frames_conf_ge_0.50": 0.037604456824512536,
+   "confianza_mediana": 0.0919,
+   "clips_con_algun_frame_ge_0.50": 0.1671309192200557
+  }
+ },
+ "puntos_faciales_y_cefalicos": {
+  "nose": {
+   "frames_conf_ge_0.50": 1.0,
+   "confianza_mediana": 0.8146,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "upper_jaw": {
+   "frames_conf_ge_0.50": 0.8758704735376045,
+   "confianza_mediana": 0.72625,
+   "clips_con_algun_frame_ge_0.50": 0.9944289693593314
+  },
+  "lower_jaw": {
+   "frames_conf_ge_0.50": 0.7909122562674095,
+   "confianza_mediana": 0.68915,
+   "clips_con_algun_frame_ge_0.50": 0.9972144846796658
+  },
+  "mouth_end_right": {
+   "frames_conf_ge_0.50": 0.4481197771587744,
+   "confianza_mediana": 0.4244,
+   "clips_con_algun_frame_ge_0.50": 0.6880222841225627
+  },
+  "mouth_end_left": {
+   "frames_conf_ge_0.50": 0.4157381615598886,
+   "confianza_mediana": 0.3943,
+   "clips_con_algun_frame_ge_0.50": 0.6880222841225627
+  },
+  "right_eye": {
+   "frames_conf_ge_0.50": 0.9660515320334262,
+   "confianza_mediana": 0.87,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "left_eye": {
+   "frames_conf_ge_0.50": 0.9408077994428969,
+   "confianza_mediana": 0.87825,
+   "clips_con_algun_frame_ge_0.50": 1.0
+  },
+  "right_earbase": {
+   "frames_conf_ge_0.50": 0.6469359331476323,
+   "confianza_mediana": 0.6215,
+   "clips_con_algun_frame_ge_0.50": 0.947075208913649
+  },
+  "right_earend": {
+   "frames_conf_ge_0.50": 0.5826949860724234,
+   "confianza_mediana": 0.6716500000000001,
+   "clips_con_algun_frame_ge_0.50": 0.9080779944289693
+  },
+  "left_earbase": {
+   "frames_conf_ge_0.50": 0.6711350974930362,
+   "confianza_mediana": 0.6507499999999999,
+   "clips_con_algun_frame_ge_0.50": 0.9498607242339833
+  },
+  "left_earend": {
+   "frames_conf_ge_0.50": 0.5934888579387186,
+   "confianza_mediana": 0.7079,
+   "clips_con_algun_frame_ge_0.50": 0.9415041782729805
+  },
+  "right_antler_base": {
+   "frames_conf_ge_0.50": 0.6136838440111421,
+   "confianza_mediana": 0.58545,
+   "clips_con_algun_frame_ge_0.50": 0.935933147632312
+  },
+  "left_antler_base": {
+   "frames_conf_ge_0.50": 0.6310933147632312,
+   "confianza_mediana": 0.59485,
+   "clips_con_algun_frame_ge_0.50": 0.9387186629526463
+  },
+  "right_antler_end": {
+   "frames_conf_ge_0.50": 0.0026114206128133705,
+   "confianza_mediana": 0.1723,
+   "clips_con_algun_frame_ge_0.50": 0.027855153203342618
+  },
+  "left_antler_end": {
+   "frames_conf_ge_0.50": 0.004004178272980502,
+   "confianza_mediana": 0.1659,
+   "clips_con_algun_frame_ge_0.50": 0.04735376044568245
+  },
+  "throat_base": {
+   "frames_conf_ge_0.50": 0.6845403899721448,
+   "confianza_mediana": 0.6417999999999999,
+   "clips_con_algun_frame_ge_0.50": 0.9303621169916435
+  },
+  "throat_end": {
+   "frames_conf_ge_0.50": 0.4073816155988858,
+   "confianza_mediana": 0.4169,
+   "clips_con_algun_frame_ge_0.50": 0.7994428969359332
+  },
+  "neck_base": {
+   "frames_conf_ge_0.50": 0.24947771587743733,
+   "confianza_mediana": 0.2953,
+   "clips_con_algun_frame_ge_0.50": 0.6685236768802229
+  },
+  "neck_end": {
+   "frames_conf_ge_0.50": 0.36176880222841223,
+   "confianza_mediana": 0.37585,
+   "clips_con_algun_frame_ge_0.50": 0.8133704735376045
+  }
+ },
+ "features_candidatas": [
+  {
+   "feature": "angulo de orejas respecto del eje de la cabeza",
+   "clasificacion": "aproximada",
+   "motivo": "earbase/earend de cada oreja; proyección 2D, depende del punto de vista",
+   "bodyparts": [
+    "left_earbase",
+    "left_earend",
+    "right_earbase",
+    "right_earend"
+   ],
+   "implementada_como": "oreja_angulo_*"
+  },
+  {
+   "feature": "largo/posición de orejas, asimetría L-R, separación entre puntas",
+   "clasificacion": "aproximada",
+   "motivo": "2D con escorzo; 'izquierda/derecha' es del animal, no de la imagen",
+   "bodyparts": [
+    "left_earbase",
+    "left_earend",
+    "right_earbase",
+    "right_earend"
+   ],
+   "implementada_como": "oreja_*"
+  },
+  {
+   "feature": "apertura del ojo",
+   "clasificacion": "imposible",
+   "motivo": "un solo keypoint por ojo; no hay párpados superior/inferior",
+   "bodyparts": [
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": null
+  },
+  {
+   "feature": "parpadeo",
+   "clasificacion": "imposible",
+   "motivo": "no hay apertura de ojo; además se muestrean 16 frames separados 0,2-0,5 s (un parpadeo dura ~0,1-0,4 s)",
+   "bodyparts": [
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": null
+  },
+  {
+   "feature": "distancia interocular / ojo-hocico",
+   "clasificacion": "directamente observable (en 2D)",
+   "motivo": "ambos ojos y nariz",
+   "bodyparts": [
+    "left_eye",
+    "right_eye",
+    "nose"
+   ],
+   "implementada_como": "ojos_distancia, cabeza_largo_ojo_hocico_rel"
+  },
+  {
+   "feature": "labios (tensión, comisuras)",
+   "clasificacion": "aproximada",
+   "motivo": "solo comisuras (mouth_end_*) y mandíbulas (upper/lower_jaw), no labios; comisuras visibles en poco frames",
+   "bodyparts": [
+    "mouth_end_left",
+    "mouth_end_right",
+    "upper_jaw",
+    "lower_jaw"
+   ],
+   "implementada_como": "boca_*"
+  },
+  {
+   "feature": "apertura de mandíbula/boca",
+   "clasificacion": "aproximada",
+   "motivo": "upper_jaw-lower_jaw",
+   "bodyparts": [
+    "upper_jaw",
+    "lower_jaw"
+   ],
+   "implementada_como": "boca_apertura_mandibulas"
+  },
+  {
+   "feature": "fosas nasales, tensión muscular, surcos faciales",
+   "clasificacion": "imposible",
+   "motivo": "no existen landmarks para esas estructuras",
+   "bodyparts": [],
+   "implementada_como": null
+  },
+  {
+   "feature": "orientación/inclinación de cabeza en el plano de la imagen",
+   "clasificacion": "directamente observable",
+   "motivo": "eje ojo(s)->hocico",
+   "bodyparts": [
+    "nose",
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": "cabeza_inclinacion_sobre_horizontal"
+  },
+  {
+   "feature": "pitch/yaw/roll 3D de la cabeza",
+   "clasificacion": "imposible (solo proxy)",
+   "motivo": "pose 2D monocular; el cociente largo ojo-hocico / mediana del clip es un proxy de escorzo, no de ángulo",
+   "bodyparts": [
+    "nose",
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": "cabeza_largo_ojo_hocico_rel"
+  },
+  {
+   "feature": "ángulo cabeza-cuello",
+   "clasificacion": "aproximada",
+   "motivo": "neck_base/neck_end con confianza >=0,50 en 25-36 % de los frames; semántica exacta de neck_* no verificada",
+   "bodyparts": [
+    "neck_base",
+    "neck_end"
+   ],
+   "implementada_como": "cuello_*"
+  },
+  {
+   "feature": "velocidades (cabeza, orejas, mandíbula)",
+   "clasificacion": "aproximada",
+   "motivo": "diferencias entre los 16 frames del clip (separados 0,2-0,5 s); la velocidad de cabeza incluye movimiento de cámara y de cuerpo (no hay marco fijo)",
+   "bodyparts": [
+    "nose",
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": "*_velocidad_*"
+  },
+  {
+   "feature": "aceleraciones",
+   "clasificacion": "aproximada (más ruidosa)",
+   "motivo": "segunda diferencia sobre muestreo grueso y jitter de keypoints",
+   "bodyparts": [
+    "nose",
+    "left_eye",
+    "right_eye"
+   ],
+   "implementada_como": "*_aceleracion"
+  },
+  {
+   "feature": "simetría L-R",
+   "clasificacion": "aproximada",
+   "motivo": "depende del punto de vista (vistas de perfil ocultan un lado)",
+   "bodyparts": [
+    "left_eye",
+    "right_eye",
+    "left_earbase",
+    "right_earbase"
+   ],
+   "implementada_como": "*_asimetria_*"
+  },
+  {
+   "feature": "antler_base/antler_end",
+   "clasificacion": "no usadas",
+   "motivo": "puntos del esquema SuperAnimal-Quadruped pensados para cuernas; su correspondencia anatómica en el caballo No pudo verificarse con los archivos disponibles (antler_end tiene confianza >=0,50 en 0 % de los frames)",
+   "bodyparts": [
+    "left_antler_base",
+    "right_antler_base",
+    "left_antler_end",
+    "right_antler_end"
+   ],
+   "implementada_como": null
+  }
+ ],
+ "comparacion_con_9_vigentes": {
+  "columnas": [
+   "x_ojo",
+   "y_ojo",
+   "x_hocico",
+   "y_hocico",
+   "x_oreja",
+   "y_oreja",
+   "valido_ojo",
+   "valido_hocico",
+   "valido_oreja"
+  ],
+  "definicion_codigo": "equinos/clasificacion.py::MultimodalEquineDataset.__getitem__ (ojo = mejor 'eye' por confianza; hocico = mejor de nose/snout/muzzle/upper_jaw/mouth; oreja = mejor de 'earbase'/'earend' de AMBAS orejas), centradas en el punto medio ojo-hocico y divididas por la distancia ojo-hocico del propio frame; las máscaras son 1 si confianza > 0 (NO >= 0,50).",
+  "denominador": "5744 de 5744 frames (359 clips x 16) con ojo y hocico válidos",
+  "ojo_mas_hocico_es_cero_(simetria_exacta)_fraccion": 1.0,
+  "norma_hocico_mediana_(debe_ser_0.5)": 0.5,
+  "fraccion_mascara_ojo_1": 1.0,
+  "fraccion_mascara_hocico_1": 1.0,
+  "fraccion_mascara_oreja_1": 1.0,
+  "lectura": "Con el centrado y la escala ojo-hocico, las 4 primeras columnas valen (-0,5, +0,5)*u donde u es el versor ojo->hocico en coordenadas de imagen: llevan UN solo grado de libertad (inclinación de la cabeza en el plano de la imagen). x/y de oreja es la posición de UN punto de oreja (el más confiable, que puede cambiar de base a punta o de lado entre frames) en ejes de imagen, sin rotar al eje de la cabeza, así que mezcla orientación con posición. Las máscaras valen ~1 casi siempre porque se usa confianza > 0."
+ },
+ "redundancia_y_novedad": {
+  "redundantes_con_las_9": [
+   "cabeza_inclinacion_sobre_horizontal (equivale a la dirección u de las 4 primeras columnas)",
+   "disp_* / escala (las máscaras valid_* de las 9 son casi constantes)"
+  ],
+  "informacion_nueva": [
+   "largo, ángulo y asimetría de orejas relativos al eje de la cabeza (las 9 solo tienen UN punto de oreja)",
+   "boca/mandíbula y comisuras (las 9 no incluyen)",
+   "distancia interocular y escorzo de la cabeza",
+   "dinámica temporal: velocidades y aceleraciones de cabeza/oreja/mandíbula (las 9 se resumen en el MIL por atención, sin derivadas explícitas)",
+   "disponibilidad de keypoints"
+  ]
+ }
+}

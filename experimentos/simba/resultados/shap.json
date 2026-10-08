@@ -1,0 +1,710 @@
+{
+ "explicacion": "SHAP (TreeExplainer) out-of-fold: cada fold explica su test con el RF entrenado con los otros 3 folds. Valores = contribuciones respecto del valor base (valor esperado de la salida del modelo). Asociación, no causalidad; requiere validación experta.",
+ "valores_base_por_fold_(prob_media_por_clase_Disg_Int_Ser)": {
+  "0": [
+   0.3337144587457492,
+   0.3350102100718339,
+   0.33127533118241703
+  ],
+  "1": [
+   0.3307883709298463,
+   0.3370253774374837,
+   0.3321862516326698
+  ],
+  "2": [
+   0.3320411198394589,
+   0.33179545070567407,
+   0.3361634294548662
+  ],
+  "3": [
+   0.3321305234578609,
+   0.33525770300957564,
+   0.3326117735325631
+  ]
+ },
+ "importancia_global_top20": [
+  {
+   "rank": 1,
+   "feature": "cabeza_velocidad__media",
+   "media_abs_shap": 0.030602503745048727,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 2,
+   "feature": "cabeza_aceleracion__media",
+   "media_abs_shap": 0.01987692684490623,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 3,
+   "feature": "cabeza_velocidad__desvio",
+   "media_abs_shap": 0.018730694522673442,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 4,
+   "feature": "cabeza_velocidad__max",
+   "media_abs_shap": 0.018608218420744536,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 5,
+   "feature": "cabeza_velocidad_angular__media",
+   "media_abs_shap": 0.016026951932089452,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 6,
+   "feature": "oreja_asimetria_largo__media",
+   "media_abs_shap": 0.01581580658688755,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 7,
+   "feature": "cabeza_aceleracion__desvio",
+   "media_abs_shap": 0.012833831703025576,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 8,
+   "feature": "cabeza_aceleracion__max",
+   "media_abs_shap": 0.012640758459852066,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 9,
+   "feature": "ojos_distancia__desvio",
+   "media_abs_shap": 0.01247739556771108,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 10,
+   "feature": "oreja_separacion_puntas_sobre_bases__min",
+   "media_abs_shap": 0.01228522978357729,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 11,
+   "feature": "ojos_distancia__rango",
+   "media_abs_shap": 0.010770040341815376,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 12,
+   "feature": "oreja_asimetria_largo__min",
+   "media_abs_shap": 0.010611089989970424,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 13,
+   "feature": "ojos_distancia__max",
+   "media_abs_shap": 0.01042462392999267,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 14,
+   "feature": "cabeza_inclinacion_sobre_horizontal__desvio",
+   "media_abs_shap": 0.009731769905872444,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 15,
+   "feature": "cabeza_largo_ojo_hocico_rel__rango",
+   "media_abs_shap": 0.009457282796890813,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 16,
+   "feature": "oreja_separacion_puntas_sobre_bases__media",
+   "media_abs_shap": 0.009188879807445136,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 17,
+   "feature": "cabeza_largo_ojo_hocico_rel__desvio",
+   "media_abs_shap": 0.008430260162931875,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 18,
+   "feature": "cabeza_velocidad_angular__desvio",
+   "media_abs_shap": 0.008160494960315855,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 19,
+   "feature": "cabeza_inclinacion_sobre_horizontal__rango",
+   "media_abs_shap": 0.00809284471715336,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 20,
+   "feature": "cabeza_velocidad_angular__max",
+   "media_abs_shap": 0.007474416345717998,
+   "grupo": "dinamica"
+  }
+ ],
+ "importancia_por_clase_top20": {
+  "Disgustado": [
+   {
+    "rank": 1,
+    "feature": "cabeza_velocidad__media",
+    "media_abs_shap": 0.04573840066246783,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.7367584278696773
+   },
+   {
+    "rank": 2,
+    "feature": "cabeza_aceleracion__media",
+    "media_abs_shap": 0.029592667582443805,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.8055528755128825
+   },
+   {
+    "rank": 3,
+    "feature": "cabeza_velocidad__max",
+    "media_abs_shap": 0.027164233266189792,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.8624168106108941
+   },
+   {
+    "rank": 4,
+    "feature": "cabeza_velocidad__desvio",
+    "media_abs_shap": 0.02699207153186163,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.8858343318653616
+   },
+   {
+    "rank": 5,
+    "feature": "cabeza_velocidad_angular__media",
+    "media_abs_shap": 0.023959149471622716,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.6967383016137315
+   },
+   {
+    "rank": 6,
+    "feature": "cabeza_aceleracion__desvio",
+    "media_abs_shap": 0.019080380801593876,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.7816765482433617
+   },
+   {
+    "rank": 7,
+    "feature": "cabeza_aceleracion__max",
+    "media_abs_shap": 0.018661959850672812,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.8321366510532567
+   },
+   {
+    "rank": 8,
+    "feature": "cabeza_velocidad_angular__desvio",
+    "media_abs_shap": 0.011198739657716549,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.8540789384956142
+   },
+   {
+    "rank": 9,
+    "feature": "oreja_separacion_puntas_sobre_bases__min",
+    "media_abs_shap": 0.010124972450478931,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.7213791835511139
+   },
+   {
+    "rank": 10,
+    "feature": "cabeza_velocidad_angular__max",
+    "media_abs_shap": 0.010018589014707925,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.859192200557103
+   },
+   {
+    "rank": 11,
+    "feature": "oreja_asimetria_largo__media",
+    "media_abs_shap": 0.009829815453583126,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.6947393157436832
+   },
+   {
+    "rank": 12,
+    "feature": "cabeza_inclinacion_sobre_horizontal__desvio",
+    "media_abs_shap": 0.008494102945665329,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8862168863437129
+   },
+   {
+    "rank": 13,
+    "feature": "disp_orejas_ambas",
+    "media_abs_shap": 0.008225831385979399,
+    "grupo": "disponibilidad",
+    "spearman_valor_vs_shap": -0.8983287495094469
+   },
+   {
+    "rank": 14,
+    "feature": "boca_velocidad_apertura__media",
+    "media_abs_shap": 0.007905678898964296,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.7390371105514849
+   },
+   {
+    "rank": 15,
+    "feature": "ojos_distancia__desvio",
+    "media_abs_shap": 0.00733685578997807,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8358988058458714
+   },
+   {
+    "rank": 16,
+    "feature": "cabeza_inclinacion_sobre_horizontal__rango",
+    "media_abs_shap": 0.007115530925031162,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.9244987887936178
+   },
+   {
+    "rank": 17,
+    "feature": "boca_velocidad_apertura__max",
+    "media_abs_shap": 0.007002418563256968,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": 0.6817450366096738
+   },
+   {
+    "rank": 18,
+    "feature": "oreja_separacion_puntas_sobre_bases__media",
+    "media_abs_shap": 0.006982015103002096,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.7134220480796052
+   },
+   {
+    "rank": 19,
+    "feature": "cabeza_largo_ojo_hocico_rel__rango",
+    "media_abs_shap": 0.006164143351749536,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.9123187729208487
+   },
+   {
+    "rank": 20,
+    "feature": "oreja_asimetria_largo__min",
+    "media_abs_shap": 0.00615560967559009,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.6178357732131923
+   }
+  ],
+  "Interesado": [
+   {
+    "rank": 1,
+    "feature": "oreja_asimetria_largo__media",
+    "media_abs_shap": 0.023702481909955792,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8766447505699736
+   },
+   {
+    "rank": 2,
+    "feature": "cabeza_velocidad__media",
+    "media_abs_shap": 0.02320206360146395,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.2933489986150231
+   },
+   {
+    "rank": 3,
+    "feature": "oreja_separacion_puntas_sobre_bases__min",
+    "media_abs_shap": 0.018187718081553696,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9017481786691439
+   },
+   {
+    "rank": 4,
+    "feature": "oreja_asimetria_largo__min",
+    "media_abs_shap": 0.015552504460259627,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9027766188960628
+   },
+   {
+    "rank": 5,
+    "feature": "cabeza_aceleracion__media",
+    "media_abs_shap": 0.014947595271847983,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.5209681351571456
+   },
+   {
+    "rank": 6,
+    "feature": "ojos_distancia__max",
+    "media_abs_shap": 0.01376182481953968,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8108386638629111
+   },
+   {
+    "rank": 7,
+    "feature": "oreja_separacion_puntas_sobre_bases__media",
+    "media_abs_shap": 0.013341488227691876,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9138989142992933
+   },
+   {
+    "rank": 8,
+    "feature": "cabeza_velocidad_angular__media",
+    "media_abs_shap": 0.013248515634565508,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.5389100698713061
+   },
+   {
+    "rank": 9,
+    "feature": "cabeza_velocidad__desvio",
+    "media_abs_shap": 0.011549400769191009,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.3919725805698635
+   },
+   {
+    "rank": 10,
+    "feature": "ojos_distancia__desvio",
+    "media_abs_shap": 0.011496438559403193,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8790880673401911
+   },
+   {
+    "rank": 11,
+    "feature": "cabeza_velocidad__max",
+    "media_abs_shap": 0.011154871846802078,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.4190636622523771
+   },
+   {
+    "rank": 12,
+    "feature": "ojos_distancia__rango",
+    "media_abs_shap": 0.010321423999145719,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8600999388042507
+   },
+   {
+    "rank": 13,
+    "feature": "oreja_punta_a_ojo_der__min",
+    "media_abs_shap": 0.010287653290095487,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8453083926047342
+   },
+   {
+    "rank": 14,
+    "feature": "oreja_asimetria_largo__max",
+    "media_abs_shap": 0.00991387743281387,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8850593872118354
+   },
+   {
+    "rank": 15,
+    "feature": "oreja_base_a_ojo_media__media",
+    "media_abs_shap": 0.009136770172323486,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9297488227851307
+   },
+   {
+    "rank": 16,
+    "feature": "cabeza_aceleracion__desvio",
+    "media_abs_shap": 0.008633692263326866,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.503604830301427
+   },
+   {
+    "rank": 17,
+    "feature": "cabeza_aceleracion__max",
+    "media_abs_shap": 0.008419076380236623,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.4787216715166794
+   },
+   {
+    "rank": 18,
+    "feature": "oreja_punta_a_ojo_der__media",
+    "media_abs_shap": 0.008194482426164041,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8661235578373814
+   },
+   {
+    "rank": 19,
+    "feature": "cabeza_largo_ojo_hocico_rel__rango",
+    "media_abs_shap": 0.00812663918286865,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.5493516025790656
+   },
+   {
+    "rank": 20,
+    "feature": "oreja_base_a_ojo_media__max",
+    "media_abs_shap": 0.008111943869470532,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9448382203886802
+   }
+  ],
+  "Sereno": [
+   {
+    "rank": 1,
+    "feature": "cabeza_velocidad__media",
+    "media_abs_shap": 0.02286704697121441,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.9323003065623007
+   },
+   {
+    "rank": 2,
+    "feature": "ojos_distancia__desvio",
+    "media_abs_shap": 0.01859889235375199,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.88478022230987
+   },
+   {
+    "rank": 3,
+    "feature": "cabeza_velocidad__desvio",
+    "media_abs_shap": 0.01765061126696767,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.9409330698246214
+   },
+   {
+    "rank": 4,
+    "feature": "cabeza_velocidad__max",
+    "media_abs_shap": 0.017505550149241718,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.9347188289423861
+   },
+   {
+    "rank": 5,
+    "feature": "ojos_distancia__rango",
+    "media_abs_shap": 0.016113121763529484,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8748167466551516
+   },
+   {
+    "rank": 6,
+    "feature": "ojos_distancia__max",
+    "media_abs_shap": 0.01535277209422442,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8017050778404412
+   },
+   {
+    "rank": 7,
+    "feature": "cabeza_aceleracion__media",
+    "media_abs_shap": 0.015090517680426857,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.9252109885207722
+   },
+   {
+    "rank": 8,
+    "feature": "cabeza_inclinacion_sobre_horizontal__desvio",
+    "media_abs_shap": 0.014441989107789353,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8886551200053947
+   },
+   {
+    "rank": 9,
+    "feature": "cabeza_largo_ojo_hocico_rel__rango",
+    "media_abs_shap": 0.014081065856054254,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.7636627710949617
+   },
+   {
+    "rank": 10,
+    "feature": "oreja_asimetria_largo__media",
+    "media_abs_shap": 0.013915122397123754,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8966379282688087
+   },
+   {
+    "rank": 11,
+    "feature": "cabeza_largo_ojo_hocico_rel__desvio",
+    "media_abs_shap": 0.012569011761877292,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8061470669094267
+   },
+   {
+    "rank": 12,
+    "feature": "cabeza_inclinacion_sobre_horizontal__rango",
+    "media_abs_shap": 0.011800859757245066,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.9011839736906263
+   },
+   {
+    "rank": 13,
+    "feature": "oreja_punta_a_ojo_der__min",
+    "media_abs_shap": 0.01090827209819758,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8460749633763
+   },
+   {
+    "rank": 14,
+    "feature": "cabeza_velocidad_angular__media",
+    "media_abs_shap": 0.010873190690080125,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.8726757546049184
+   },
+   {
+    "rank": 15,
+    "feature": "cabeza_aceleracion__max",
+    "media_abs_shap": 0.010841239148646752,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.9339931425488761
+   },
+   {
+    "rank": 16,
+    "feature": "cabeza_aceleracion__desvio",
+    "media_abs_shap": 0.01078742204415598,
+    "grupo": "dinamica",
+    "spearman_valor_vs_shap": -0.8946045553809205
+   },
+   {
+    "rank": 17,
+    "feature": "oreja_asimetria_largo__min",
+    "media_abs_shap": 0.010125155834061567,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.9144348450078101
+   },
+   {
+    "rank": 18,
+    "feature": "cabeza_inclinacion_sobre_horizontal__min",
+    "media_abs_shap": 0.010013675963448135,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8502317178163755
+   },
+   {
+    "rank": 19,
+    "feature": "boca_comisuras_a_ojo_media__desvio",
+    "media_abs_shap": 0.008552559682635413,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": -0.8144543580979298
+   },
+   {
+    "rank": 20,
+    "feature": "oreja_separacion_puntas_sobre_bases__min",
+    "media_abs_shap": 0.008542998818699212,
+    "grupo": "estatica",
+    "spearman_valor_vs_shap": 0.8271353991972576
+   }
+  ]
+ },
+ "importancia_impureza_RF_top20": [
+  {
+   "rank": 1,
+   "feature": "cabeza_velocidad__media",
+   "media_abs_shap": 0.055015537775742356,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 2,
+   "feature": "cabeza_aceleracion__media",
+   "media_abs_shap": 0.038292297750200446,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 3,
+   "feature": "cabeza_velocidad__desvio",
+   "media_abs_shap": 0.03780476216243109,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 4,
+   "feature": "cabeza_velocidad__max",
+   "media_abs_shap": 0.03645621969816247,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 5,
+   "feature": "cabeza_velocidad_angular__media",
+   "media_abs_shap": 0.030230240255542218,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 6,
+   "feature": "cabeza_aceleracion__max",
+   "media_abs_shap": 0.025231599187032133,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 7,
+   "feature": "cabeza_aceleracion__desvio",
+   "media_abs_shap": 0.02515405351228489,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 8,
+   "feature": "oreja_asimetria_largo__media",
+   "media_abs_shap": 0.025008644173469055,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 9,
+   "feature": "ojos_distancia__desvio",
+   "media_abs_shap": 0.021510100540822544,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 10,
+   "feature": "oreja_separacion_puntas_sobre_bases__min",
+   "media_abs_shap": 0.019955333008356765,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 11,
+   "feature": "oreja_asimetria_largo__min",
+   "media_abs_shap": 0.019673847032805492,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 12,
+   "feature": "ojos_distancia__rango",
+   "media_abs_shap": 0.017283176573740427,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 13,
+   "feature": "cabeza_largo_ojo_hocico_rel__rango",
+   "media_abs_shap": 0.016964005293258148,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 14,
+   "feature": "cabeza_velocidad_angular__desvio",
+   "media_abs_shap": 0.016958640135115402,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 15,
+   "feature": "cabeza_inclinacion_sobre_horizontal__desvio",
+   "media_abs_shap": 0.016304778449481333,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 16,
+   "feature": "ojos_distancia__max",
+   "media_abs_shap": 0.015966172555933824,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 17,
+   "feature": "oreja_separacion_puntas_sobre_bases__media",
+   "media_abs_shap": 0.01552593498387575,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 18,
+   "feature": "cabeza_velocidad_angular__max",
+   "media_abs_shap": 0.01543293923806948,
+   "grupo": "dinamica"
+  },
+  {
+   "rank": 19,
+   "feature": "cabeza_inclinacion_sobre_horizontal__rango",
+   "media_abs_shap": 0.015303450551891806,
+   "grupo": "estatica"
+  },
+  {
+   "rank": 20,
+   "feature": "cabeza_largo_ojo_hocico_rel__desvio",
+   "media_abs_shap": 0.014202774695011857,
+   "grupo": "estatica"
+  }
+ ],
+ "aporte_por_familia_anatomica_fraccion": {
+  "Cabeza (orientación/dinámica)": 0.4019702314982836,
+  "Orejas": 0.38521849638705086,
+  "Boca/mandíbula": 0.09655356322424673,
+  "Ojos": 0.07377958209611442,
+  "Disponibilidad de keypoints": 0.022879981959772595,
+  "Cabeza-cuello": 0.019598144834531605
+ },
+ "aporte_por_grupo_fraccion": {
+  "estatica": 0.6370245185213537,
+  "dinamica": 0.3400954995188738,
+  "disponibilidad": 0.0228799819597726
+ }
+}

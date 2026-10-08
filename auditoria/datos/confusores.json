@@ -1,0 +1,79 @@
+{
+ "rotacion_declarada_por_clase": {
+  "Disgustado": {
+   "rotados": 1,
+   "videos": 110
+  },
+  "Interesado": {
+   "rotados": 21,
+   "videos": 71
+  },
+  "Sereno": {
+   "rotados": 47,
+   "videos": 93
+  }
+ },
+ "contenedor_por_clase": {
+  "Disgustado": {
+   ".mp4": 94,
+   ".avi": 1,
+   ".mkv": 15
+  },
+  "Interesado": {
+   ".mp4": 59,
+   ".avi": 12
+  },
+  "Sereno": {
+   ".mp4": 93
+  }
+ },
+ "codec_por_clase": {
+  "Disgustado": {
+   "h264": 109,
+   "mpeg4": 1
+  },
+  "Interesado": {
+   "h264": 59,
+   "mpeg4": 10,
+   "mjpeg": 2
+  },
+  "Sereno": {
+   "h264": 93
+  }
+ },
+ "clips_por_fecha_distinta": 16,
+ "videos_sin_fecha_en_el_nombre": 35,
+ "baselines_sin_mirar_la_cara": {
+  "solo_rotacion_declarada": {
+   "f1_macro": 0.3838196899820347,
+   "f1_desvio": 0.07122785354564665,
+   "accuracy": 0.4818941504178273
+  },
+  "tecnicos (códec, contenedor, pix_fmt, tasa de bits, tamaño, rotación)": {
+   "f1_macro": 0.5557232404451555,
+   "f1_desvio": 0.030453978178668895,
+   "accuracy": 0.5877437325905293
+  },
+  "solo_año_de_la_sesión (por nombre de archivo)": {
+   "f1_macro": 0.39459981191211146,
+   "f1_desvio": 0.06469519789964498,
+   "accuracy": 0.5153203342618384
+  },
+  "solo_mes_de_la_sesión": {
+   "f1_macro": 0.5364583775823646,
+   "f1_desvio": 0.049749334048467916,
+   "accuracy": 0.5905292479108635
+  },
+  "solo_fecha_exacta_de_la_sesión": {
+   "f1_macro": 0.5354766986225431,
+   "f1_desvio": 0.06442046963265093,
+   "accuracy": 0.5710306406685237
+  },
+  "técnicos + fecha exacta": {
+   "f1_macro": 0.604676876181049,
+   "f1_desvio": 0.08880975175062021,
+   "accuracy": 0.6183844011142061
+  }
+ },
+ "nota": "La fecha sale del nombre de archivo (patrones YYYYMMDD / YYYY-MM-DD); es una aproximación a la sesión de filmación, no un identificador de establecimiento. Un caballo de test nunca visto puede compartir fecha con caballos de train (misma sesión, mismo lugar): es la vía por la que el contexto puede ayudar sin que haya fuga de individuo."
+}

@@ -1,0 +1,194 @@
+{
+ "coseno_dentro_del_mismo_id": {
+  "media": 0.48676326870918274,
+  "p5": 0.08713838793337345,
+  "p50": 0.47631053626537323,
+  "n_pares_de_clips": 712
+ },
+ "coseno_entre_ids_distintos(media por par de IDs)": {
+  "media": -0.00132272870082539,
+  "p95": 0.24272590503096575,
+  "p99": 0.3788885810971254
+ },
+ "top15_pares_de_ids_en_folds_distintos": [
+  {
+   "id_a": "167",
+   "id_b": "174",
+   "coseno_medio": 0.7005120515823364,
+   "folds": "2/3",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 1
+  },
+  {
+   "id_a": "123",
+   "id_b": "169",
+   "coseno_medio": 0.6218814849853516,
+   "folds": "3/0",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 3,
+   "ranking": 2
+  },
+  {
+   "id_a": "901",
+   "id_b": "902",
+   "coseno_medio": 0.6023077368736267,
+   "folds": "1/2",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 3
+  },
+  {
+   "id_a": "509",
+   "id_b": "517",
+   "coseno_medio": 0.5867030024528503,
+   "folds": "0/2",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 7,
+   "n_b": 3,
+   "ranking": 4
+  },
+  {
+   "id_a": "503",
+   "id_b": "511",
+   "coseno_medio": 0.585645318031311,
+   "folds": "3/0",
+   "clases_a": "Disgustado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 1,
+   "ranking": 5
+  },
+  {
+   "id_a": "707",
+   "id_b": "709",
+   "coseno_medio": 0.566097617149353,
+   "folds": "0/2",
+   "clases_a": "Disgustado",
+   "clases_b": "Disgustado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 7
+  },
+  {
+   "id_a": "508",
+   "id_b": "517",
+   "coseno_medio": 0.5501015782356262,
+   "folds": "0/2",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 3,
+   "ranking": 8
+  },
+  {
+   "id_a": "123",
+   "id_b": "176",
+   "coseno_medio": 0.5246844291687012,
+   "folds": "3/1",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 1,
+   "ranking": 10
+  },
+  {
+   "id_a": "125",
+   "id_b": "171",
+   "coseno_medio": 0.5125473141670227,
+   "folds": "0/1",
+   "clases_a": "Sereno",
+   "clases_b": "Interesado",
+   "n_a": 1,
+   "n_b": 4,
+   "ranking": 11
+  },
+  {
+   "id_a": "707",
+   "id_b": "903",
+   "coseno_medio": 0.49732136726379395,
+   "folds": "0/3",
+   "clases_a": "Disgustado",
+   "clases_b": "Disgustado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 12
+  },
+  {
+   "id_a": "503",
+   "id_b": "515",
+   "coseno_medio": 0.4971655607223511,
+   "folds": "3/1",
+   "clases_a": "Disgustado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 3,
+   "ranking": 13
+  },
+  {
+   "id_a": "246",
+   "id_b": "903",
+   "coseno_medio": 0.49673837423324585,
+   "folds": "2/3",
+   "clases_a": "Disgustado",
+   "clases_b": "Disgustado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 14
+  },
+  {
+   "id_a": "505",
+   "id_b": "515",
+   "coseno_medio": 0.49627935886383057,
+   "folds": "0/1",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 3,
+   "n_b": 3,
+   "ranking": 15
+  },
+  {
+   "id_a": "125",
+   "id_b": "174",
+   "coseno_medio": 0.4962491989135742,
+   "folds": "0/3",
+   "clases_a": "Sereno",
+   "clases_b": "Interesado",
+   "n_a": 1,
+   "n_b": 1,
+   "ranking": 16
+  },
+  {
+   "id_a": "018",
+   "id_b": "172",
+   "coseno_medio": 0.4841459095478058,
+   "folds": "3/1",
+   "clases_a": "Interesado",
+   "clases_b": "Disgustado",
+   "n_a": 4,
+   "n_b": 1,
+   "ranking": 19
+  }
+ ],
+ "par_123_169": [
+  {
+   "id_a": "123",
+   "id_b": "169",
+   "coseno_medio": 0.6218814849853516,
+   "folds": "3/0",
+   "clases_a": "Interesado",
+   "clases_b": "Interesado",
+   "n_a": 2,
+   "n_b": 3,
+   "ranking": 2
+  }
+ ],
+ "aviso": "el backbone es ImageNet, sin entrenamiento para reidentificación; el cribado solo prioriza pares a revisar manualmente"
+}

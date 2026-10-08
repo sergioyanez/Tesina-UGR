@@ -1,0 +1,120 @@
+{
+ "dependencias": {
+  "fijadas": 20,
+  "diferencias_con_lo_instalado": {
+   "tensorboard": {
+    "requirements": "2.21.0",
+    "instalada": null
+   }
+  },
+  "instaladas_clave": {
+   "torch": "2.5.1+cu121",
+   "numpy": "1.26.4",
+   "scikit-learn": "1.7.2",
+   "deeplabcut": "3.0.1",
+   "opencv-python": "4.11.0.86",
+   "streamlit": "1.62.0"
+  }
+ },
+ "semillas": {
+  "SEMILLA global (clasificacion.SEMILLA)": "42",
+  "torch.manual_seed / random.seed / np.random.seed / cuda.manual_seed_all en entrenar_mil_multimodal": true,
+  "generador propio del DataLoader de train": true,
+  "cudnn.deterministic / use_deterministic_algorithms": false,
+  "partición sin azar (determinista por orden y desempate por nombre)": false,
+  "semilla del bootstrap (lineas_de_base)": "SEMILLA_BOOTSTRAP = 1"
+ },
+ "estado_git": {
+  "commit_base": "caf5564",
+  "rama_de_la_auditoria": "feat/auditoria-y-experimento-simba",
+  "ramas": [
+   "chore/deuda-menor-y-observador-unico",
+   "  chore/limpieza-codigo",
+   "  ejecucion-local-gpu",
+   "  feat/arquitectura-multimodal-mil",
+   "* feat/auditoria-y-experimento-simba",
+   "  feat/enriquecer-canal-geometrico",
+   "  feat/finetuning-visual",
+   "  feat/mejoras-prioridad-alta",
+   "  feat/validacion-cruzada-anidada-NestedCV",
+   "  feat2/otro-camino",
+   "  hector",
+   "+ main",
+   "  nuevo-intento-con-enmascarado-y-geometria",
+   "  sergio",
+   "  remotes/origin/chore/limpieza-codigo",
+   "  remotes/origin/ejecucion-local-gpu",
+   "  remotes/origin/feat/arquitectura-multimodal-mil",
+   "  remotes/origin/feat/enriquecer-canal-geometrico",
+   "  remotes/origin/feat/finetuning-visual",
+   "  remotes/origin/feat/microexpresiones-ollares",
+   "  remotes/origin/feat/recortes-largos",
+   "  remotes/origin/feat/validacion-cruzada-anidada-NestedCV",
+   "  remotes/origin/feat2/otro-camino",
+   "  remotes/origin/hector",
+   "  remotes/origin/main"
+  ],
+  "gitignore_datos": true
+ },
+ "artefactos": {
+  "evaluacion_vigente": true,
+  "lineas_de_base": true,
+  "pesos_de_los_4_folds": true,
+  "modelo_de_produccion_y_procedencia": true,
+  "huella_de_caracteristicas": "806a6f478408ab0b",
+  "huella_registrada_en_el_modelo_de_produccion": "806a6f478408ab0b",
+  "scripts_de_evaluacion_en_main": [
+   "evaluar_lineas_de_base.py",
+   "evaluar_v2.py"
+  ],
+  "scripts_pyc_sin_fuente_en_scripts/__pycache__": [],
+  "docs_registro_de_experimentos": true,
+  "tests": [
+   "test_anotacion.py",
+   "test_catalogo.py",
+   "test_clasificacion.py",
+   "test_encuadre.py",
+   "test_entorno.py",
+   "test_equivalencia.py",
+   "test_geometria.py",
+   "test_inferencia.py",
+   "test_interpolacion.py",
+   "test_lineas_de_base.py",
+   "test_particion.py",
+   "test_persistencia.py",
+   "test_pose.py",
+   "test_secuencia.py",
+   "test_sobreajuste.py"
+  ]
+ },
+ "fragilidad_cache": {
+  "la huella de la caché usa st_mtime del CSV": true,
+  "consecuencia": "copiar o tocar dataset_frames_alineados_v2.csv invalida la caché y obliga a re-extraer (y escribe en la raíz de datos); no cambia resultados porque el backbone es determinista, pero rompe la trazabilidad por huella"
+ },
+ "ramas_laterales": {
+  "feat/enriquecer-canal-geometrico": {
+   "scripts": [
+    "scripts/evaluar_canal_geometrico.py",
+    "scripts/evaluar_v2.py"
+   ],
+   "ultimo_commit": "b0b1379 2026-09-22 docs: la medición refuta la recomendación 4.1 y cierra la sección 7"
+  },
+  "feat/validacion-cruzada-anidada-NestedCV": {
+   "scripts": [
+    "scripts/evaluar_canal_geometrico.py",
+    "scripts/evaluar_nested_cv.py",
+    "scripts/evaluar_v2.py"
+   ],
+   "ultimo_commit": "23d4b25 2026-09-23 feat: medir la validación cruzada anidada — no se adopta"
+  },
+  "feat/finetuning-visual": {
+   "scripts": [
+    "scripts/entrenar_finetuning.py",
+    "scripts/evaluar_finetuning.py",
+    "scripts/evaluar_v2.py",
+    "scripts/smoke_test.py"
+   ],
+   "ultimo_commit": "544d323 2026-09-22 Se estudia aplicar finetuning para ver si hay mejoras pero NO LA HAY"
+  }
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "clips": 359,
+ "predicciones_iguales_a_la_evaluacion_vigente": 359,
+ "confianza_media": 0.8240252733230591,
+ "accuracy": 0.7437325905292479,
+ "ECE_10_bins": 0.08127893727469908,
+ "NLL": 0.7757090330123901,
+ "NLL_azar_uniforme": 1.0986122886681096,
+ "Brier": 0.37261477819916256,
+ "tabla": [
+  {
+   "rango": "(0.4,0.5]",
+   "n": 21,
+   "confianza_media": 0.47069698572158813,
+   "acierto": 0.38095238095238093
+  },
+  {
+   "rango": "(0.5,0.6]",
+   "n": 32,
+   "confianza_media": 0.5569677948951721,
+   "acierto": 0.5625
+  },
+  {
+   "rango": "(0.6,0.7]",
+   "n": 30,
+   "confianza_media": 0.6506261229515076,
+   "acierto": 0.4
+  },
+  {
+   "rango": "(0.7,0.8]",
+   "n": 49,
+   "confianza_media": 0.7480450868606567,
+   "acierto": 0.6530612244897959
+  },
+  {
+   "rango": "(0.8,0.9]",
+   "n": 67,
+   "confianza_media": 0.8483598232269287,
+   "acierto": 0.8059701492537313
+  },
+  {
+   "rango": "(0.9,1.0]",
+   "n": 160,
+   "confianza_media": 0.9694023132324219,
+   "acierto": 0.89375
+  }
+ ],
+ "pct_clips_con_confianza_mayor_0.9": 44.56824512534819,
+ "acierto_con_confianza_mayor_0.9": 0.89375
+}

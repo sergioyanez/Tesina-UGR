@@ -194,6 +194,54 @@ def dividir_por_ejemplar(clips: list[dict], fraccion_validacion: float = 0.25) -
     return entrenamiento, validacion
 
 
+SEMILLA_VALIDACION = 42
+MODOS_VALIDACION_INTERNA = ("mas_clips", "estratificada")
+
+
+def dividir_estratificada(clips: list[dict], fraccion_validacion: float = 0.25,
+                          semilla: int = SEMILLA_VALIDACION) -> tuple[list, list]:
+    """Corte interno por caballo, estratificado por clase, con semilla fija.
+
+    Reemplaza (como opción) a `dividir_por_ejemplar`, que manda a validación los caballos con MÁS
+    clips: la validación queda formada por los caballos más filmados, que no representan al caballo
+    típico (la auditoría midió que su composición de clases difiere de la del resto). Acá se usa
+    `StratifiedGroupKFold` con `n_splits = round(1 / fraccion)` y se toma el primer pliegue como
+    validación: ningún caballo cruza el corte y cada clase queda repartida lo más parejo que el
+    agrupamiento permite. Determinista dada la semilla.
+    """
+    import numpy as np
+    from sklearn.model_selection import StratifiedGroupKFold
+
+    if not 0.0 < fraccion_validacion < 1.0:
+        raise ValueError(f"La fracción de validación tiene que estar entre 0 y 1: "
+                         f"{fraccion_validacion}")
+    n_splits = max(2, round(1.0 / fraccion_validacion))
+    # El orden de entrada no debe importar: se ordena por clip.
+    ordenados = sorted(clips, key=lambda c: c["clip"])
+    y = np.array([c["clase"] for c in ordenados])
+    g = np.array([c["id_caballo"] for c in ordenados])
+    sgkf = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=semilla)
+    ent_idx, val_idx = next(iter(sgkf.split(np.zeros(len(y)), y, g)))
+    entrenamiento = [ordenados[i] for i in ent_idx]
+    validacion = [ordenados[i] for i in val_idx]
+
+    cruce = {c["id_caballo"] for c in entrenamiento} & {c["id_caballo"] for c in validacion}
+    assert not cruce, f"fuga de ejemplar entre train interno y validación: {sorted(cruce)}"
+    assert entrenamiento and validacion, "un lado del corte interno quedó vacío"
+    return entrenamiento, validacion
+
+
+def dividir_validacion(clips: list[dict], fraccion_validacion: float = 0.25,
+                       modo: str = "mas_clips", semilla: int = SEMILLA_VALIDACION):
+    """Despacha el corte interno. `mas_clips` = el histórico; `estratificada` = el nuevo."""
+    if modo == "mas_clips":
+        return dividir_por_ejemplar(clips, fraccion_validacion)
+    if modo == "estratificada":
+        return dividir_estratificada(clips, fraccion_validacion, semilla)
+    raise ValueError(f"Modo de validación interna desconocido: {modo!r}. "
+                     f"Opciones: {MODOS_VALIDACION_INTERNA}")
+
+
 def verificar(particionados: list[dict], folds: int = FOLDS) -> dict:
     """Comprueba lo que, si falla, no da error sino una métrica falsa.
 

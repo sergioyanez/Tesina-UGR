@@ -1,0 +1,824 @@
+{
+ "modo": "normalizado",
+ "n": 16,
+ "predicciones": 16,
+ "coinciden_con_etiqueta": 16,
+ "detalle": [
+  {
+   "video": "217_20260818_144806.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9934782981872559,
+   "segundos": 67.5,
+   "ordenes": [
+    2,
+    16,
+    26,
+    44,
+    56,
+    70,
+    83,
+    99,
+    109,
+    126,
+    142,
+    153,
+    167,
+    182,
+    193,
+    207
+   ],
+   "total": 307,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "217_20260818_144806_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.999876607209444,
+    "dif_rel_media_comunes": 0.014568759594112635,
+    "dif_pose_px_mediana_comunes": 0.004062499999974989,
+    "ventana_cache": [
+     2,
+     207
+    ],
+    "ventana_inferencia": [
+     2,
+     207
+    ]
+   }
+  },
+  {
+   "video": "207_20260818_151913.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9883193969726562,
+   "segundos": 48.5,
+   "ordenes": [
+    144,
+    149,
+    159,
+    167,
+    174,
+    181,
+    185,
+    194,
+    203,
+    204,
+    218,
+    227,
+    242,
+    244,
+    248,
+    253
+   ],
+   "total": 256,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "207_20260818_151913_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 10,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998935163021088,
+    "dif_rel_media_comunes": 0.014436571765691042,
+    "dif_pose_px_mediana_comunes": 0.004062499999974989,
+    "ventana_cache": [
+     144,
+     204
+    ],
+    "ventana_inferencia": [
+     144,
+     253
+    ]
+   }
+  },
+  {
+   "video": "217_20260818_144548.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9682620763778687,
+   "segundos": 54.5,
+   "ordenes": [
+    1,
+    14,
+    29,
+    40,
+    58,
+    69,
+    82,
+    97,
+    113,
+    123,
+    137,
+    154,
+    170,
+    180,
+    196,
+    208
+   ],
+   "total": 302,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "217_20260818_144548_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998328201472759,
+    "dif_rel_media_comunes": 0.018392149824649096,
+    "dif_pose_px_mediana_comunes": 0.00437499999998181,
+    "ventana_cache": [
+     1,
+     208
+    ],
+    "ventana_inferencia": [
+     1,
+     208
+    ]
+   }
+  },
+  {
+   "video": "154_20260811_123118.mp4",
+   "clase_real": "Interesado",
+   "resultado": "PREDICCION",
+   "predicha": "Interesado",
+   "coincide": true,
+   "prob_max": 0.9986974596977234,
+   "segundos": 50.4,
+   "ordenes": [
+    1,
+    11,
+    28,
+    39,
+    54,
+    71,
+    84,
+    97,
+    111,
+    124,
+    139,
+    154,
+    165,
+    183,
+    195,
+    207
+   ],
+   "total": 300,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "154_20260811_123118_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Interesado",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.999833457171917,
+    "dif_rel_media_comunes": 0.018458337523043156,
+    "dif_pose_px_mediana_comunes": 0.0040625000000176215,
+    "ventana_cache": [
+     1,
+     207
+    ],
+    "ventana_inferencia": [
+     1,
+     207
+    ]
+   }
+  },
+  {
+   "video": "230_20260818_120401.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9409717917442322,
+   "segundos": 49.8,
+   "ordenes": [
+    1,
+    16,
+    30,
+    41,
+    54,
+    69,
+    84,
+    97,
+    110,
+    127,
+    140,
+    155,
+    169,
+    179,
+    193,
+    206
+   ],
+   "total": 288,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "230_20260818_120401_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 15,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998127341270446,
+    "dif_rel_media_comunes": 0.019307892583310605,
+    "dif_pose_px_mediana_comunes": 0.00343750000001819,
+    "ventana_cache": [
+     1,
+     209
+    ],
+    "ventana_inferencia": [
+     1,
+     206
+    ]
+   }
+  },
+  {
+   "video": "912_20260702_142421.mp4",
+   "clase_real": "Interesado",
+   "resultado": "PREDICCION",
+   "predicha": "Interesado",
+   "coincide": true,
+   "prob_max": 0.8255541324615479,
+   "segundos": 47.1,
+   "ordenes": [
+    188,
+    193,
+    197,
+    201,
+    207,
+    211,
+    218,
+    223,
+    227,
+    231,
+    237,
+    243,
+    245,
+    251,
+    257,
+    261
+   ],
+   "total": 263,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "912_20260702_142421_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 0,
+    "pred_cache": "Interesado",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": null,
+    "dif_rel_media_comunes": null,
+    "dif_pose_px_mediana_comunes": null,
+    "ventana_cache": [
+     44,
+     79
+    ],
+    "ventana_inferencia": [
+     188,
+     261
+    ]
+   }
+  },
+  {
+   "video": "218_20260818_143428.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.8602668046951294,
+   "segundos": 21.0,
+   "ordenes": [
+    1,
+    7,
+    17,
+    25,
+    32,
+    38,
+    44,
+    56,
+    59,
+    68,
+    79,
+    83,
+    93,
+    102,
+    109,
+    114
+   ],
+   "total": 116,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "218_20260818_143428_clip_00.mp4",
+    "frames_clip": [
+     0,
+     116
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998647160828114,
+    "dif_rel_media_comunes": 0.01642330939648673,
+    "dif_pose_px_mediana_comunes": 0.004218750000006821,
+    "ventana_cache": [
+     1,
+     114
+    ],
+    "ventana_inferencia": [
+     1,
+     114
+    ]
+   }
+  },
+  {
+   "video": "218_20260818_144743.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9765070676803589,
+   "segundos": 49.5,
+   "ordenes": [
+    2,
+    11,
+    27,
+    40,
+    57,
+    70,
+    83,
+    97,
+    112,
+    124,
+    140,
+    153,
+    166,
+    183,
+    194,
+    208
+   ],
+   "total": 254,
+   "rotacion": 90.0,
+   "cache": {
+    "clip": "218_20260818_144743_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998882487416267,
+    "dif_rel_media_comunes": 0.015185445314273238,
+    "dif_pose_px_mediana_comunes": 0.004062499999974989,
+    "ventana_cache": [
+     2,
+     208
+    ],
+    "ventana_inferencia": [
+     2,
+     208
+    ]
+   }
+  },
+  {
+   "video": "914_20260702-141211_NZFZ0IuM.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.8732335567474365,
+   "segundos": 31.7,
+   "ordenes": [
+    1,
+    13,
+    21,
+    32,
+    42,
+    54,
+    68,
+    79,
+    87,
+    100,
+    109,
+    123,
+    131,
+    145,
+    157,
+    166
+   ],
+   "total": 167,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "914_20260702-141211_NZFZ0IuM_clip_00.mp4",
+    "frames_clip": [
+     0,
+     167
+    ],
+    "frames_comunes": 15,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998901804288228,
+    "dif_rel_media_comunes": 0.014645841096838315,
+    "dif_pose_px_mediana_comunes": 0.00437499999998181,
+    "ventana_cache": [
+     1,
+     166
+    ],
+    "ventana_inferencia": [
+     1,
+     166
+    ]
+   }
+  },
+  {
+   "video": "124_bajado-5-s3_iKQVsdsn.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.7839649319648743,
+   "segundos": 52.9,
+   "ordenes": [
+    2,
+    17,
+    30,
+    43,
+    58,
+    73,
+    89,
+    102,
+    113,
+    130,
+    145,
+    157,
+    171,
+    186,
+    201,
+    214
+   ],
+   "total": 305,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "124_bajado-5-s3_iKQVsdsn_clip_00.mp4",
+    "frames_clip": [
+     0,
+     217
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9997089579701424,
+    "dif_rel_media_comunes": 0.023396094446070492,
+    "dif_pose_px_mediana_comunes": 0.00437499999998181,
+    "ventana_cache": [
+     2,
+     214
+    ],
+    "ventana_inferencia": [
+     2,
+     214
+    ]
+   }
+  },
+  {
+   "video": "706_2026-08-26-15-26-24_0LGlb5JC.mkv",
+   "clase_real": "Disgustado",
+   "resultado": "PREDICCION",
+   "predicha": "Disgustado",
+   "coincide": true,
+   "prob_max": 0.9992843270301819,
+   "segundos": 32.8,
+   "ordenes": [
+    4,
+    11,
+    25,
+    35,
+    52,
+    65,
+    77,
+    89,
+    100,
+    111,
+    121,
+    139,
+    151,
+    163,
+    175,
+    185
+   ],
+   "total": 186,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "706_2026-08-26-15-26-24_0LGlb5JC_clip_00.mp4",
+    "frames_clip": [
+     0,
+     186
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Disgustado",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9997522979974747,
+    "dif_rel_media_comunes": 0.021594523102976382,
+    "dif_pose_px_mediana_comunes": 0.004531249999985221,
+    "ventana_cache": [
+     4,
+     185
+    ],
+    "ventana_inferencia": [
+     4,
+     185
+    ]
+   }
+  },
+  {
+   "video": "200_20260818-154550_XbCo4YG4.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9091169238090515,
+   "segundos": 19.7,
+   "ordenes": [
+    2,
+    8,
+    12,
+    23,
+    27,
+    36,
+    45,
+    50,
+    59,
+    64,
+    73,
+    79,
+    84,
+    92,
+    100,
+    105
+   ],
+   "total": 108,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "200_20260818-154550_XbCo4YG4_clip_00.mp4",
+    "frames_clip": [
+     0,
+     108
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998148642480373,
+    "dif_rel_media_comunes": 0.019210907048545778,
+    "dif_pose_px_mediana_comunes": 0.00390625,
+    "ventana_cache": [
+     2,
+     105
+    ],
+    "ventana_inferencia": [
+     2,
+     105
+    ]
+   }
+  },
+  {
+   "video": "908_20260702-141427_ngER7GIe.mp4",
+   "clase_real": "Disgustado",
+   "resultado": "PREDICCION",
+   "predicha": "Disgustado",
+   "coincide": true,
+   "prob_max": 0.9665188789367676,
+   "segundos": 26.2,
+   "ordenes": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    18,
+    19,
+    21,
+    24
+   ],
+   "total": 138,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "908_20260702-141427_ngER7GIe_clip_00.mp4",
+    "frames_clip": [
+     0,
+     138
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Disgustado",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998550266027451,
+    "dif_rel_media_comunes": 0.016401759232394397,
+    "dif_pose_px_mediana_comunes": 0.004531250000013642,
+    "ventana_cache": [
+     0,
+     24
+    ],
+    "ventana_inferencia": [
+     0,
+     24
+    ]
+   }
+  },
+  {
+   "video": "231_20260818-121656_YEVak6no.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9664743542671204,
+   "segundos": 25.6,
+   "ordenes": [
+    1,
+    11,
+    15,
+    28,
+    36,
+    40,
+    53,
+    59,
+    70,
+    76,
+    86,
+    90,
+    103,
+    111,
+    116,
+    126
+   ],
+   "total": 127,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "231_20260818-121656_YEVak6no_clip_00.mp4",
+    "frames_clip": [
+     0,
+     127
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9999144934117794,
+    "dif_rel_media_comunes": 0.012078283121809363,
+    "dif_pose_px_mediana_comunes": 0.003593750000050022,
+    "ventana_cache": [
+     1,
+     126
+    ],
+    "ventana_inferencia": [
+     1,
+     126
+    ]
+   }
+  },
+  {
+   "video": "500_27v1_MqeH8hYv.avi",
+   "clase_real": "Interesado",
+   "resultado": "PREDICCION",
+   "predicha": "Interesado",
+   "coincide": true,
+   "prob_max": 0.9622800350189209,
+   "segundos": 16.9,
+   "ordenes": [
+    2,
+    6,
+    18,
+    26,
+    32,
+    42,
+    47,
+    55,
+    65,
+    74,
+    78,
+    86,
+    98,
+    106,
+    114,
+    119
+   ],
+   "total": 121,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "500_27v1_MqeH8hYv_clip_00.mp4",
+    "frames_clip": [
+     0,
+     121
+    ],
+    "frames_comunes": 16,
+    "pred_cache": "Interesado",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9996723048388958,
+    "dif_rel_media_comunes": 0.025025324895977974,
+    "dif_pose_px_mediana_comunes": 0.00421874999999261,
+    "ventana_cache": [
+     2,
+     119
+    ],
+    "ventana_inferencia": [
+     2,
+     119
+    ]
+   }
+  },
+  {
+   "video": "217_20260818-144422_akI0bRyV.mp4",
+   "clase_real": "Sereno",
+   "resultado": "PREDICCION",
+   "predicha": "Sereno",
+   "coincide": true,
+   "prob_max": 0.9442159533500671,
+   "segundos": 42.8,
+   "ordenes": [
+    1,
+    14,
+    27,
+    45,
+    54,
+    68,
+    84,
+    96,
+    111,
+    124,
+    140,
+    157,
+    167,
+    181,
+    195,
+    210
+   ],
+   "total": 226,
+   "rotacion": 0.0,
+   "cache": {
+    "clip": "217_20260818-144422_akI0bRyV_clip_00.mp4",
+    "frames_clip": [
+     0,
+     210
+    ],
+    "frames_comunes": 11,
+    "pred_cache": "Sereno",
+    "pred_cache_coincide_etiqueta": true,
+    "pred_inf_igual_cache": true,
+    "coseno_medio_comunes": 0.9998840472914956,
+    "dif_rel_media_comunes": 0.015314720655706797,
+    "dif_pose_px_mediana_comunes": 0.0037500000000818545,
+    "ventana_cache": [
+     1,
+     205
+    ],
+    "ventana_inferencia": [
+     1,
+     210
+    ]
+   }
+  }
+ ]
+}

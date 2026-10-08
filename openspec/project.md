@@ -41,10 +41,28 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 
 | Objetivo específico | Estado |
 |---|---|
-| 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **249 videos → 368 clips → 5888 frames** (28/08/2026, con `PISO_VIDEO_CORTO = 1.0`) |
-| 2. Pipeline de preprocesamiento | 🟢 Ejecutado 368/368 clips; **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
+| 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **274 videos → 393 clips → 359 clips íntegros** (133 caballos; cifras vigentes según la auditoría del 25/09/2026; las de 249/368/5888 son del 28/08/2026) |
+| 2. Pipeline de preprocesamiento | 🟢 Ejecutado sobre 393 clips (359 íntegros); **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
 | 3. Clasificación orientada a video | 🟡 **Modelo vigente: MIL multimodal, F1 macro 0,740 ± 0,052** (359 clips, 133 caballos; `objetivo3_evaluacion_v2.json`). Supera a los metadatos de filmación (0,618) pero **empata con un promedio estático lineal (0,741)**: el aporte de la arquitectura y del orden temporal no está demostrado. Sobreajuste moderado. Ver «Estado al 25/09/2026» |
-| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo el MIL vigente (`mil_multimodal_produccion.pt`), con la preparación compartida con el entrenamiento. La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
+| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo el MIL vigente (`mil_multimodal_produccion.pt`), con la preparación compartida con el entrenamiento y, desde el 07/10/2026, la lectura del video igualada a la del notebook 01 (orientación y `mp4v`; change `base-comun-comparacion-de-modelos`). La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
+
+### Base común para comparar modelos (07/10/2026)
+
+Change `base-comun-comparacion-de-modelos`. Las cifras históricas de esta página (234 videos, 342
+clips, 141 clips íntegros, 368 clips) son de corridas anteriores y se conservan porque explican el
+diagnóstico; las vigentes son 274 videos, 393 clips, 359 íntegros, 133 caballos.
+
+- **Protocolo** (`comparacion/PROTOCOLO.md`, `equinos/comparacion.py`): reserva del 15 % de los
+  caballos (20 caballos, 68 clips; decisión de Sergio del 07/10/2026, una sola vez con el ganador),
+  desarrollo de 113 caballos / 291 clips, particiones 5×4 por caballo, evaluador con esquema fijo,
+  IC95 bootstrap pareado por caballo y criterio de elección declarado antes de comparar.
+- **Geometría v2** (`equinos/geometria.py`): 17 columnas en el marco de la cabeza, máscaras con
+  umbral 0,50; la v1 y el modelo desplegado no cambian por omisión.
+- **Validación interna**: opción `estratificada` (por caballo, estratificada por clase, semilla
+  fija); `mas_clips` sigue siendo el valor por omisión para reproducir lo medido.
+- **Inferencia**: normaliza el video con `ORIENTATION_AUTO` y `mp4v` como los clips del dataset.
+- **Sesiones**: `comparacion/sesiones_de_filmacion.csv` (a completar por Sergio) para un futuro
+  leave-session-out.
 
 ### Objetivo 3 — resultado, y por qué es un resultado negativo bien medido (28/08/2026)
 

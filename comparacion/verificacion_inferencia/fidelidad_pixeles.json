@@ -1,0 +1,522 @@
+{
+ "resumen": {
+  "A_clip_dataset": {
+   "coseno_medio": 1.0000000102445483,
+   "dif_rel_media": 0.0,
+   "misma_pred_que_cache": 16,
+   "n": 16
+  },
+  "B_normalizado_mp4v": {
+   "coseno_medio": 1.0000000102445483,
+   "dif_rel_media": 0.0,
+   "misma_pred_que_cache": 16,
+   "n": 16
+  },
+  "C_orientado_sin_recodificar": {
+   "coseno_medio": 0.9954027980566025,
+   "dif_rel_media": 0.08842120645567775,
+   "misma_pred_que_cache": 16,
+   "n": 16
+  },
+  "D_original_crudo": {
+   "coseno_medio": 0.9053742727264762,
+   "dif_rel_media": 0.34501851443201303,
+   "misma_pred_que_cache": 13,
+   "n": 16
+  },
+  "por_rotacion": {
+   "con_rotacion": {
+    "B_normalizado_mp4v": 1.0000000158324838,
+    "C_orientado_sin_recodificar": 0.9969836105592549,
+    "D_original_crudo": 0.8169265598990023
+   },
+   "sin_rotacion": {
+    "B_normalizado_mp4v": 1.0000000046566129,
+    "C_orientado_sin_recodificar": 0.9938219855539501,
+    "D_original_crudo": 0.9938219855539501
+   }
+  }
+ },
+ "detalle": [
+  {
+   "video": "217_20260818_144806.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 0.9999999962747097,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 0.9999999962747097,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9975232854485512,
+    "dif_rel": 0.07091877609491348,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.7578401304781437,
+    "dif_rel": 0.6617157459259033,
+    "pred": "Disgustado",
+    "igual_cache": false
+   }
+  },
+  {
+   "video": "207_20260818_151913.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000149011612,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000149011612,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9957599565386772,
+    "dif_rel": 0.09547383338212967,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.8182367235422134,
+    "dif_rel": 0.5914772152900696,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "217_20260818_144548.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000186264515,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000186264515,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9967673420906067,
+    "dif_rel": 0.08212593197822571,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.7382513768970966,
+    "dif_rel": 0.7004388570785522,
+    "pred": "Disgustado",
+    "igual_cache": false
+   }
+  },
+  {
+   "video": "154_20260811_123118.mp4",
+   "clase": "Interesado",
+   "rotacion": 90.0,
+   "pred_cache": "Interesado",
+   "A_clip_dataset": {
+    "coseno": 1.0000000037252903,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000037252903,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9963272362947464,
+    "dif_rel": 0.08679766952991486,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.8419234529137611,
+    "dif_rel": 0.544013261795044,
+    "pred": "Interesado",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "230_20260818_120401.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000335276127,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000335276127,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9974263869225979,
+    "dif_rel": 0.07304409891366959,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.8164418153464794,
+    "dif_rel": 0.5822635293006897,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "912_20260702_142421.mp4",
+   "clase": "Interesado",
+   "rotacion": 90.0,
+   "pred_cache": "Interesado",
+   "A_clip_dataset": {
+    "coseno": 1.0000000037252903,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000037252903,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9970385432243347,
+    "dif_rel": 0.0788165032863617,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.8762039765715599,
+    "dif_rel": 0.5332742929458618,
+    "pred": "Interesado",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "218_20260818_143428.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000447034836,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000447034836,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9973123595118523,
+    "dif_rel": 0.07366999983787537,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.8303460963070393,
+    "dif_rel": 0.5882545709609985,
+    "pred": "Disgustado",
+    "igual_cache": false
+   }
+  },
+  {
+   "video": "218_20260818_144743.mp4",
+   "clase": "Sereno",
+   "rotacion": 90.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.000000011175871,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.000000011175871,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9977137744426727,
+    "dif_rel": 0.06798520684242249,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.856168907135725,
+    "dif_rel": 0.5329514741897583,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "914_20260702-141211_NZFZ0IuM.mp4",
+   "clase": "Sereno",
+   "rotacion": 0.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000074505806,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000074505806,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.997650358825922,
+    "dif_rel": 0.06919045746326447,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.997650358825922,
+    "dif_rel": 0.06919045746326447,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "124_bajado-5-s3_iKQVsdsn.mp4",
+   "clase": "Sereno",
+   "rotacion": 0.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9924698621034622,
+    "dif_rel": 0.1218048632144928,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9924698621034622,
+    "dif_rel": 0.1218048632144928,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "706_2026-08-26-15-26-24_0LGlb5JC.mkv",
+   "clase": "Disgustado",
+   "rotacion": 0.0,
+   "pred_cache": "Disgustado",
+   "A_clip_dataset": {
+    "coseno": 0.9999999962747097,
+    "dif_rel": 0.0,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 0.9999999962747097,
+    "dif_rel": 0.0,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9954142980277538,
+    "dif_rel": 0.09428584575653076,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9954142980277538,
+    "dif_rel": 0.09428584575653076,
+    "pred": "Disgustado",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "200_20260818-154550_XbCo4YG4.mp4",
+   "clase": "Sereno",
+   "rotacion": 0.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000298023224,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000298023224,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9973580315709114,
+    "dif_rel": 0.07235396653413773,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9973580315709114,
+    "dif_rel": 0.07235396653413773,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "908_20260702-141427_ngER7GIe.mp4",
+   "clase": "Disgustado",
+   "rotacion": 0.0,
+   "pred_cache": "Disgustado",
+   "A_clip_dataset": {
+    "coseno": 1.0000000223517418,
+    "dif_rel": 0.0,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000223517418,
+    "dif_rel": 0.0,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9963317476212978,
+    "dif_rel": 0.08645673096179962,
+    "pred": "Disgustado",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9963317476212978,
+    "dif_rel": 0.08645673096179962,
+    "pred": "Disgustado",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "231_20260818-121656_YEVak6no.mp4",
+   "clase": "Sereno",
+   "rotacion": 0.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 1.0000000186264515,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 1.0000000186264515,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9980626702308655,
+    "dif_rel": 0.06211746484041214,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9980626702308655,
+    "dif_rel": 0.06211746484041214,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "500_27v1_MqeH8hYv.avi",
+   "clase": "Interesado",
+   "rotacion": 0.0,
+   "pred_cache": "Interesado",
+   "A_clip_dataset": {
+    "coseno": 0.9999999888241291,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 0.9999999888241291,
+    "dif_rel": 0.0,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9755412675440311,
+    "dif_rel": 0.21270108222961426,
+    "pred": "Interesado",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9755412675440311,
+    "dif_rel": 0.21270108222961426,
+    "pred": "Interesado",
+    "igual_cache": true
+   }
+  },
+  {
+   "video": "217_20260818-144422_akI0bRyV.mp4",
+   "clase": "Sereno",
+   "rotacion": 0.0,
+   "pred_cache": "Sereno",
+   "A_clip_dataset": {
+    "coseno": 0.9999999739229679,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "B_normalizado_mp4v": {
+    "coseno": 0.9999999739229679,
+    "dif_rel": 0.0,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "C_orientado_sin_recodificar": {
+    "coseno": 0.9977476485073566,
+    "dif_rel": 0.06699687242507935,
+    "pred": "Sereno",
+    "igual_cache": true
+   },
+   "D_original_crudo": {
+    "coseno": 0.9977476485073566,
+    "dif_rel": 0.06699687242507935,
+    "pred": "Sereno",
+    "igual_cache": true
+   }
+  }
+ ]
+}

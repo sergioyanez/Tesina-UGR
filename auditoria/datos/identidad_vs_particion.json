@@ -1,0 +1,31 @@
+{
+ "por_caballo": {
+  "f1_macro": 0.18349295631904328,
+  "f1_desvio": 0.03319776672657725,
+  "caballos_de_test_nunca_vistos": 359,
+  "clips": 359
+ },
+ "ingenua_semilla_42": {
+  "f1_macro": 0.6048348441372114,
+  "f1_desvio": 0.044093744184586954,
+  "clips_con_caballo_visto": 288,
+  "clips": 359
+ },
+ "ingenua_semilla_1": {
+  "f1_macro": 0.6017915849569617,
+  "f1_desvio": 0.013511600869789756,
+  "clips_con_caballo_visto": 283,
+  "clips": 359
+ },
+ "ingenua_semilla_2": {
+  "f1_macro": 0.6323408081380448,
+  "f1_desvio": 0.02140760580282127,
+  "clips_con_caballo_visto": 286,
+  "clips": 359
+ },
+ "resumen": {
+  "f1_solo_identidad_particion_ingenua_media": 0.612989079077406,
+  "f1_solo_identidad_por_caballo": 0.18349295631904328,
+  "espurio": 0.4294961227583627
+ }
+}

@@ -1,0 +1,57 @@
+# 11. Arquitectura, dimensionalidad, regularización y *data augmentation*
+
+## 11.1 Arquitectura vigente (instanciada y contada por la auditoría)
+
+`clasificacion.MILFusionModel` (aprendizaje de múltiples instancias, con cada frame como instancia y el clip como bolsa):
+
+```
+frame_i:  v_vis(512, ResNet-18 congelada) ──────────────┐
+          v_geom(9: 3 puntos × (x, y, válido)) → MLP 9→64→128 ┘ concat (640)
+atención: Linear(640→128) · tanh · Linear(128→1)  →  softmax sobre los frames (con máscara)
+bolsa:    Σ_i  a_i · [v_vis ‖ geom_embed]_i   (640)
+clasificador: Dropout(0,3) · Linear(640→64) · ReLU · Dropout(0,3) · Linear(64→3)
+```
+
+{{TABLA:arq}}
+
+- **Verificado:** el modelo tiene **132 355 parámetros entrenables**, la cifra de la guía del proyecto. El 62 % están en la cabeza de atención.
+- **ResNet-18 congelada**: `models.resnet18(weights=IMAGENET1K_V1)` sin la capa final, con `requires_grad = False`, en modo `eval`; se aplica una única vez a cada frame y las características (512 por frame) se cachean (`caracteristicas_backbone_v2.npz`). Las 11 176 512 parámetros de la red no se entrenan.
+- **Es un MLP con atención, no un modelo temporal**: no hay codificación de posición ni recurrencia; la salida es una suma ponderada por softmax de instancias independientes. Permutar los frames no cambia la salida (0/359 predicciones, diferencia máxima de logits 3,8·10⁻⁶; barajado e invertido).
+- El **canal geométrico** (puntos de ojo, hocico y oreja normalizados por frame con la distancia ojo–hocico, más tres indicadores de validez) aporta dentro del MIL (el MIL visual puro rinde 0,686 y un canal de ruido de 9 dimensiones 0,680; `docs/registro_de_experimentos.md`), pero **un promedio lineal sin canal geométrico ni atención rinde lo mismo que el MIL completo** (capítulo 10).
+
+## 11.2 Dimensionalidad frente a muestras
+
+{{TABLA:dimension}}
+
+La entrada por clip es **8 336 valores** (16 × 521) para entrenar ≈ 199 clips de ≈ 93 caballos por fold con 132 355 parámetros entrenables (≈ 665 por clip, ≈ 1 423 por caballo). Es un régimen de alta dimensión con pocas muestras independientes: la memorización del train (F1 0,98; capítulo 8) es esperable y la elección de congelar el backbone es la correcta (el propio código documenta que descongelarlo llevaría los entrenables al orden de 10⁷). Con **133 caballos** como tamaño muestral efectivo (capítulo 13), ni siquiera un modelo de 10⁵ parámetros puede estimarse con precisión; el único modelo con capacidad claramente proporcional a los datos es el lineal sobre una media.
+
+## 11.3 Regularización implementada de verdad
+
+| Técnica | ¿Está? | Detalle y evidencia |
+|---|---|---|
+| Backbone preentrenado y congelado | **Sí** | `caracteristicas._cargar_backbone` |
+| Dropout | **Sí, 0,3** | Dos capas `Dropout(0,3)` en el clasificador de la bolsa; **no** sobre las instancias (decisión de diseño documentada). Elegido por F1 de validación interna entre 0,0 / 0,2 / 0,3 (indistinguibles: 0,687 / 0,690 / 0,707) |
+| *Weight decay* | **Sí, 1e-4** | `Adam(weight_decay=1e-4)` (L2 acoplado, no AdamW) |
+| *Early stopping* | **Sí** | Paciencia 10 sobre F1 de validación interna (capítulo 7) |
+| Pesos de clase | **Sí** | Raíz de la frecuencia inversa (no es regularización en sentido estricto) |
+| *Label smoothing*, *batch norm*, *scheduler*, recorte de gradiente | No | No hay en el código |
+| Reducción de capacidad de la cabeza | No | Sugerida en `docs/analisis_sobreajuste.md`; no probada |
+| Calibración posterior | No | La interfaz muestra la probabilidad softmax cruda (sobreconfiada, §11.4) |
+
+## 11.4 Calibración de lo que se muestra al usuario
+
+Con los modelos de fold sobre su test (359 predicciones fuera de muestra; coinciden con la evaluación vigente en 359/359):
+
+{{TABLA:calibracion}}
+
+Confianza media {{VAL:calibracion.json:confianza_media}}, acierto {{VAL:calibracion.json:accuracy}}, ECE {{VAL:calibracion.json:ECE_10_bins}}, NLL {{VAL:calibracion.json:NLL}} (frente a 1,099 del azar uniforme), Brier {{VAL:calibracion.json:Brier}}. La interfaz acompaña cada predicción con la **precisión medida de esa clase** (p. ej., «cuando el modelo predijo `Disgustado`, acertó 71 de 96 veces»), que es una corrección apropiada, pero la barra de probabilidad por clase sigue siendo optimista en el rango 0,6–0,8.
+
+## 11.5 *Data augmentation*
+
+- **En el modelo vigente: ninguna.** El entrenamiento consume las características del backbone **precalculadas** de los frames originales (`caracteristicas_backbone_v2.npz`), y no hay transformaciones de imagen ni de característica en `entrenar_mil_multimodal`. Por lo tanto **tampoco hay riesgo de que se aplique al test**.
+- **Existe pero no se usa en el vigente:** `caracteristicas.extraer_aumentadas` genera vistas con espejo horizontal (p = 0,5), rotación ±10°, brillo y contraste ±15 %, con sorteo **por clip** (coherente entre sus 16 frames), pre-calculadas y cacheadas. Se probó en la etapa anterior (20 vistas por clip) y **no movió el F1** (−0,005 a 0,000; `openspec/project.md`).
+- **Advertencia técnica:** el espejo horizontal es una transformación dudosa para expresiones asimétricas (un oído «hacia atrás» no cambia de significado, pero el canal geométrico incluye coordenadas x con signo); si se reutilizara debería aplicarse también al canal geométrico, cosa que el código actual no hace (sólo transforma píxeles).
+
+## 11.6 Hallazgo: el canal geométrico del MIL es casi vacío
+
+Medido sobre los 5 744 frames (`experimentos/simba/resultados/inventario_anatomico.json`, `comparacion_con_9_vigentes`; detalle en §17.4): las cuatro columnas de ojo y hocico llevan **un solo grado de libertad** (la inclinación de la cabeza en el plano de la imagen) porque están centradas y escaladas con la distancia ojo–hocico del mismo frame; las **tres máscaras de validez valen 1 en el 100 % de los frames** porque se calculan con `confianza > 0` y no con el umbral `≥ 0,50` del resto del pipeline; y las coordenadas de «oreja» son las de un único punto, en ejes de imagen. Consecuencia: la contribución del canal geométrico dentro del MIL (el MIL visual puro rinde 0,686) corresponde esencialmente a la inclinación de la cabeza y a un punto de oreja. Corrección sugerida: máscaras con el umbral del pipeline, rotación al eje de la cabeza y más puntos (orejas, boca).

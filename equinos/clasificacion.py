@@ -171,7 +171,19 @@ from torch.utils.data import Dataset, DataLoader
 import math
 
 class MultimodalEquineDataset(Dataset):
-    def __init__(self, clips, vectores, indice, pose_filas):
+    def __init__(self, clips, vectores, indice, pose_filas, geometria="v1", umbral_mascara=None):
+        """`geometria`: "v1" (las 9 columnas del modelo desplegado) o "v2" (17, ver
+        `equinos.geometria`). `umbral_mascara`: confianza mínima para que un punto cuente como
+        medido. `None` conserva el comportamiento histórico de v1 (`confianza > 0`, que deja las
+        máscaras en 1 en el 100 % de los frames y es lo que vio el modelo desplegado); para v1
+        corregido pasar `geometria.CONF_MINIMA_KEYPOINT` (0,50). En v2 el umbral por omisión ya es
+        0,50."""
+        from equinos import geometria as _geo
+
+        if geometria not in _geo.VERSIONES:
+            raise ValueError(f"geometria debe ser una de {_geo.VERSIONES}: {geometria!r}")
+        self.geometria = geometria
+        self.umbral_mascara = umbral_mascara
         self.clips = clips
         self.vectores = vectores
         self.indice = indice
@@ -231,6 +243,19 @@ class MultimodalEquineDataset(Dataset):
         geom_features = []
         val_masks = []
         pose_del_clip = self.pose_por_clip.get(clip_name, {})
+
+        if self.geometria == "v2":
+            from equinos import geometria as _geo
+
+            umbral = _geo.CONF_MINIMA_KEYPOINT if self.umbral_mascara is None else self.umbral_mascara
+            v_geom = torch.tensor(_geo.extraer_v2(pose_del_clip, seq_len, umbral))
+            return (torch.tensor(v_vis, dtype=torch.float32), v_geom,
+                    torch.tensor(clase_idx, dtype=torch.long))
+
+        umbral_v1 = self.umbral_mascara
+
+        def medido(c):
+            return c > 0 if umbral_v1 is None else c >= umbral_v1
         
         for orden in range(seq_len):
             medidos = pose_del_clip.get(orden, [])
@@ -238,7 +263,7 @@ class MultimodalEquineDataset(Dataset):
             x_hoc, y_hoc, c_hoc = self._mejor_de(["nose", "snout", "muzzle", "upper_jaw", "mouth"], medidos)
             x_ore, y_ore, c_ore = self._mejor_de(["earbase", "earend"], medidos)
             
-            if c_ojo > 0 and c_hoc > 0:
+            if medido(c_ojo) and medido(c_hoc):
                 cx, cy = (x_ojo + x_hoc) / 2, (y_ojo + y_hoc) / 2
                 escala = math.hypot(x_ojo - x_hoc, y_ojo - y_hoc)
                 if escala < 1e-6:
@@ -247,7 +272,7 @@ class MultimodalEquineDataset(Dataset):
                 cx, cy, escala = 0.0, 0.0, 1.0
                 
             def normalizar(x, y, c):
-                if c > 0.0 and not math.isnan(x) and not math.isnan(y):
+                if medido(c) and not math.isnan(x) and not math.isnan(y):
                     return (x - cx) / escala, (y - cy) / escala, 1.0
                 return 0.0, 0.0, 0.0
                 
@@ -368,7 +393,8 @@ def pesos_de_clase(clases_del_conjunto, clases_del_modelo, estrategia="inversa")
 
 def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas, guardar_en=None,
                             dropout=0.0, max_epocas=100, paciencia=10, estrategia_pesos="inversa",
-                            fraccion_validacion=0.25, semilla=SEMILLA, verbose=False):
+                            fraccion_validacion=0.25, semilla=SEMILLA, verbose=False,
+                            validacion_interna="mas_clips", geometria="v1", umbral_mascara=None):
     """Entrena el MIL con validación interna y early stopping. **El test no se mira nunca acá.**
 
     `entrenamiento` es el `train_val` del fold externo; `prueba` es su test. Lo primero que hace
@@ -380,6 +406,11 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
     que eligiera mal la época, es que no la elegía, y nadie podía saber si sobreajustaba o si le
     faltaba entrenar. Elegirla mirando el test hubiera sido peor: el número final habría dejado
     de ser una estimación fuera de muestra sin que ningún assert lo detectara.
+
+    `validacion_interna`: "mas_clips" (histórico: los caballos con más clips) o "estratificada"
+    (StratifiedGroupKFold por caballo, semilla fija). `geometria`: "v1" (modelo desplegado) o "v2"
+    (`equinos.geometria`); `umbral_mascara`: ver `MultimodalEquineDataset`. Los valores por omisión
+    reproducen la corrida anterior.
 
     Devuelve `(predichas, extra)` donde `extra` trae la mejor época, el F1 de validación y las
     curvas, para que el informe pueda mostrar si 50 épocas era poco, mucho o razonable.
@@ -399,16 +430,18 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # --- el corte interno, por ejemplar: ningún caballo de validación entrena ------------------
-    train_interno, validacion = _particion.dividir_por_ejemplar(entrenamiento, fraccion_validacion)
+    train_interno, validacion = _particion.dividir_validacion(
+        entrenamiento, fraccion_validacion, modo=validacion_interna)
 
     caballos_test = {c["id_caballo"] for c in prueba}
     for nombre, conjunto in (("train interno", train_interno), ("validación", validacion)):
         cruce = {c["id_caballo"] for c in conjunto} & caballos_test
         assert not cruce, f"fuga de ejemplar entre {nombre} y test: {sorted(cruce)}"
 
-    ds_ent = MultimodalEquineDataset(train_interno, vectores, indice, pose_filas)
-    ds_val = MultimodalEquineDataset(validacion, vectores, indice, pose_filas)
-    ds_pru = MultimodalEquineDataset(prueba, vectores, indice, pose_filas)
+    opc = dict(geometria=geometria, umbral_mascara=umbral_mascara)
+    ds_ent = MultimodalEquineDataset(train_interno, vectores, indice, pose_filas, **opc)
+    ds_val = MultimodalEquineDataset(validacion, vectores, indice, pose_filas, **opc)
+    ds_pru = MultimodalEquineDataset(prueba, vectores, indice, pose_filas, **opc)
 
     generador = torch.Generator()
     generador.manual_seed(semilla)
@@ -425,7 +458,8 @@ def entrenar_mil_multimodal(entrenamiento, prueba, vectores, indice, pose_filas,
     pesos = pesos_de_clase([c["clase"] for c in train_interno], ds_ent.clases, estrategia_pesos)
     weight_tensor = torch.tensor(pesos, dtype=torch.float32).to(device)
 
-    model = MILFusionModel(dropout=dropout).to(device)
+    from equinos import geometria as _geo
+    model = MILFusionModel(geom_dim=_geo.DIM[geometria], dropout=dropout).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-4)
     criterion = nn.CrossEntropyLoss(weight=weight_tensor)
 

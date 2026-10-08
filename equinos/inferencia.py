@@ -14,8 +14,9 @@ otra distribución y **la confiabilidad medida dejaría de aplicar sin que nada 
 clase de error silencioso que el proyecto ya encontró con el espejo de videos a medio copiar.
 
 **Negarse es una respuesta de primera clase.** El modelo consume clips íntegros —16 frames
-alineados— y sobre el dataset propio sólo 141 de 368 clips (38 %) lo fueron. Para un video
-cualquiera, la negativa es el resultado MÁS PROBABLE, no un caso de borde. Predecir con los frames
+alineados— y sobre el dataset propio sólo 359 de 393 clips (91,3 %) lo fueron. Para un video
+cualquiera la negativa sigue siendo una respuesta esperable (hay videos sin cara medida), no un
+caso de borde. Predecir con los frames
 que haya daría una etiqueta cuya confiabilidad nadie midió.
 """
 
@@ -33,10 +34,10 @@ FUNCIONES_GEOMETRIA = ("similitud_desde_dos_puntos", "roi_desde_keypoints")
 # Frames que el modelo consume por clip. No es configurable: es la forma de su entrada.
 FRAMES_POR_CLIP = 16
 
-# Duración máxima admitida, en segundos. El modelo se midió sobre clips de 5–7 s, y los 16 frames
-# se muestrean repartidos por todo el video: sobre un video de dos minutos eso da 16 fotogramas
-# separados por ocho segundos, que no es una secuencia de expresión sino una colección de momentos
-# distintos. La entrada sería de otra distribución y la confiabilidad medida no aplicaría.
+# Duración máxima admitida, en segundos. El modelo se midió sobre clips de 5–7 s; los 16 frames
+# salen de una ventana de a lo sumo 7 s (`secuencia.VENTANA_MAXIMA_SEG`). Sobre un video de dos
+# minutos esa ventana sería un tramo arbitrario del video, que el modelo no vio al entrenarse. La
+# entrada sería de otra distribución y la confiabilidad medida no aplicaría.
 #
 # Se acepta con holgura sobre los 7 s del diseño para no rechazar una toma un poco más larga.
 DURACION_MAXIMA_SEG = 15.0
@@ -203,8 +204,16 @@ def _sin_progreso(etapa: str, detalle: str = "") -> None:
     pass
 
 
-def preparar_clip(ruta_video, progreso=None, parametros=None):
+def preparar_clip(ruta_video, progreso=None, parametros=None, normalizar=True, info=None):
     """Video → 16 recortes alineados, o una `Negativa` con el motivo.
+
+    `normalizar=True` (por omisión) hace con el video lo mismo que la segmentación del notebook 01
+    le hizo a cada clip: lo lee con `CAP_PROP_ORIENTATION_AUTO = 1` y lo recodifica con `mp4v`
+    (`equinos.video.normalizar_video`); DeepLabCut y los recortes salen de esa copia, no del
+    original. Sin eso un video de celular con rotación declarada llegaba acostado al modelo de pose
+    (69 de 274 videos). `normalizar=False` reproduce la lectura anterior y existe sólo para medir
+    la diferencia. `info`, si es un dict, se completa con lo que se eligió (`ordenes`, `total`,
+    `fps`, `rotacion`), para poder comparar contra la caché de entrenamiento.
 
     **No decide nada por su cuenta.** Qué frames entran y cómo se alinean lo resuelve
     `equinos.alineado.preparar_secuencia`, que es exactamente la función que usa la generación del
@@ -221,6 +230,31 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
     Devuelve `(recortes, filas_pose)` donde `filas_pose` ya viene con `orden` renumerado a la
     posición en la secuencia, que es lo que `MultimodalEquineDataset` espera.
     """
+    import shutil
+    import tempfile
+
+    from equinos import video
+
+    if not normalizar:
+        return _preparar_desde(ruta_video, progreso, parametros, info, rotacion=None)
+
+    avisar = progreso or _sin_progreso
+    avisar("leer", "normalizando el video como se hizo con los clips")
+    # En el temporal del sistema y no bajo la raíz de datos: DeepLabCut deja auxiliares junto a
+    # la entrada y la raíz puede ser de sólo lectura o estar en Drive.
+    carpeta = Path(tempfile.mkdtemp(prefix="equinos_inf_"))
+    try:
+        copia = carpeta / (Path(ruta_video).stem + ".mp4")
+        meta = video.normalizar_video(ruta_video, copia)
+        if meta["frames"] <= 0:
+            return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
+        return _preparar_desde(copia, progreso, parametros, info, rotacion=meta["rotacion"])
+    finally:
+        shutil.rmtree(carpeta, ignore_errors=True)
+
+
+def _preparar_desde(ruta_video, progreso, parametros, info, rotacion):
+    """El cuerpo de `preparar_clip`, sobre un video que ya está en la forma que se quiere leer."""
     import cv2
 
     from equinos import alineado, secuencia
@@ -233,6 +267,8 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
     total = int(captura.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = captura.get(cv2.CAP_PROP_FPS) or 30.0
     captura.release()
+    if info is not None:
+        info.update(total=total, fps=float(fps), rotacion=rotacion)
 
     if total <= 0:
         return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
@@ -270,6 +306,10 @@ def preparar_clip(ruta_video, progreso=None, parametros=None):
             f"ninguna ventana con {secuencia.FRAMES_POR_CLIP} mediciones seguidas dentro de "
             f"{secuencia.VENTANA_MAXIMA_SEG:.0f} s.",
             prep.validos)
+
+    if info is not None:
+        info.update(ordenes=[int(o) for o in prep.ordenes], validos=prep.validos,
+                    span_seg=float(prep.span_seg))
 
     por_orden: dict[int, list] = {}
     for fila in filas_pose:
@@ -337,10 +377,10 @@ def _limpiar_auxiliares(ruta_video):
             archivo.unlink(missing_ok=True)
 
 
-def clasificar_video(ruta_video, progreso=None):
+def clasificar_video(ruta_video, progreso=None, normalizar=True):
     """Punto de entrada de la interfaz: un video, una `Prediccion` o una `Negativa`."""
     avisar = progreso or _sin_progreso
-    preparado = preparar_clip(ruta_video, progreso=progreso)
+    preparado = preparar_clip(ruta_video, progreso=progreso, normalizar=normalizar)
     if isinstance(preparado, Negativa):
         return preparado
     

@@ -1,0 +1,230 @@
+{
+ "semillas": [
+  "42",
+  "43",
+  "44",
+  "45",
+  "46",
+  "47"
+ ],
+ "f1_macro_por_semilla": {
+  "42": 0.7396195634909437,
+  "43": 0.7509462741161805,
+  "44": 0.729508101333221,
+  "45": 0.7263886057894338,
+  "46": 0.762858091640893,
+  "47": 0.7274925940919694
+ },
+ "accuracy_por_semilla": {
+  "42": 0.7437325905292479,
+  "43": 0.7604456824512534,
+  "44": 0.7381615598885793,
+  "45": 0.7325905292479109,
+  "46": 0.766016713091922,
+  "47": 0.7325905292479109
+ },
+ "f1_media_entre_semillas": 0.7394688717437736,
+ "f1_desvio_entre_semillas": 0.014782087887830402,
+ "f1_min": 0.7263886057894338,
+ "f1_max": 0.762858091640893,
+ "rango": 0.03646948585145926,
+ "desvio_entre_folds_medio": 0.06064765151765439,
+ "mejor_epoca_por_semilla_y_fold": [
+  [
+   28,
+   26,
+   20,
+   40
+  ],
+  [
+   44,
+   28,
+   21,
+   27
+  ],
+  [
+   18,
+   23,
+   16,
+   22
+  ],
+  [
+   50,
+   24,
+   14,
+   19
+  ],
+  [
+   13,
+   15,
+   18,
+   22
+  ],
+  [
+   24,
+   30,
+   21,
+   21
+  ]
+ ],
+ "mejor_epoca_min": 13,
+ "mejor_epoca_max": 50,
+ "mejor_epoca_desvio_global": 9.14932483451846,
+ "f1_train_medio": 0.9700275,
+ "f1_validacion_medio": 0.7199758333333334,
+ "determinismo_semilla_42": {
+  "predicciones_iguales_a_las_guardadas": "359/359",
+  "pesos_identicos_bit_a_bit_por_fold": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "curvas_validacion_iguales": true,
+  "curvas_train_iguales": true
+ },
+ "lectura": "El resultado con la semilla vigente (42) es reproducible bit a bit en esta máquina; con otras semillas el F1 macro varía en el orden de ±0,015 y la mejor época cambia mucho entre semillas. El 0,740 es un punto dentro de una distribución de ~0,73–0,76, y la diferencia con el baseline estático (0,741) es menor que esa dispersión.",
+ "particiones_alternativas": {
+  "particiones": [
+   {
+    "semilla_de_particion": 101,
+    "tamano_folds": [
+     90,
+     90,
+     90,
+     89
+    ],
+    "mil_f1_media": 0.755584719332281,
+    "mil_f1_desvio": 0.026285303504535434,
+    "mil_f1_por_fold": [
+     0.7864369853402754,
+     0.7237484737484738,
+     0.7487671748541315,
+     0.7633862433862434
+    ],
+    "estatica_f1_media": 0.7360041044895893,
+    "estatica_f1_desvio": 0.017271523657392568,
+    "estatica_f1_por_fold": [
+     0.7618491680085883,
+     0.7282621314139773,
+     0.7256975311530124,
+     0.7282075873827791
+    ],
+    "diferencia_mil_menos_estatica": 0.01958061484269169,
+    "mejor_epoca": [
+     41,
+     23,
+     28,
+     22
+    ],
+    "accuracy_mil": 0.7604456824512534
+   },
+   {
+    "semilla_de_particion": 102,
+    "tamano_folds": [
+     89,
+     90,
+     90,
+     90
+    ],
+    "mil_f1_media": 0.7438206842715556,
+    "mil_f1_desvio": 0.04024321817210596,
+    "mil_f1_por_fold": [
+     0.7108465608465608,
+     0.7073299028016008,
+     0.7748793530716056,
+     0.7822269203664552
+    ],
+    "estatica_f1_media": 0.7263553799262006,
+    "estatica_f1_desvio": 0.033884298054200346,
+    "estatica_f1_por_fold": [
+     0.711434937241389,
+     0.7665390924002186,
+     0.7391006065943603,
+     0.6883468834688348
+    ],
+    "diferencia_mil_menos_estatica": 0.01746530434535498,
+    "mejor_epoca": [
+     22,
+     22,
+     19,
+     15
+    ],
+    "accuracy_mil": 0.7576601671309192
+   },
+   {
+    "semilla_de_particion": 103,
+    "tamano_folds": [
+     90,
+     90,
+     90,
+     89
+    ],
+    "mil_f1_media": 0.7578258285304745,
+    "mil_f1_desvio": 0.032696272408939735,
+    "mil_f1_por_fold": [
+     0.7900048908452271,
+     0.7295790255838682,
+     0.7297251103831363,
+     0.7819942873096665
+    ],
+    "estatica_f1_media": 0.7369790972835693,
+    "estatica_f1_desvio": 0.058662840651297676,
+    "estatica_f1_por_fold": [
+     0.7480448935067248,
+     0.7827738502114642,
+     0.7655041312981122,
+     0.651593514117976
+    ],
+    "diferencia_mil_menos_estatica": 0.02084673124690528,
+    "mejor_epoca": [
+     16,
+     16,
+     20,
+     40
+    ],
+    "accuracy_mil": 0.7576601671309192
+   },
+   {
+    "semilla_de_particion": 104,
+    "tamano_folds": [
+     90,
+     90,
+     90,
+     89
+    ],
+    "mil_f1_media": 0.7437798618537951,
+    "mil_f1_desvio": 0.04375360525545434,
+    "mil_f1_por_fold": [
+     0.8009259259259259,
+     0.694358445132439,
+     0.7383128948346339,
+     0.7415221815221815
+    ],
+    "estatica_f1_media": 0.7404824615633736,
+    "estatica_f1_desvio": 0.01809828914954682,
+    "estatica_f1_por_fold": [
+     0.7300503317318691,
+     0.7204705311666263,
+     0.7579312738632419,
+     0.753477709491757
+    ],
+    "diferencia_mil_menos_estatica": 0.0032974002904214705,
+    "mejor_epoca": [
+     20,
+     7,
+     35,
+     21
+    ],
+    "accuracy_mil": 0.7437325905292479
+   }
+  ],
+  "resumen": {
+   "mil_media_de_medias": 0.7502527734970266,
+   "estatica_media_de_medias": 0.7349552608156832,
+   "dif_media": 0.015297512681343356,
+   "dif_min": 0.0032974002904214705,
+   "dif_max": 0.02084673124690528
+  }
+ }
+}

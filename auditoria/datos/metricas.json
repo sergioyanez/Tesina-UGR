@@ -1,0 +1,591 @@
+{
+ "por_fold": [
+  {
+   "fold": 0,
+   "n": 90,
+   "f1_macro": 0.7183115546052111,
+   "f1_macro_sklearn": 0.7183115546052111,
+   "accuracy": 0.7222222222222222,
+   "balanced_accuracy": 0.7202809706257982,
+   "precision": {
+    "Disgustado": 0.7878787878787878,
+    "Interesado": 0.6875,
+    "Sereno": 0.68
+   },
+   "recall": {
+    "Disgustado": 0.7222222222222222,
+    "Interesado": 0.7586206896551724,
+    "Sereno": 0.68
+   },
+   "f1": {
+    "Disgustado": 0.7536231884057971,
+    "Interesado": 0.7213114754098361,
+    "Sereno": 0.68
+   },
+   "soporte": {
+    "Disgustado": 36,
+    "Interesado": 29,
+    "Sereno": 25
+   },
+   "matriz": [
+    [
+     26,
+     6,
+     4
+    ],
+    [
+     3,
+     22,
+     4
+    ],
+    [
+     4,
+     4,
+     17
+    ]
+   ]
+  },
+  {
+   "fold": 1,
+   "n": 90,
+   "f1_macro": 0.7686909581646422,
+   "f1_macro_sklearn": 0.7686909581646425,
+   "accuracy": 0.7666666666666667,
+   "balanced_accuracy": 0.7817460317460317,
+   "precision": {
+    "Disgustado": 0.7894736842105263,
+    "Interesado": 0.7027027027027027,
+    "Sereno": 0.8235294117647058
+   },
+   "recall": {
+    "Disgustado": 0.75,
+    "Interesado": 0.9285714285714286,
+    "Sereno": 0.6666666666666666
+   },
+   "f1": {
+    "Disgustado": 0.7692307692307693,
+    "Interesado": 0.8,
+    "Sereno": 0.7368421052631579
+   },
+   "soporte": {
+    "Disgustado": 20,
+    "Interesado": 28,
+    "Sereno": 42
+   },
+   "matriz": [
+    [
+     15,
+     1,
+     4
+    ],
+    [
+     0,
+     26,
+     2
+    ],
+    [
+     4,
+     10,
+     28
+    ]
+   ]
+  },
+  {
+   "fold": 2,
+   "n": 90,
+   "f1_macro": 0.6769450949778819,
+   "f1_macro_sklearn": 0.6769450949778819,
+   "accuracy": 0.6777777777777778,
+   "balanced_accuracy": 0.6767890248424177,
+   "precision": {
+    "Disgustado": 0.6666666666666666,
+    "Interesado": 0.7333333333333333,
+    "Sereno": 0.6363636363636364
+   },
+   "recall": {
+    "Disgustado": 0.6206896551724138,
+    "Interesado": 0.7096774193548387,
+    "Sereno": 0.7
+   },
+   "f1": {
+    "Disgustado": 0.6428571428571429,
+    "Interesado": 0.7213114754098361,
+    "Sereno": 0.6666666666666666
+   },
+   "soporte": {
+    "Disgustado": 29,
+    "Interesado": 31,
+    "Sereno": 30
+   },
+   "matriz": [
+    [
+     18,
+     6,
+     5
+    ],
+    [
+     2,
+     22,
+     7
+    ],
+    [
+     7,
+     2,
+     21
+    ]
+   ]
+  },
+  {
+   "fold": 3,
+   "n": 89,
+   "f1_macro": 0.7945306462160396,
+   "f1_macro_sklearn": 0.7945306462160394,
+   "accuracy": 0.8089887640449438,
+   "balanced_accuracy": 0.7815718157181571,
+   "precision": {
+    "Disgustado": 0.7058823529411765,
+    "Interesado": 1.0,
+    "Sereno": 0.75
+   },
+   "recall": {
+    "Disgustado": 0.6666666666666666,
+    "Interesado": 0.8,
+    "Sereno": 0.8780487804878049
+   },
+   "f1": {
+    "Disgustado": 0.6857142857142857,
+    "Interesado": 0.8888888888888888,
+    "Sereno": 0.8089887640449438
+   },
+   "soporte": {
+    "Disgustado": 18,
+    "Interesado": 30,
+    "Sereno": 41
+   },
+   "matriz": [
+    [
+     12,
+     0,
+     6
+    ],
+    [
+     0,
+     24,
+     6
+    ],
+    [
+     5,
+     0,
+     36
+    ]
+   ]
+  }
+ ],
+ "estabilidad": {
+  "f1_macro_media": 0.7396195634909437,
+  "f1_macro_desvio_ddof1": 0.052416578930670095,
+  "f1_macro_desvio_ddof0": 0.045394088933432476,
+  "min": 0.6769450949778819,
+  "max": 0.7945306462160396,
+  "rango": 0.11758555123815773,
+  "cv_pct": 7.086964909806893,
+  "f1_por_fold": [
+   0.7183115546052111,
+   0.7686909581646422,
+   0.6769450949778819,
+   0.7945306462160396
+  ],
+  "accuracy_media": 0.7439138576779026,
+  "accuracy_desvio": 0.05655953167196544,
+  "accuracy_por_fold": [
+   0.7222222222222222,
+   0.7666666666666667,
+   0.6777777777777778,
+   0.8089887640449438
+  ],
+  "n_folds": 4,
+  "nota": "con 4 folds el desvío es una estimación muy gruesa (3 grados de libertad)"
+ },
+ "global": {
+  "matriz_filas_real_columnas_predicha": [
+   [
+    71,
+    13,
+    19
+   ],
+   [
+    5,
+    94,
+    19
+   ],
+   [
+    20,
+    16,
+    102
+   ]
+  ],
+  "clases": [
+   "Disgustado",
+   "Interesado",
+   "Sereno"
+  ],
+  "accuracy": 0.7437325905292479,
+  "f1_macro_agrupado_sklearn": 0.7424879254627116,
+  "f1_micro_agrupado(=accuracy)": 0.7437325905292479,
+  "f1_ponderado_agrupado": 0.7432130000519943,
+  "balanced_accuracy": 0.7416869975412163,
+  "por_clase": {
+   "Disgustado": {
+    "precision": 0.7395833333333334,
+    "recall": 0.6893203883495146,
+    "f1": 0.7135678391959799,
+    "soporte": 103
+   },
+   "Interesado": {
+    "precision": 0.7642276422764228,
+    "recall": 0.7966101694915254,
+    "f1": 0.7800829875518672,
+    "soporte": 118
+   },
+   "Sereno": {
+    "precision": 0.7285714285714285,
+    "recall": 0.7391304347826086,
+    "f1": 0.7338129496402878,
+    "soporte": 138
+   }
+  },
+  "errores_totales": 92,
+  "error_dominante": {
+   "Sereno→Disgustado": 20,
+   "Disgustado→Sereno": 19,
+   "Interesado→Sereno": 19,
+   "Sereno→Interesado": 16
+  }
+ },
+ "baselines": {
+  "mayoritaria_del_train_del_fold": {
+   "f1_macro": 0.18349295631904328,
+   "desvio": 0.03319776672657725,
+   "por_fold": [
+    0.14492753623188406,
+    0.21212121212121213,
+    0.16666666666666666,
+    0.21025641025641026
+   ],
+   "accuracy": 0.38440111420612816,
+   "clase_predicha_por_fold": [
+    "Sereno",
+    "Sereno",
+    "Sereno",
+    "Sereno"
+   ]
+  },
+  "aleatoria_uniforme_1/3": {
+   "f1_macro_esperado": 0.3267476200604193,
+   "desvio_sim": 0.02480363746794993,
+   "p95": 0.36712590581466376,
+   "simulaciones": 4000
+  },
+  "aleatoria_estratificada": {
+   "f1_macro_esperado": 0.3255761788177067,
+   "desvio_sim": 0.02437131739008554,
+   "p95": 0.3660705819203989,
+   "simulaciones": 4000
+  },
+  "accuracy_esperada_azar_uniforme": 0.3333333333333333,
+  "del_repo(objetivo3_lineas_de_base.json)": {
+   "Clase mayoritaria (del train del fold)": {
+    "f1_macro": 0.18349295631904328,
+    "f1_desvio": 0.03319776672657725,
+    "accuracy": 0.38440111420612816
+   },
+   "Solo duración del clip (LogReg)": {
+    "f1_macro": 0.5441398130149493,
+    "f1_desvio": 0.03491073800137171,
+    "accuracy": 0.532033426183844
+   },
+   "Metadatos de filmación (LogReg)": {
+    "f1_macro": 0.6180705430610371,
+    "f1_desvio": 0.03398015825289482,
+    "accuracy": 0.6350974930362117
+   },
+   "Geometría sola: media y desvío (LogReg)": {
+    "f1_macro": 0.607216162769963,
+    "f1_desvio": 0.03268122449009823,
+    "accuracy": 0.6183844011142061
+   },
+   "Visual: 1 frame central (LogReg)": {
+    "f1_macro": 0.6786422063133306,
+    "f1_desvio": 0.02435506461906725,
+    "accuracy": 0.6880222841225627
+   },
+   "Visual estática: media de 16 frames (LogReg)": {
+    "f1_macro": 0.7405419586232885,
+    "f1_desvio": 0.02031493870903793,
+    "accuracy": 0.7493036211699164
+   },
+   "MIL multimodal (vigente)": {
+    "f1_macro": 0.7396195634909437,
+    "f1_desvio": 0.052416578930670095,
+    "accuracy": 0.7437325905292479
+   },
+   "Azar estratificado (esperanza)": {
+    "f1_macro": 0.3250987712023717,
+    "f1_desvio": 0.025032459440333915,
+    "accuracy": null
+   },
+   "Solo id_caballo (partición por ejemplar)": {
+    "f1_macro": 0.18349295631904328,
+    "f1_desvio": 0.03319776672657725,
+    "accuracy": null
+   }
+  }
+ },
+ "bootstrap": {
+  "replicas": 2000,
+  "semilla": 1,
+  "referencia": "MIL multimodal (vigente)",
+  "caballos": 133,
+  "modelos": {
+   "MIL multimodal (vigente)": {
+    "f1_ic95": [
+     0.6772173177657993,
+     0.796927144461369
+    ],
+    "accuracy_ic95": [
+     0.6789984518280339,
+     0.8011061665101024
+    ]
+   },
+   "Estática: media 16 frames (LogReg)": {
+    "f1_ic95": [
+     0.6846748870806774,
+     0.7980295428846547
+    ],
+    "accuracy_ic95": [
+     0.6882706971677559,
+     0.8039822795513886
+    ],
+    "diferencia_referencia_menos_este": {
+     "media": -0.005174076659402166,
+     "ic95": [
+      -0.06803446796614109,
+      0.05755833370819017
+     ],
+     "incluye_cero": true
+    }
+   },
+   "Un frame central (LogReg)": {
+    "f1_ic95": [
+     0.6260134639175449,
+     0.7366656012372507
+    ],
+    "accuracy_ic95": [
+     0.6296270504487775,
+     0.7468692692096094
+    ],
+    "diferencia_referencia_menos_este": {
+     "media": 0.05910044324355953,
+     "ic95": [
+      0.0013798626625169037,
+      0.11621823323778613
+     ],
+     "incluye_cero": false
+    }
+   },
+   "Metadatos de filmación (LogReg)": {
+    "f1_ic95": [
+     0.5375948053017492,
+     0.6985809527078441
+    ],
+    "accuracy_ic95": [
+     0.5508359611089213,
+     0.7142857142857143
+    ],
+    "diferencia_referencia_menos_este": {
+     "media": 0.12081878235052616,
+     "ic95": [
+      0.031244404213868163,
+      0.2108854856299321
+     ],
+     "incluye_cero": false
+    }
+   },
+   "Geometría sola (LogReg)": {
+    "f1_ic95": [
+     0.5550910464006288,
+     0.6692297382141493
+    ],
+    "accuracy_ic95": [
+     0.5611803516112162,
+     0.6785757418909593
+    ],
+    "diferencia_referencia_menos_este": {
+     "media": 0.12810374734793512,
+     "ic95": [
+      0.052996224820544446,
+      0.1994941923806978
+     ],
+     "incluye_cero": false
+    }
+   }
+  },
+  "coincide_con_el_json_del_repo": true,
+  "por_fold_mil_menos_estatica": [
+   -0.022057644717710545,
+   0.028521480062163262,
+   -0.038992054292600664,
+   0.02883863841876877
+  ],
+  "f1_estatica_por_fold": [
+   0.7403691993229217,
+   0.7401694781024789,
+   0.7159371492704826,
+   0.7656920077972709
+  ]
+ },
+ "historico": [
+  {
+   "cifra": "0,626 ± 0,065",
+   "modelo": "Un frame + voto (LogReg)",
+   "dataset": "141 clips / 73 caballos",
+   "fecha": "2026-08-28",
+   "commit": "6f50a59 (línea de base) / 425c592 (evaluación final)",
+   "protocolo": "GroupKFold por caballo, sin validación interna",
+   "artefacto_local": "no (objetivo3_evaluacion.json lo sobrescribió; se cita en project.md)",
+   "vigente": "No"
+  },
+  {
+   "cifra": "0,704 ± 0,044",
+   "modelo": "Cabeza «promedio» (MLP sobre media de frames)",
+   "dataset": "153 clips / 83 caballos",
+   "fecha": "2026-09-15",
+   "commit": "archivo objetivo3_evaluacion.json (mtime 15/09)",
+   "protocolo": "GroupKFold, 50 épocas fijas",
+   "artefacto_local": "sí: objetivo3_evaluacion.json",
+   "vigente": "No"
+  },
+  {
+   "cifra": "0,754",
+   "modelo": "MIL multimodal (otra corrida)",
+   "dataset": "257 clips / 113 caballos (según docs)",
+   "fecha": "2026-09-15",
+   "commit": "6b66044 (primera aparición, escrito a mano en clasificacion.py); retirado en 5e41c63 (18/09)",
+   "protocolo": "50 épocas fijas",
+   "artefacto_local": "NO: sin artefacto que lo respalde",
+   "vigente": "No (no citar)"
+  },
+  {
+   "cifra": "0,618",
+   "modelo": "MIL con validación interna",
+   "dataset": "153 clips / 83 caballos",
+   "fecha": "2026-09-18",
+   "commit": "docs/informe_mejora_pipeline_mil.md §6",
+   "protocolo": "validación interna por caballo + early stopping",
+   "artefacto_local": "no (cifra en el informe)",
+   "vigente": "No"
+  },
+  {
+   "cifra": "0,740 ± 0,052",
+   "modelo": "MIL multimodal (MILFusionModel)",
+   "dataset": "359 clips / 133 caballos",
+   "fecha": "2026-09-18 (re-ejecutado 25/09)",
+   "commit": "4e51800 (protocolo), cf23ded (selección de frames); archivo objetivo3_evaluacion_v2.json",
+   "protocolo": "4 folds por caballo + validación interna + early stopping",
+   "artefacto_local": "sí: objetivo3_evaluacion_v2.json",
+   "vigente": "SÍ (única cifra vigente)"
+  },
+  {
+   "cifra": "0,741 ± 0,020",
+   "modelo": "Estática: media de 16 frames + LogReg",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-25",
+   "commit": "e75f13a",
+   "protocolo": "mismos folds",
+   "artefacto_local": "sí: objetivo3_lineas_de_base.json",
+   "vigente": "Línea de base vigente"
+  },
+  {
+   "cifra": "0,618 ± 0,034",
+   "modelo": "Solo metadatos de filmación (LogReg)",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-25",
+   "commit": "e75f13a",
+   "protocolo": "mismos folds",
+   "artefacto_local": "sí: objetivo3_lineas_de_base.json",
+   "vigente": "Línea de base vigente"
+  },
+  {
+   "cifra": "0,686",
+   "modelo": "MIL visual puro (sin geometría)",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-18",
+   "commit": "docs/informe_mejora_pipeline_mil.md §7",
+   "protocolo": "vigente",
+   "artefacto_local": "no (cifra en el informe)",
+   "vigente": "No (variante)"
+  },
+  {
+   "cifra": "0,747 ± 0,057",
+   "modelo": "MIL con fine-tuning del backbone",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-22",
+   "commit": "rama feat/finetuning-visual (c6d6f80, 544d323)",
+   "protocolo": "vigente",
+   "artefacto_local": "sí: objetivo3_finetuning_evaluacion.json",
+   "vigente": "No (no adoptado)"
+  },
+  {
+   "cifra": "0,698 ± 0,103",
+   "modelo": "MIL con canal geométrico enriquecido",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-22",
+   "commit": "rama feat/enriquecer-canal-geometrico",
+   "protocolo": "vigente",
+   "artefacto_local": "sí",
+   "vigente": "No (no adoptado)"
+  },
+  {
+   "cifra": "0,755 ± 0,022",
+   "modelo": "MIL reentrenado sobre 100 % del train_val",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-23",
+   "commit": "rama feat/validacion-cruzada-anidada-NestedCV (23d4b25)",
+   "protocolo": "reentrenado",
+   "artefacto_local": "sí",
+   "vigente": "No (no adoptado)"
+  },
+  {
+   "cifra": "0,784 ± 0,036",
+   "modelo": "MIL con CV anidada (época promedio)",
+   "dataset": "359 / 133",
+   "fecha": "2026-09-23",
+   "commit": "rama feat/validacion-cruzada-anidada-NestedCV",
+   "protocolo": "anidado k=4",
+   "artefacto_local": "sí",
+   "vigente": "No (no adoptado; optimista)"
+  }
+ ],
+ "verificacion_historicos": {
+  "objetivo3_canal_enriquecido_evaluacion.json": [
+   0.697713337606958,
+   0.10255134814654406
+  ],
+  "objetivo3_finetuning_evaluacion.json": [
+   0.7473359271601061,
+   0.05719811713091246
+  ],
+  "objetivo3_nested_reentrenado_baseline_evaluacion.json": [
+   0.7551646618685173,
+   0.02223370240298499
+  ],
+  "objetivo3_nested_anidado_baseline_evaluacion.json": [
+   0.784324305198524,
+   0.036292246712218576
+  ],
+  "objetivo3_evaluacion.json": [
+   0.7037372297297259,
+   0.043547874168160354
+  ]
+ }
+}
