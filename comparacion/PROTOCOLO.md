@@ -91,3 +91,28 @@ Sergio el 07/10/2026** (15 %, una sola vez, con el ganador).
   estándar. Para la incertidumbre se usa el bootstrap por caballo.
 - 22 caballos aparecen en dos clases y 7 en las tres; por eso la estratificación del caballo es por
   clase dominante, y la de los folds, por clip.
+
+## Enmienda del 08/10/2026: análisis complementario leave-session-out
+
+Declarada ANTES de correr el análisis. Es un análisis complementario: **no cambia la elección del
+ganador** (que se fijó con el criterio del §5 antes de comparar) **ni toca la reserva** (ya usada una
+vez, §6). Responde al primer límite del §7 (agrupamiento por caballo y no por sesión). Lo implementa
+`comparacion/validacion_por_sesion.py`; resultados en `comparacion/resultados/validacion_por_sesion.json`.
+
+- **Datos**: sólo los 291 clips de los 113 caballos de desarrollo. Cada clip se vincula con su sesión
+  por clip → `video_origen` (`dataset_frames_alineados_v2.csv`) → `sesion_confirmada`
+  (`sesiones_de_filmacion.csv`, clave clase + nombre de archivo). Se verifica por aserción que todo
+  clip de desarrollo tiene sesión. Las sesiones con clips de desarrollo son 20 (de las 22 de la tabla).
+- **Partición**: para cada sesión `s` con clips de desarrollo, test = clips de `s`; train = clips de
+  desarrollo de las otras sesiones **excluyendo** los de cualquier caballo que aparezca en `s` (sin
+  fuga por sesión ni por caballo). Se registra cuántos clips de train se pierden por esa exclusión. Si
+  el train queda sin alguna de las tres clases, la sesión se saltea y se informa.
+- **Candidatos**: los cuatro del §3, con exactamente la misma partición, instanciando un candidato
+  nuevo por sesión y con los hiperparámetros ya fijados (ningún ajuste con el test de la sesión).
+- **Métrica principal**: F1 macro **agrupado** sobre todas las predicciones fuera de muestra (una por
+  clip), porque muchas sesiones tienen pocos clips o una sola clase. También accuracy, F1 por clase,
+  matriz de confusión y el F1 agrupado en el subconjunto limpio.
+- **Incertidumbre**: IC95 bootstrap por caballo del F1 agrupado de cada candidato y de la diferencia
+  pareada fusión − otro (2 000 réplicas, semilla 7, remuestreando caballos).
+- **Uso de los resultados**: se comparan con el 5×4 para ver cuánto cae cada candidato y si el ranking
+  se sostiene. Si contradicen la elección, se registra como limitación; el ganador no cambia.
