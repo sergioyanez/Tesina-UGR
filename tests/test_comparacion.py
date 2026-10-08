@@ -136,7 +136,9 @@ else:
     v = cmp.verificar_particiones(datos.clips, P, R)
     check("20 evaluaciones sin cruces ni reserva ni clases ausentes",
           v["evaluaciones"] == 20 and not v["folds_con_clase_ausente"], v)
-    check("la reserva nunca se usó en el repositorio", cmp.usos_de_reserva() == [])
+    usos = cmp.usos_de_reserva()
+    check("la reserva se usó a lo sumo una vez, sólo con el ganador (DECISION.md)",
+          len(usos) <= 1 and all(u["candidato"] == "fusion_tardia_pose_visual" for u in usos), usos)
 
 print("\n" + "=" * 52)
 if fallos:

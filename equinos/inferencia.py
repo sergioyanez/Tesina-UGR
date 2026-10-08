@@ -28,6 +28,11 @@ from typing import NamedTuple
 
 from equinos import caracteristicas, clasificacion, rutas
 
+# Qué modelo predice si no se pide otro. Desde la comparación de modelos (`comparacion/DECISION.md`)
+# es la fusión pose + visual; el MIL queda como opción explícita (`modelo="mil"`).
+MODELOS = ("fusion", "mil")
+MODELO_POR_OMISION = "fusion"
+
 NOTEBOOK_ETAPA02 = "02_roi_y_normalizacion.ipynb"
 FUNCIONES_GEOMETRIA = ("similitud_desde_dos_puntos", "roi_desde_keypoints")
 
@@ -71,6 +76,10 @@ class Prediccion(NamedTuple):
     frames_alineados: int
     atencion: list[float]
     clases_por_frame: list[str]
+    # Qué modelo predijo. El MIL trae atención por frame; la fusión no (queda vacía) y en cambio
+    # trae en `detalle` las probabilidades de cada rama y el peso de la pose.
+    modelo: str = "mil"
+    detalle: dict | None = None
 
     @property
     def hay_prediccion(self) -> bool:
@@ -195,6 +204,47 @@ def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
         frames_alineados=len(vectores),
         atencion=atencion,
         clases_por_frame=[clases[i] for i in probs_frame.argmax(axis=1)],
+    )
+
+
+def predecir_con_fusion(vectores, filas_pose, frames, fps, precisiones=None, paquete=None,
+                        metricas=None, reserva=None) -> Prediccion | Negativa:
+    """Predice con la fusión pose + visual a partir de lo que ya calculó el pipeline. Sin video.
+
+    `vectores`: los 16 vectores visuales (16, 512). `filas_pose`: pose de los 16 frames con `orden`
+    = posición en la secuencia. `frames`: índice de fotograma del video de cada uno de los 16 (los
+    `ordenes` de `preparar_clip`), y `fps` del video: las features dinámicas dividen por el tiempo
+    real entre frames. Las 160 features salen de `vector_del_clip`, igual que en el entrenamiento.
+    """
+    from equinos import fusion
+
+    if len(vectores) != FRAMES_POR_CLIP:
+        return Negativa("ALINEACION_INSUFICIENTE",
+                        MOTIVOS["ALINEACION_INSUFICIENTE"]
+                        + f" Se alinearon {len(vectores)} de {FRAMES_POR_CLIP}.",
+                        len(vectores))
+
+    paquete = paquete or fusion.cargar_paquete()
+    vector_pose = fusion.features_de_pose(filas_pose, frames, fps)
+    prob = fusion.probabilidades(paquete, vector_pose, vectores)
+    probabilidades = prob["fusion"]
+    clase = max(probabilidades, key=probabilidades.get)
+
+    precisiones = precisiones or fusion.precision_por_clase()
+    p = precisiones[clase]
+    return Prediccion(
+        clase=clase,
+        probabilidades=probabilidades,
+        precision=p["precision"],
+        acertadas=p["acertadas"],
+        veces_que_lo_dijo=p["veces_que_lo_dijo"],
+        texto_confiabilidad=fusion.texto_de_confiabilidad(clase, precisiones, metricas, reserva),
+        frames_alineados=len(vectores),
+        atencion=[],
+        clases_por_frame=[],
+        modelo="fusion",
+        detalle={"pose": prob["pose"], "visual": prob["visual"], "peso_pose": prob["peso_pose"],
+                 "precision_reserva": (reserva or fusion.precision_reserva())[clase]},
     )
 
 
@@ -377,10 +427,16 @@ def _limpiar_auxiliares(ruta_video):
             archivo.unlink(missing_ok=True)
 
 
-def clasificar_video(ruta_video, progreso=None, normalizar=True):
-    """Punto de entrada de la interfaz: un video, una `Prediccion` o una `Negativa`."""
+def clasificar_video(ruta_video, progreso=None, normalizar=True, modelo=MODELO_POR_OMISION):
+    """Punto de entrada de la interfaz: un video, una `Prediccion` o una `Negativa`.
+
+    `modelo`: "fusion" (por omisión, el ganador de la comparación) o "mil" (el MIL multimodal).
+    """
+    if modelo not in MODELOS:
+        raise ValueError(f"Modelo desconocido: {modelo!r}. Opciones: {', '.join(MODELOS)}")
     avisar = progreso or _sin_progreso
-    preparado = preparar_clip(ruta_video, progreso=progreso, normalizar=normalizar)
+    info: dict = {}
+    preparado = preparar_clip(ruta_video, progreso=progreso, normalizar=normalizar, info=info)
     if isinstance(preparado, Negativa):
         return preparado
     
@@ -389,7 +445,9 @@ def clasificar_video(ruta_video, progreso=None, normalizar=True):
     avisar("caracteristicas", "extrayendo características con el backbone congelado")
     vectores = _caracteristicas_de(recortes)
     avisar("predecir", "clasificando")
-    return predecir_desde_caracteristicas(vectores, filas_pose)
+    if modelo == "mil":
+        return predecir_desde_caracteristicas(vectores, filas_pose)
+    return predecir_con_fusion(vectores, filas_pose, info["ordenes"], info["fps"])
 
 
 def _caracteristicas_de(recortes):
