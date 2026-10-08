@@ -43,7 +43,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 |---|---|
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **274 videos → 393 clips → 359 clips íntegros** (133 caballos; cifras vigentes según la auditoría del 25/09/2026; las de 249/368/5888 son del 28/08/2026) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado sobre 393 clips (359 íntegros); **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
-| 3. Clasificación orientada a video | 🟡 **Modelo vigente: MIL multimodal, F1 macro 0,740 ± 0,052** (359 clips, 133 caballos; `objetivo3_evaluacion_v2.json`). Supera a los metadatos de filmación (0,618) pero **empata con un promedio estático lineal (0,741)**: el aporte de la arquitectura y del orden temporal no está demostrado. Sobreajuste moderado. Ver «Estado al 25/09/2026» |
+| 3. Clasificación orientada a video | 🟢 **Modelo vigente desde el 08/10/2026: fusión tardía pose + visual**, elegida entre cuatro candidatos con un protocolo declarado antes de medir: F1 macro 0,868 ± 0,046 (5×4 por caballo, 113 caballos), **0,834 [0,698; 0,925] en la reserva** (20 caballos, un solo uso) y 0,864 dejando afuera una sesión de filmación. Ventaja mínima sobre el bosque aleatorio de pose; orden temporal sin aporte; confusor de filmación medido (−12 puntos en limpio). Ver `comparacion/DECISION.md` |
 | 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo, desde el 08/10/2026, la **fusión pose + visual** (`modelos/fusion_pose_visual/fusion_pose_visual.joblib`, change `app-modelo-fusion`; el MIL queda como opción `modelo="mil"`), con la preparación compartida con el entrenamiento y, desde el 07/10/2026, la lectura del video igualada a la del notebook 01 (orientación y `mp4v`; change `base-comun-comparacion-de-modelos`). La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
 
 ### Base común para comparar modelos (07/10/2026)
@@ -432,6 +432,22 @@ Dos consecuencias que condicionan el objetivo 3:
    Es la primera vía a explorar antes de decidir anotación manual.
 
 ## Punto de partida de la próxima sesión
+
+### Estado al 08/10/2026 — lo más reciente
+
+Registro completo de la sesión en `docs/registro_sesion_2026-10-08.md`. En síntesis:
+
+- **Comparación de modelos cerrada.** Cuatro candidatos sobre las mismas particiones; gana la fusión
+  tardía pose + visual (`comparacion/DECISION.md`); reserva usada una sola vez (0,834); validación
+  dejando afuera una sesión de filmación como enmienda (ranking estable, fusión − bosque aleatorio
+  ya no distinguible de cero).
+- **App** sirviendo la fusión, con textos en lenguaje llano y registro formal, y el tramo analizado.
+- **Devolución del docente:** 12 observaciones resueltas, 3 atendidas en parte, 1 abierta (D5:
+  validación con veterinarios). PDF `material para presentar/2da entrega/Estado_Actual_y_Metricas_Proyecto_Tesina_Equinos.pdf`.
+- **Caminos explorados:** 47, con su motivo (`docs/caminos_explorados.md`).
+- **OpenSpec:** sin changes abiertos.
+- **Informe final** reescrito en la rama `feat/informe-final` (`informe/`), compila con pdfLaTeX +
+  Biber (88 págs.). Pendiente: revisión de Sergio y Héctor; entrega el 29/10/2026.
 
 ### Estado al 07/10/2026 — lo más reciente
 
