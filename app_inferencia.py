@@ -57,6 +57,14 @@ def _reserva():
     return fusion.precision_reserva()
 
 
+def _rango_de_cada_diez(a: float, b: float) -> str:
+    """Dos mediciones en una frase: «entre 7 y 9 de cada 10 veces», o una sola cifra si coinciden."""
+    lo, hi = sorted((min(round(a * 10), 10), min(round(b * 10), 10)))
+    if lo == hi:
+        return _de_cada_diez(a)
+    return f"entre {lo} y {hi} de cada 10 veces"
+
+
 def _de_cada_diez(precision: float) -> str:
     """«unas 7 de cada 10 veces»: la proporción en palabras, para quien no lee porcentajes."""
     n = round(precision * 10)
@@ -166,18 +174,19 @@ if archivo is not None:
             st.caption("Qué tan seguro está el modelo con este video")
             st.markdown(f"# {confianza:.0%}")
 
-        # Cuánto confiar en la etiqueta, en palabras. Con la fusión, la cifra principal es la de la
-        # reserva: caballos que el modelo no vio al elegirse. La de desarrollo queda como contexto.
+        # Cuánto confiar en la etiqueta, en palabras. Con la fusión hay dos mediciones fuera de
+        # muestra (desarrollo 5×4 y reserva); cuando no coinciden se da el rango, no una sola cifra.
         if resultado.detalle:
             pr = resultado.detalle["precision_reserva"]
+            rango = _rango_de_cada_diez(pr["precision"], resultado.precision)
             st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
-                        f"«{resultado.clase}», acierta **{_de_cada_diez(pr['precision'])}**.")
+                        f"«{resultado.clase}», acierta **{rango}**.")
             st.caption(
-                f"Lo comprobamos con 20 caballos que el modelo no conocía: dijo «{resultado.clase}» "
-                f"{pr['veces_que_lo_dijo']} veces y acertó {pr['acertadas']} ({pr['precision']:.0%}). "
-                f"En las pruebas anteriores, con otros caballos, acertó {resultado.acertadas} de "
-                f"{resultado.veces_que_lo_dijo} ({resultado.precision:.0%}). Son pocos caballos: "
-                "la cifra real puede ser algo mayor o menor."
+                "Lo comprobamos dos veces, siempre con caballos que el modelo no había visto. "
+                f"En la primera prueba dijo «{resultado.clase}» {resultado.veces_que_lo_dijo} veces "
+                f"y acertó {resultado.acertadas}; en la prueba final, con otros 20 caballos, lo dijo "
+                f"{pr['veces_que_lo_dijo']} veces y acertó {pr['acertadas']}."
+                + (" Como las dos pruebas no dieron lo mismo, damos un rango y no un número exacto." if "entre" in rango else "")
             )
         else:
             st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
@@ -205,14 +214,15 @@ if archivo is not None:
             + "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que "
             "elegir una etiqueta."
         )
-        # La misma cifra que el recuadro de arriba: la de la reserva si existe (fusión).
-        aciertos = _reserva() if resultado.detalle else precisiones
+        # La misma frase que el recuadro de arriba: el rango entre desarrollo y reserva (fusión).
+        reserva = _reserva() if resultado.detalle else None
         for clase, probabilidad in sorted(resultado.probabilidades.items(),
                                           key=lambda kv: -kv[1]):
+            p_dev = precisiones[clase]["precision"]
+            frase = (_rango_de_cada_diez(reserva[clase]["precision"], p_dev) if reserva
+                     else _de_cada_diez(p_dev))
             st.progress(probabilidad,
-                        text=f"{clase} — {probabilidad:.0%}  "
-                             f"(cuando dice «{clase}», acierta "
-                             f"{_de_cada_diez(aciertos[clase]['precision'])})")
+                        text=f"{clase} — {probabilidad:.0%}  (cuando dice «{clase}», acierta {frase})")
 
         if resultado.detalle:
             st.markdown("---")
