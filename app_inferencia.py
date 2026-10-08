@@ -119,7 +119,7 @@ st.error(
 )
 
 st.markdown(
-    "Subir una toma corta de la cara de un caballo y el sistema intentará clasificar su expresión "
+    "Suba una toma corta de la cara de un caballo y el sistema intentará clasificar su expresión "
     "en **Sereno**, **Interesado** o **Disgustado**."
 )
 
