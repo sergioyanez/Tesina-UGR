@@ -49,3 +49,15 @@ Detalle completo en `resultados/comparaciones_pareadas.json`.
 
 Autorizado por Sergio el 08/10/2026, una sola vez, con el ganador. Resultado en
 `resultados/fusion_tardia_pose_visual__reserva.json` y uso registrado en `reserva_uso.log`.
+
+### Resultado en la reserva (único uso, 08/10/2026)
+
+20 caballos, 68 clips. El modelo se ajustó con todo el desarrollo y no se tocó después.
+
+- F1 macro **0,834**, IC95 bootstrap por caballo [0,698; 0,925] (2 000 réplicas, semilla 7).
+- Accuracy 0,853. F1 por clase: Disgustado 0,865, Interesado 0,727, Sereno 0,909.
+- Subconjunto limpio (48 clips): F1 macro 0,767.
+- Matriz de confusión (filas = real; Disgustado, Interesado, Sereno): [16, 1, 0], [3, 12, 1], [1, 4, 30].
+
+Está dentro de lo esperado por el desarrollo (0,868 ± 0,046; limpio 0,740). Con 20 caballos el
+intervalo es ancho: no se usa para comparar candidatos.
