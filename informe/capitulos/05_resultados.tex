@@ -13,7 +13,7 @@ La Tabla~\ref{tab:c5-candidatos} resume el rendimiento de los cuatro candidatos 
 \caption{Rendimiento de los cuatro candidatos en el desarrollo (validación 5\,$\times$\,4 por caballo)}\label{tab:c5-candidatos}
 {\singlespacing\small
 \begin{threeparttable}
-\begin{tabular}{@{}lrrrrr@{}}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth}*{5}{>{\centering\arraybackslash}X}@{}}
 \toprule
 Candidato & \fmacro{} (\textit{DE}) & Exactitud (\textit{DE}) & \fmacro{} limpio (\textit{DE})\tnote{a} & \fmacro{} en entrenamiento & Brecha (\textit{DE})\tnote{b} \\
 \midrule
@@ -22,7 +22,7 @@ Bosque aleatorio de pose & \RFPoseDevF{} (\RFPoseDevDE{}) & \RFPoseDevAcc{} (\RF
 MIL multimodal corregido & \MILDevF{} (\MILDevDE{}) & \MILDevAcc{} (\MILDevAccDE{}) & \MILLimpioF{} (\MILLimpioDE{}) & \MILTrainF{} & \MILGap{} (\MILGapDE{}) \\
 Línea de base logística & \BaseDevF{} (\BaseDevDE{}) & \BaseDevAcc{} (\BaseDevAccDE{}) & \BaseLimpioF{} (\BaseLimpioDE{}) & \BaseTrainF{} & \BaseGap{} (\BaseGapDE{}) \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \begin{tablenotes}[flushleft]\footnotesize
 \item[a] Subconjunto de \ClipsLimpioDesarrollo{} clips de \CaballosLimpioDesarrollo{} caballos con formato \CriterioLimpio{}; el desvío es entre las \Repeticiones{} repeticiones.
 \item[b] Diferencia entre el \fmacro{} de entrenamiento y el de prueba.

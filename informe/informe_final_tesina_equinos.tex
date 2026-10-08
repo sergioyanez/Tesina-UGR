@@ -73,6 +73,7 @@
 
 % Número de página arriba a la derecha (APA 7, sección 2.18); sin encabezado corrido.
 \usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}      % evita la advertencia de fancyhdr
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[R]{\thepage}
@@ -95,6 +96,11 @@
 
 \newcommand{\fmacro}{\textit{F}\textsubscript{1} macro}
 \newcommand{\clase}[1]{\textit{#1}}
+
+% Párrafos sin desbordes: estiramiento de emergencia y rutas de archivo que se cortan en / _ . -
+\setlength{\emergencystretch}{3em}
+\def\UrlBreaks{\do\/\do\_\do\.\do\-}
+\urlstyle{tt}
 
 \begin{document}
 \RaggedRight
