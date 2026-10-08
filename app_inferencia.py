@@ -166,7 +166,7 @@ if archivo is not None:
         st.markdown("---")
         st.markdown("#### Probabilidades del modelo")
         st.caption(
-            + ("El modelo procesa toda la secuencia junta (arquitectura MIL) y emite esta "
+            ("El modelo procesa toda la secuencia junta (arquitectura MIL) y emite esta "
                "distribución final. " if resultado.modelo == "mil" else
                "El modelo combina dos lecturas de la toma —la pose de la cara y su apariencia— y "
                "promedia sus probabilidades. ")
