@@ -94,20 +94,32 @@ st.title("Detección de expresiones faciales en equinos")
 _m = _metricas()
 # Lo primero que se ve: tiene que entenderlo alguien que no leyó la tesina. Las cifras salen del
 # mismo archivo que el resto de la pantalla; ninguna se escribe a mano.
+_acierto = round(_m["accuracy_reserva"] * 100)
 st.error(
-    "### Esto NO es una herramienta de diagnóstico veterinario\n\n"
-    "Es la demostración de un trabajo de tesina y **puede equivocarse**. No uses su respuesta "
-    "para tomar decisiones sobre la salud o el manejo de un caballo.\n\n"
-    f"**¿Cuánto acierta?** En una prueba final con {_m['caballos_reserva']} caballos que nunca "
-    f"había visto, reconoció bien la expresión en unos **{round(_m['accuracy_reserva'] * 100)} de "
-    "cada 100 videos**. Acierta más con unas expresiones que con otras: debajo de cada resultado "
-    "vas a ver cuánto confiar en esa respuesta en particular.\n\n"
-    "**Por qué tomarlo con cautela:** son pocos caballos, y parte de los aciertos puede deberse a "
-    "cómo se filmaron los videos y no a la expresión del animal."
+    "### Esta herramienta NO constituye un instrumento de diagnóstico veterinario\n\n"
+    "Esta aplicación, desarrollada en el marco de un trabajo de tesina, utiliza técnicas de "
+    "inteligencia artificial para **analizar videos de caballos y clasificar sus expresiones "
+    "faciales** en tres categorías: Sereno, Interesado y Disgustado.\n\n"
+    "Se trata de una herramienta experimental y **sus resultados pueden presentar errores**. Por lo "
+    "tanto, no deben utilizarse para tomar decisiones relacionadas con la salud, el bienestar o el "
+    "manejo de los equinos.\n\n"
+    f"**¿Cuál es su nivel de precisión?** En una evaluación final realizada con videos de "
+    f"{_m['caballos_reserva']} caballos que no habían sido utilizados durante el entrenamiento, el "
+    f"modelo obtuvo aproximadamente un **{_acierto} % de clasificaciones correctas**. Esto significa "
+    f"que, de cada 100 videos analizados, el sistema identificó correctamente la expresión facial "
+    f"del caballo en aproximadamente {_acierto} casos y se equivocó en los {100 - _acierto} "
+    "restantes.\n\n"
+    "Este porcentaje corresponde a los resultados de esa evaluación específica y **no garantiza el "
+    "mismo nivel de precisión con nuevos videos**. El rendimiento puede variar según la expresión "
+    "facial analizada.\n\n"
+    "**Limitaciones del modelo:** La evaluación se realizó sobre un número reducido de animales. "
+    "Además, factores como la iluminación, el ángulo de la cámara, la calidad del video y otras "
+    "condiciones de grabación podrían influir en las predicciones. Por este motivo, **los "
+    "resultados deben interpretarse con cautela**."
 )
 
 st.markdown(
-    "Subí una toma corta de la cara de un caballo y el sistema intentará clasificar su expresión "
+    "Subir una toma corta de la cara de un caballo y el sistema intentará clasificar su expresión "
     "en **Sereno**, **Interesado** o **Disgustado**."
 )
 
@@ -259,7 +271,7 @@ if archivo is not None:
             else:
                 st.warning(f"Las dos maneras de mirar el video no coinciden: la postura dice "
                            f"«{ganadoras['pose']}» y el aspecto dice «{ganadoras['visual']}». "
-                           "Tomá la respuesta con más cautela.")
+                           "Conviene tomar la respuesta con más cautela.")
 
         if resultado.atencion:
             st.markdown("---")
