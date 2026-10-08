@@ -208,7 +208,7 @@ def predecir_desde_caracteristicas(vectores, filas_pose, precisiones=None,
 
 
 def predecir_con_fusion(vectores, filas_pose, frames, fps, precisiones=None, paquete=None,
-                        metricas=None) -> Prediccion | Negativa:
+                        metricas=None, reserva=None) -> Prediccion | Negativa:
     """Predice con la fusión pose + visual a partir de lo que ya calculó el pipeline. Sin video.
 
     `vectores`: los 16 vectores visuales (16, 512). `filas_pose`: pose de los 16 frames con `orden`
@@ -238,12 +238,13 @@ def predecir_con_fusion(vectores, filas_pose, frames, fps, precisiones=None, paq
         precision=p["precision"],
         acertadas=p["acertadas"],
         veces_que_lo_dijo=p["veces_que_lo_dijo"],
-        texto_confiabilidad=fusion.texto_de_confiabilidad(clase, precisiones, metricas),
+        texto_confiabilidad=fusion.texto_de_confiabilidad(clase, precisiones, metricas, reserva),
         frames_alineados=len(vectores),
         atencion=[],
         clases_por_frame=[],
         modelo="fusion",
-        detalle={"pose": prob["pose"], "visual": prob["visual"], "peso_pose": prob["peso_pose"]},
+        detalle={"pose": prob["pose"], "visual": prob["visual"], "peso_pose": prob["peso_pose"],
+                 "precision_reserva": (reserva or fusion.precision_reserva())[clase]},
     )
 
 

@@ -163,6 +163,21 @@ def precision_por_clase(carpeta: Path | None = None) -> dict:
     return salida
 
 
+def precision_reserva(carpeta: Path | None = None) -> dict:
+    """Lo mismo, medido en la reserva: 20 caballos / 68 clips que no se usaron para elegir nada.
+
+    Es la medida más honesta y la más chica: cada precisión se apoya en pocas decenas de clips.
+    """
+    r = _leer(ARCHIVO_RESERVA, carpeta)
+    m = r["metricas"]["matriz"]
+    salida = {}
+    for j, clase in enumerate(CLASES):
+        dijo = sum(m[i][j] for i in range(len(m)))
+        salida[clase] = {"precision": m[j][j] / dijo if dijo else float("nan"),
+                         "acertadas": m[j][j], "veces_que_lo_dijo": dijo}
+    return salida
+
+
 def metricas_globales(carpeta: Path | None = None) -> dict:
     """F1 macro de desarrollo y de la reserva (único uso), y del subconjunto limpio."""
     d, r = _leer(ARCHIVO_DESARROLLO, carpeta), _leer(ARCHIVO_RESERVA, carpeta)
@@ -178,13 +193,16 @@ def metricas_globales(carpeta: Path | None = None) -> dict:
     }
 
 
-def texto_de_confiabilidad(clase: str, precisiones=None, metricas=None) -> str:
+def texto_de_confiabilidad(clase: str, precisiones=None, metricas=None, reserva=None) -> str:
     precisiones = precisiones or precision_por_clase()
     m = metricas or metricas_globales()
     p = precisiones[clase]
+    r = (reserva or precision_reserva())[clase]
     return (
         f"Cuando este modelo predijo «{clase}», acertó {p['acertadas']} de "
-        f"{p['veces_que_lo_dijo']} veces ({p['precision']:.0%}) en validación cruzada por caballo.\n"
+        f"{p['veces_que_lo_dijo']} veces ({p['precision']:.0%}) en validación cruzada por caballo "
+        f"({m['clips_desarrollo']} clips de desarrollo, 5 repeticiones), y {r['acertadas']} de "
+        f"{r['veces_que_lo_dijo']} ({r['precision']:.0%}) en la reserva.\n"
         f"F1 macro {m['f1_macro_reserva']:.3f} sobre {m['clips_reserva']} clips de "
         f"{m['caballos_reserva']} caballos reservados (un solo uso) y "
         f"{m['f1_macro_desarrollo']:.3f} en desarrollo; {m['f1_limpio_reserva']:.3f} en la reserva "

@@ -71,7 +71,7 @@ st.error(
     "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
     f"trabajo de tesina. El modelo (fusión de pose y apariencia) obtuvo F1 macro "
     f"**{_m['f1_macro_reserva']:.3f}** sobre {_m['clips_reserva']} tomas de "
-    f"{_m['caballos_reserva']} caballos reservados que nunca usó para entrenarse ni para elegirlo "
+    f"{_m['caballos_reserva']} caballos reservados, medido con una versión del modelo ajustada sin ellos "
     f"({_m['accuracy_reserva']:.0%} de aciertos), y {_m['f1_macro_desarrollo']:.3f} en validación "
     f"cruzada por caballo. Su acierto depende de la clase y baja si la toma no se filmó en "
     f"condiciones parejas (F1 {_m['f1_limpio_reserva']:.3f} en la reserva, tomas parejas): "
@@ -150,7 +150,11 @@ if archivo is not None:
             st.markdown(f"# {confianza:.0%}")
             st.caption(f"Cuando dice «{resultado.clase}» acierta {resultado.precision:.0%}: "
                        f"{resultado.acertadas} de {resultado.veces_que_lo_dijo} veces, "
-                       "medido fuera de muestra")
+                       "en validación cruzada por caballo (tomas de desarrollo, fuera de muestra)")
+            if resultado.detalle:
+                pr = resultado.detalle["precision_reserva"]
+                st.caption(f"En la reserva (20 caballos, 68 tomas, un solo uso): "
+                           f"{pr['precision']:.0%}, {pr['acertadas']} de {pr['veces_que_lo_dijo']} veces")
 
         if resultado.precision < 0.5:
             st.error(

@@ -64,7 +64,8 @@ def pose_16():
 
 
 PRECISIONES = {c: {"precision": 0.8, "acertadas": 8, "veces_que_lo_dijo": 10} for c in CLASES}
-METRICAS = {"f1_macro_reserva": 0.834, "clips_reserva": 68, "caballos_reserva": 20,
+RESERVA = {c: {"precision": 0.5, "acertadas": 5, "veces_que_lo_dijo": 10} for c in CLASES}
+METRICAS = {"clips_desarrollo": 291, "f1_macro_reserva": 0.834, "clips_reserva": 68, "caballos_reserva": 20,
             "f1_macro_desarrollo": 0.868, "f1_limpio_reserva": 0.767}
 VIS = np.ones((16, 512), dtype=np.float32)
 FRAMES = np.arange(16) * 5 + 100
@@ -82,12 +83,12 @@ except ValueError:
 print("\n=== negarse cuando no hay 16 frames ===")
 for n in (0, 8, 15, 17):
     r = inf.predecir_con_fusion(np.ones((n, 512)), pose_16(), np.arange(n), 30.0,
-                                PRECISIONES, paquete_falso("Sereno", "Sereno"), METRICAS)
+                                PRECISIONES, paquete_falso("Sereno", "Sereno"), METRICAS, RESERVA)
     check(f"con {n} frames se niega", not r.hay_prediccion)
 
 print("\n=== la salida conserva la interfaz ===")
 r = inf.predecir_con_fusion(VIS, pose_16(), FRAMES, 30.0, PRECISIONES,
-                            paquete_falso("Disgustado", "Sereno"), METRICAS)
+                            paquete_falso("Disgustado", "Sereno"), METRICAS, RESERVA)
 check("predice", r.hay_prediccion)
 check("la clase es la de la mezcla ponderada", r.clase == "Disgustado", r.clase)
 check("trae las tres probabilidades", set(r.probabilidades) == set(CLASES))
@@ -98,13 +99,18 @@ check("w pondera la pose", abs(r.probabilidades["Disgustado"] - esperada) < 1e-9
 check("trae la precisión de su clase", (r.precision, r.acertadas, r.veces_que_lo_dijo) == (0.8, 8, 10))
 check("se identifica como fusión", r.modelo == "fusion")
 check("sin atención (es del MIL)", r.atencion == [] and r.clases_por_frame == [])
-check("trae lo que dijo cada rama", set(r.detalle) == {"pose", "visual", "peso_pose"})
+check("trae lo que dijo cada rama", set(r.detalle) == {"pose", "visual", "peso_pose", "precision_reserva"})
 check("el texto informa el F1 de la reserva y que no es diagnóstico",
       "0.834" in r.texto_confiabilidad and "NO es un diagnóstico veterinario" in r.texto_confiabilidad,
       r.texto_confiabilidad)
+check("el texto declara la precisión y el tamaño de la reserva",
+      "5 de 10" in r.texto_confiabilidad and "291 clips" in r.texto_confiabilidad)
+check("la reserva real es la registrada (Sereno 30 de 31)",
+      (fusion.precision_reserva()["Sereno"]["acertadas"],
+       fusion.precision_reserva()["Sereno"]["veces_que_lo_dijo"]) == (30, 31))
 check("frames alineados", r.frames_alineados == 16)
 w0 = inf.predecir_con_fusion(VIS, pose_16(), FRAMES, 30.0, PRECISIONES,
-                             paquete_falso("Disgustado", "Sereno", peso=0.0), METRICAS)
+                             paquete_falso("Disgustado", "Sereno", peso=0.0), METRICAS, RESERVA)
 check("con w=0 manda la rama visual", w0.clase == "Sereno", w0.clase)
 
 print("\n=== el MIL conserva su salida (campos nuevos con valores por omisión) ===")
