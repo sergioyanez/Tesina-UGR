@@ -6,87 +6,344 @@
 \addcontentsline{toc}{chapter}{Capítulo 8. Anexos}
 
 \section{Anexo A. Parámetros del Sistema}
+La Tabla~\ref{tab:a-parametros} reúne los parámetros del procesamiento y de los modelos vigentes. Los valores del preprocesamiento son comunes a los cuatro candidatos; los hiperparámetros de cada uno se detallan en el Capítulo~4.
+
 \begin{table}[H]
-\caption{Parámetros principales}\label{tab:parametros}
-{\singlespacing
+\caption{Parámetros del pipeline y del modelo vigente}\label{tab:a-parametros}
+{\singlespacing\small
 \begin{tabularx}{\textwidth}{@{}lX@{}}
 \toprule
 Parámetro & Valor \\
 \midrule
-Fotogramas por clip & 16 \\
+\multicolumn{2}{@{}l}{\textit{Preprocesamiento}} \\
+Orientación del video & Corrección automática (\texttt{CAP\_PROP\_ORIENTATION\_AUTO}) \\
+Modelo de pose & DeepLabCut, SuperAnimal-Quadruped, sin ajuste \\
+Fotogramas por clip & \Fotogramas{} \\
 Ventana temporal máxima & 7,0~s \\
 Hueco máximo entre mediciones & 0,5~s \\
 Tolerancia de anclaje & 0,10~s \\
-Confianza mínima de ojo y hocico & 0,50 \\
-Tamaño del recorte & $224 \times 343$ píxeles \\
-Extractor visual & ResNet18 preentrenada en ImageNet, congelada \\
-Dimensión visual / geométrica & 512 / 9 \\
-Proyección geométrica & $9 \rightarrow 64 \rightarrow 128$ \\
-Particiones externas & 4, agrupadas por caballo \\
-Épocas máximas / paciencia & 100 / 10 \\
-Épocas del modelo de producción & 29 \\
-Parámetros entrenables & 132\,355 \\
+Confianza mínima de ojo y hocico / de los puntos faciales & 0,50 / 0,50 \\
+Tamaño del recorte & $224 \times 343$ píxeles, JPEG de calidad 95 \\
+\multicolumn{2}{@{}l}{\textit{Representaciones}} \\
+Extractor visual & ResNet-18 preentrenada en ImageNet, congelada; 512 características por fotograma \\
+Rasgos de pose & \PoseRasgos{} por clip (130 estáticos, 21 dinámicos, 9 de disponibilidad) \\
+Geometría para el MIL & v2, 17 columnas por fotograma \\
+\multicolumn{2}{@{}l}{\textit{Candidatos}} \\
+Línea de base & Estandarización y regresión logística, $C = 0{,}1$, pesos balanceados \\
+Bosque aleatorio de pose & 500 árboles, \texttt{max\_features} = raíz, \texttt{min\_samples\_leaf} = 2, pesos balanceados, imputación por mediana \\
+Fusión & $w \in \{0;\,0{,}25;\,0{,}5;\,0{,}75;\,1\}$, validación interna de 4 pliegues por caballo; $w$ del modelo final = \PesoPose{} \\
+MIL & $17 \rightarrow 64 \rightarrow 128$; atención $640 \rightarrow 128 \rightarrow 1$; clasificador $640 \rightarrow 64 \rightarrow 3$; 132\,867 parámetros; Adam $10^{-3}$; lote 32; hasta 100 épocas, paciencia 10 \\
+\multicolumn{2}{@{}l}{\textit{Evaluación}} \\
+Reserva & \CaballosReserva{} caballos, \ClipsReserva{} clips, semilla 20261007, un solo uso \\
+Desarrollo & \CaballosDesarrollo{} caballos, \ClipsDesarrollo{} clips; \Repeticiones{} repeticiones $\times$ \Folds{} pliegues por caballo (semillas 1101 a 1105) \\
+Bootstrap pareado por caballo & \ReplicasBootstrap{} réplicas, semilla \SemillaBootstrap{} \\
+Subconjunto limpio & \CriterioLimpio{} \\
+\multicolumn{2}{@{}l}{\textit{Aplicación}} \\
+Modelo por omisión & Fusión pose y visual entrenada con los \ClipsTotal{} clips \\
+Duración máxima admitida del video & 15~s (se analiza un tramo de a lo sumo 7~s) \\
+Formatos aceptados & mp4, mov, avi, mkv, webm \\
 \bottomrule
 \end{tabularx}}
 \end{table}
 
-\section{Anexo B. Componentes del Software}
-\begin{itemize}
-  \item \texttt{equinos/catalogo.py}: catálogo de videos por clase.
-  \item \texttt{equinos/reproceso.py}: estimación de pose sobre todos los fotogramas.
-  \item \texttt{equinos/secuencia.py}: selección temporal de fotogramas.
-  \item \texttt{equinos/alineado.py}: alineación de la cara.
-  \item \texttt{equinos/dataset.py}: construcción de los recortes.
-  \item \texttt{equinos/caracteristicas.py}: extracción con ResNet18.
-  \item \texttt{equinos/clasificacion.py}: modelo, entrenamiento y evaluación.
-  \item \texttt{equinos/particion.py}: particiones por caballo.
-  \item \texttt{equinos/inferencia.py} y \texttt{app\_inferencia.py}: aplicación de inferencia.
-  \item \texttt{scripts/evaluar\_v2.py} y \texttt{scripts/evaluar\_lineas\_de\_base.py}: evaluación del modelo y de las líneas de base.
-  \item \texttt{tests/}: pruebas automatizadas, entre ellas la de equivalencia entre entrenamiento e inferencia.
-\end{itemize}
+\section{Anexo B. Protocolo de Comparación y su Enmienda}
+Este anexo resume el protocolo declarado antes de comparar (versión 1, 07/10/2026; \texttt{comparacion/PROTOCOLO.md}) y su enmienda del 08/10/2026. El texto íntegro y su historia de cambios están en el repositorio.
 
-\section{Anexo C. Resultados por Partición}
-\begin{table}[H]
-\caption{Entrenamiento, validación y prueba por partición}\label{tab:folds}
-{\singlespacing
-\begin{tabular}{@{}rrrrr@{}}
-\toprule
-Partición & Mejor época & \textit{F}\textsubscript{1} entrenamiento & \textit{F}\textsubscript{1} validación & \textit{F}\textsubscript{1} prueba \\
-\midrule
-1 & 28 & 0,973 & 0,700 & 0,718 \\
-2 & 26 & 0,994 & 0,766 & 0,769 \\
-3 & 20 & 0,969 & 0,641 & 0,677 \\
-4 & 40 & 0,981 & 0,742 & 0,795 \\
-\midrule
-Media & 28,5 & 0,979 & 0,712 & 0,740 \\
-\bottomrule
-\end{tabular}}
-\notatabla{\textit{F}\textsubscript{1} macro. El entrenamiento se evalúa sin \textit{dropout} con los pesos de la mejor época.}
-\end{table}
+\subsection{Pregunta y Datos}
+Cuál de los modelos candidatos clasifica mejor la expresión (\clase{Sereno}, \clase{Interesado}, \clase{Disgustado}) en caballos nunca vistos, sin que la ventaja pueda explicarse por rasgos de filmación. El conjunto vigente son \ClipsTotal{} clips íntegros de \CaballosTotal{} caballos; la unidad de agrupamiento es el caballo. Se apartó una reserva del 15~\% de los caballos (\CaballosReserva{} caballos, \ClipsReserva{} clips: \clase{Disgustado} \ClipsReservaDisg{}, \clase{Interesado} \ClipsReservaInt{}, \clase{Sereno} \ClipsReservaSer{}), sorteada con semilla 20261007 y estratificada por clase dominante del caballo. El desarrollo son los \CaballosDesarrollo{} caballos restantes (\ClipsDesarrollo{} clips: \clase{Disgustado} \ClipsDevDisg{}, \clase{Interesado} \ClipsDevInt{}, \clase{Sereno} \ClipsDevSer{}).
 
-\section{Anexo D. Variantes Evaluadas}
-\begingroup\singlespacing\small
-\setlength{\LTleft}{0pt}
-\begin{longtable}{@{}p{0.27\textwidth}p{0.42\textwidth}p{0.23\textwidth}@{}}
-\caption{Modelos y variantes evaluados}\label{tab:modelos}\\
+\subsection{Reglas}
+\begin{enumerate}
+  \item La reserva no interviene en ninguna evaluación de desarrollo ni en la elección de hiperparámetros, umbrales, épocas o arquitectura; su único acceso exige una autorización explícita y un motivo, deja una línea en la bitácora de uso y se niega a un segundo uso.
+  \item En el desarrollo se usan \Repeticiones{} repeticiones $\times$ \Folds{} pliegues por caballo (\Evaluaciones{} evaluaciones por candidato), las mismas para todos, persistidas con su huella. Se verifica por aserción que ningún caballo cruza entrenamiento y prueba, que la reserva no aparece y que cada prueba contiene las tres clases.
+  \item Todo ajuste propio del candidato se hace dentro del entrenamiento de cada evaluación, con una validación interna por caballo estratificada por clase.
+  \item Las métricas las calcula el evaluador y no el candidato: \fmacro{} (principal), exactitud, precisión, exhaustividad y \textit{F}\textsubscript{1} por clase, matrices de confusión, \fmacro{} en el subconjunto limpio y brecha entrenamiento menos prueba.
+  \item Incertidumbre: bootstrap pareado por caballo de la diferencia entre candidatos (\ReplicasBootstrap{} réplicas), en todo el desarrollo y en el subconjunto limpio.
+  \item Criterio de elección: (1) mayor \fmacro{} media; (2) no inferioridad en limpio frente a ningún otro; (3) si el intervalo de la diferencia con el líder incluye el cero, gana el más simple.
+  \item La reserva se usa una sola vez, con el ganador, tras registrar por escrito la decisión; el modelo no se vuelve a tocar.
+\end{enumerate}
+
+\subsection{Límites Declarados en el Protocolo}
+El agrupamiento es por caballo y no por sesión; un solo observador etiquetó los clips y no hay acuerdo interobservador medido; las repeticiones remuestrean la partición y no los datos, por lo que su desvío no es un error estándar; y 22 caballos aparecen en dos clases y 7 en las tres, razón por la cual el caballo se estratifica por su clase dominante y los pliegues, por clip.
+
+\subsection{Enmienda del 08/10/2026}
+Declarada antes de correr el análisis. Es complementaria: no cambia la elección del ganador ni toca la reserva. Responde al primer límite. Se usan sólo los \ClipsDesarrollo{} clips del desarrollo, vinculados a su sesión por el video de origen. Para cada sesión con clips de desarrollo (\SesionesEvaluadas{} de las \SesionesTotal{}), la prueba son los clips de la sesión y el entrenamiento los de las otras sesiones sin los de ningún caballo presente en ella; si el entrenamiento quedara sin una clase, la sesión se saltea (no ocurrió). Los cuatro candidatos usan la misma partición y los hiperparámetros ya fijados. La métrica principal es la \fmacro{} agrupada de todas las predicciones fuera de muestra, con bootstrap por caballo de cada candidato y de la diferencia fusión menos otro. Los resultados se comparan con el 5$\times$4; si contradijeran la elección, se registrarían como limitación.
+
+\section{Anexo C. Caminos Explorados y Descartados}
+La Tabla~\ref{tab:a-caminos} resume los 47 caminos que se siguieron durante el desarrollo, tomados de \texttt{docs/caminos\_explorados.md}, donde cada uno tiene su descripción, su resultado y su evidencia. «Adoptado» indica que forma parte del pipeline o del modelo vigente; «Reemplazado», que estuvo vigente y otro lo sustituyó; «Descartado: peor», que se midió y rindió menos con una diferencia que supera la incertidumbre; «Descartado: sin diferencia», que no se distingue de la alternativa y se descartó por costo, parsimonia o riesgo; «Descartado: otra razón», que no se descartó por rendimiento; «Abandonado», que la línea se dejó sin cierre formal. Las cifras de conjuntos y protocolos distintos no son comparables entre sí. Las etapas son: datos, preprocesamiento (Preproc.), representación, modelo, validación, entorno y aplicación.
+
+\begingroup\singlespacing\footnotesize
+\setlength{\LTleft}{0pt}\setlength{\LTright}{0pt}\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{0.055\textwidth}p{0.20\textwidth}p{0.09\textwidth}p{0.16\textwidth}p{0.40\textwidth}@{}}
+\caption{Caminos explorados y decisiones}\label{tab:a-caminos}\\
 \toprule
-Modelo & Descripción & Resultado \\
+Id & Camino & Etapa & Decisión & Motivo \\
 \midrule
 \endfirsthead
 \toprule
-Modelo & Descripción & Resultado \\
+Id & Camino & Etapa & Decisión & Motivo \\
 \midrule
 \endhead
-Un fotograma y voto & Regresión logística por fotograma y voto entre 16 predicciones. & 0,660 sobre 153 clips. \\
-Modelo de promedio & Proyección compartida y promedio de 16 fotogramas. & 0,704 sobre 153 clips. \\
-GRU & Recurrente, sensible al orden. & No superó a los invariantes. \\
-Atención con posición & Atención con codificación posicional. & Sin mejora consistente. \\
-CNN--LSTM & ResNet18 seguida de LSTM. & No integrada. \\
-MIL visual & MIL sólo con características visuales. & 0,686. \\
-MIL multimodal & Visual, geometría y atención. & Modelo final: 0,740. \\
-Ajuste fino parcial & Última etapa de la ResNet18 entrenable. & 0,747; no adoptado. \\
-Canal geométrico ampliado & Más puntos anatómicos. & Peor o más inestable. \\
-Puntos de boca y ollares & Puntos faciales adicionales. & Sin mejora. \\
+\midrule
+\multicolumn{5}{r}{\textit{Continúa en la página siguiente}} \\
+\endfoot
 \bottomrule
+\endlastfoot
+C-01 & Plan B de dos clases & Datos & Descartado: otra razón & Dejó de ser necesario al llegar a 32 caballos de Disgustado \\
+C-02 & Catálogo declarado por clase & Datos & Adoptado & Etiqueta del catálogo, no de la carpeta; +11 videos \\
+C-03 & Fuente única de videos & Datos & Adoptado & Una corrida usó un espejo parcial y publicó 72,0 \% falso \\
+C-04 & Piso de video corto (2 s, luego 1,0 s) & Datos & Adoptado & Recupera a Disgustado (11 a 32 caballos) con desviación declarada \\
+C-05 & Ampliación del dataset / plan de filmación & Datos & Adoptado / Plan de filmación no ejecutado & Tamaño muestral = caballos; el plan del 08/09 no se ejecutó (respuesta de un autor, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores»; motivo específico no documentado) \\
+C-06 & Búsqueda de duplicados y conflictos & Datos & Adoptado (501 excluido) & 0 duplicados; 178 es contiguo, no duplicado \\
+C-07 & Protocolo de etiquetado / observador único / etiqueta débil / EquiFACS & Datos & Adoptado / Sin medición / A y B descartados & Un solo observador; A y B no forman parte del modelo final (decisión de un autor, 08/10/2026) \\
+C-08 & Orientación de video & Preproc. & Adoptado & 42/146 videos rotados perdían 55,6 \% de frames; 8/16 a 16/16 en la app \\
+C-09 & YOLO + DLC SuperAnimal, sin ajuste & Preproc. & Adoptado & Cero anotación propia; detector propio y Horse-30 sin evaluar \\
+C-10 & Hocico upper\_jaw / máxima confianza & Preproc. & Descartado: peor / sin diferencia & 54,4 \% contra 62,4 \% de nose \\
+C-11 & Encuadre 224\ensuremath{\times}343 con orejas & Preproc. & Adoptado & Vector de oreja 4,3 \% a 77,2 \%; alternativas medidas peores \\
+C-12 & Relleno temporal de keypoints & Preproc. & Adoptado, luego Reemplazado & Solo el hueco de 1 supera la línea de base; la ventana lo dejó sin uso \\
+C-13 & Anotación manual de keypoints & Preproc. & Adoptado, luego Reemplazado & +5 caballos; la v4 usa 0 anotaciones \\
+C-14 & 16 fotogramas por ventana temporal & Preproc. & Adoptado & 153 a 359 clips (91,3 \%); 16 fijos y muestreo variable reemplazados \\
+C-15 & Umbral de confianza 0,55 & Preproc. & Revertido a 0,50 & Cambió la preparación de la app sin avisar; respuesta de un autor (08/10/2026): «se fueron probando nuevos modelos pero no daban mejoras o eran peores» \\
+C-16 & Enmascarado 254\ensuremath{\times}12 & Datos/Modelo & Descartado: sin diferencia; Abandonado & No cumple su criterio (0,736 contra 0,7847); mismo objetivo logrado por C-14; no se retomó (un autor, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») \\
+C-17 & Oreja medible en N fotogramas (177\ensuremath{\times}8) & Datos & Descartado (diseños peores); construido & La fuga pasa de «cuántos» a «cuáles» (+0,143); no se retomó (un autor, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») \\
+C-18 & Backbone: congelado / fine-tuning / red de video & Representación & Congelado adoptado; fine-tuning descartado: sin diferencia & 0,747 \ensuremath{\pm} 0,057 contra 0,740 \ensuremath{\pm} 0,052 \\
+C-19 & Cambiar el extractor visual & Representación & Descartado: no forma parte del modelo final (sin medición) & El diagnóstico 0 lo descartó como respuesta a la hipótesis temporal \\
+C-20 & Retirar el canal geométrico v1 & Representación & Descartado: peor & 0,686 sin canal; el canal le gana al ruido por +0,059 \\
+C-21 & Canal enriquecido de 21 dimensiones & Representación & Descartado: sin diferencia & 0,698 \ensuremath{\pm} 0,103; margen sobre ruido +0,018 \\
+C-22 & Comisuras y ollares (15 dimensiones) & Representación & Descartado: peor (sin fusionar) & 0,669 \ensuremath{\pm} 0,077; ruido de pose mayor que la señal; no fusionado (un autor, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») \\
+C-23 & Geometría v2 (17 columnas) & Representación & Adoptado (módulo); MIL corregido descartado & Descripción más rica; el MIL con v2 no supera al vigente \\
+C-24 & Geometría pura (6 derivadas), factorial 12 celdas & Representación & Descartado: peor & 0,184 por debajo de Apariencia; 1/12 celdas cumple \\
+C-25 & Movimiento de cabeza (vía C) & Representación & Descartado: peor / sin señal & Ningún modelo supera el piso 0,571; la duración sola da 0,578 \\
+C-26 & Features tipo SimBA propias (160) & Representación & Adoptado & RF 0,841 contra MIL 0,740, con alerta de filmación \\
+C-27 & Un fotograma con voto / 18 cabezas temporales & Modelo & Hipótesis temporal no sostenida; promedio adoptado, luego Reemplazado & El orden no aportó en ninguna de las 18 configuraciones \\
+C-28 & Aumentación coherente y capacidad & Modelo & Descartado: sin diferencia & \ensuremath{-}0,005 a +0,000 con 20 vistas por clip \\
+C-29 & CNN-LSTM (hector) & Modelo & Abandonado & Partición única, sin corrida que lo respalde; no se fusionó (un autor, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») \\
+C-30 & MIL multimodal & Modelo & Adoptado, luego Reemplazado & 0,740 \ensuremath{\pm} 0,052 = promedio estático 0,741; tercero en la comparación \\
+C-31 & Dropout y pesos de clase & Modelo & Adoptado por regla declarada & Diferencias indistinguibles del ruido \\
+C-32 & Regresión logística sobre la media de frames & Modelo & Reemplazado como candidato & Cuarto: 0,694 en 5\ensuremath{\times}4 \\
+C-33 & RF de pose tipo SimBA como candidato & Modelo & Descartado: sin diferencia & Segundo: 0,844; \ensuremath{-}0,026 [\ensuremath{-}0,051; \ensuremath{-}0,002] frente a la fusión \\
+C-34 & SimBA real & Modelo & Descartado: otra razón & Para un animal solo da movimiento (0,720) \\
+C-35 & Fusión pose más visual & Modelo & Adoptado & 0,868 en desarrollo y 0,834 en reserva (único uso) \\
+C-36 & Partición por clip, hold-out, 5 folds & Validación & Descartado: peor / otra razón & La identidad sola da +0,338 con partición ingenua \\
+C-37 & Criterio declarado y anclado & Validación & Adoptado (reemplazado por criterio de elección) & Evita elegir el número que conviene; re-declaración del 25/09 consta como tal \\
+C-38 & Validación interna y early stopping & Validación & Adoptado & 50 épocas fijas no permitían detectar sobreajuste \\
+C-39 & Validación cruzada anidada & Validación & Descartado: peor & Triplica el desvío de la época sobre el canal real \\
+C-40 & Protocolo 5\ensuremath{\times}4 con reserva del 15 \% & Validación & Adoptado & Incertidumbre acotada y una estimación final fuera de muestra \\
+C-41 & Subconjunto limpio; recortar clips a igual duración & Validación & Adoptado / Sin medición & Los candidatos pierden 10–13 puntos; igualar duración cambia el dataset \\
+C-42 & Leave-session-out & Validación & Adoptado (análisis complementario) & El ranking y el nivel de la fusión se sostienen con sesiones no vistas (0,864); fusión \ensuremath{-} RF ya no se distingue de cero \\
+C-43 & Colab a máquina local con GPU & Entorno & Adoptado & Colab cortó la GPU; driver 580, Python del sistema y abandonar Colab descartados \\
+C-44 & Persistencia y orquestación (papermill) & Entorno & Adoptado & Cortes de sesión; reanudar con otra configuración mezcla corridas \\
+C-45 & Modelo servido por la app & App & Fusión adoptada; anteriores Reemplazados & Cada reemplazo se apoya en una medición \\
+C-46 & Videos largos en la app (recortes de 5 s) & App & Abandonado & Rama sin fusionar; respuesta de un autor (08/10/2026): «se fueron probando nuevos modelos pero no daban mejoras o eran peores» (la función no es un modelo) \\
+C-47 & Textos de confiabilidad / prueba con persona ajena & App & Adoptado; repetición no realizada & n = 1 \\
 \end{longtable}
 \endgroup
+
+\section{Anexo D. Devolución del Docente}
+El profesor Juan Toloza anotó el informe de cumplimiento de condiciones con dieciséis observaciones: cuatro comentarios escritos (A), una nota sobre SimBA (B), una nota de diagnóstico con cinco indicaciones (C) y seis pasajes resaltados sin comentario (D). La Tabla~\ref{tab:a-devolucion} registra, para cada una, la acción tomada, el resultado y su estado: 11 resueltas, 3 atendidas en parte y 2 abiertas.
+
+\begingroup\singlespacing\footnotesize
+\setlength{\LTleft}{0pt}\setlength{\LTright}{0pt}\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{0.05\textwidth}p{0.23\textwidth}p{0.25\textwidth}p{0.27\textwidth}p{0.09\textwidth}@{}}
+\caption{Observaciones del docente, acción, resultado y estado}\label{tab:a-devolucion}\\
+\toprule
+Id & Observación & Acción & Resultado & Estado \\
+\midrule
+\endfirsthead
+\toprule
+Id & Observación & Acción & Resultado & Estado \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{Continúa en la página siguiente}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+A1 & ¿Cómo está la repetibilidad? & La auditoría la midió en lugar de afirmarla; el protocolo común repite la validación 5 veces con particiones distintas de caballos y estratifica la validación interna. & MIL anterior: 359 de 359 predicciones idénticas con la misma semilla; 6 semillas, 0,739 $\pm$ 0,015. Fusión: \FusionAgrupF{} de media, con valores de 0,846 a 0,878 entre las 5 repeticiones (Tabla~\ref{tab:a-rep}). & Resuelta \\
+A2 & ¿Es espacio-temporal o sólo procesamiento del video, dado que es invariante al orden de los fotogramas? & Se verificó numéricamente: 0 de 359 predicciones cambian al barajar o invertir los 16 fotogramas. El texto pasó a decir «agregación espacial de varios fotogramas». & El docente tenía razón. Los dos modelos que lideran la comparación tampoco modelan el orden. La hipótesis temporal no queda sostenida. & Resuelta \\
+A3 & Requisito «la evolución temporal aporta robustez»: no lo estamos haciendo, sacar. & Se retiró de la matriz de cumplimiento (18 requisitos en lugar de 19); la evidencia empírica se conserva como hallazgo. & Auditoría v2, secciones 1.5 y 2.4. & Resuelta \\
+A4 & ¿Se usó DeepLabCut con Horse-30, el subconjunto experto para caballos? & Se buscó en código, notebooks y documentos: no se usa; se aplica el modelo generalista SuperAnimal-Quadruped sin ajuste. & No se midió la calidad de los puntos contra anotación humana en el conjunto vigente ni se probó un modelo específico. & En parte \\
+B1 & Nota sobre SimBA: clasificadores supervisados sobre los puntos de DeepLabCut, con rasgos calculados y explicabilidad. & Experimento comparativo (07/10): \PoseRasgos{} rasgos tipo SimBA con código propio y bosque aleatorio; SimBA real instalado y probado; valores SHAP en la auditoría. & Bosque aleatorio de pose: 0,841 $\pm$ 0,003 (5 semillas) contra 0,740 del MIL en el protocolo anterior; en el protocolo común, \RFPoseDevF{}. SimBA real, para un solo animal, sólo da movimiento (0,720). & Resuelta \\
+C1 & Aceptar la parsimonia: no ocultar el baseline estático y preferir la solución más simple a igual resultado. & El baseline es el candidato 1 y la regla de empate se declaró antes de medir. & Baseline en el protocolo común: último, \BaseDevF{}. Fusión menos RF no activa el desempate (\DifFusionRFDevIC{}); por sesión sí lo activaría (\DifFusionRFSesion{}, \DifFusionRFSesionIC{}). & Resuelta \\
+C2 & Blanquear el confusor de filmación: reportar el rendimiento sólo en clips limpios y declarar el desbalance de duraciones. & El subconjunto limpio es obligatorio en toda tabla; el criterio exige no inferioridad en limpio; se agregó la validación por sesión. & Fusión en limpio, \FusionLimpioF{}; reserva, \FusionReservaLimpio{}. Todos los modelos caen entre 10 y 13 puntos: el confusor se midió y se declara, pero no se eliminó. & En parte \\
+C3 & Sincerar el sobreajuste: no afirmar que no hay; mostrar entrenamiento contra validación. & La brecha entrenamiento menos prueba se informa por candidato; el MIL usa parada temprana con validación interna estratificada. & Brecha: fusión +\FusionGap{}, RF +\RFPoseGap{}, MIL +\MILGap{}, baseline +\BaseGap{}. La \fmacro{} de entrenamiento de la fusión es \FusionTrainF{}. & Resuelta \\
+C4 & Documentar la falta de protocolo etológico y de acuerdo entre observadores como limitación. & La etiquetadora devolvió el formulario el 28/09; el criterio quedó en \texttt{protocolo\_de\_etiquetado.md}; se declaró la limitación. & Acuerdo medido sólo en un piloto sobre imágenes (kappa de Fleiss 0,99). Hay un único observador y no se midió el acuerdo interobservador. Las alternativas de etiqueta débil y de unidades de acción se descartaron. & En parte \\
+C5 & Limpiar la trazabilidad: sin cifras «fantasma»; corregir la huella de características. & Huella corregida; registro de experimentos y de caminos explorados; la cifra 0,754 quedó marcada «no citar». & Cada resultado de la comparación se regenera con un comando y lleva la huella del conjunto, de las particiones y de la reserva. & Resuelta \\
+D1 & El criterio de aceptación de 0,691 se definió sobre otro conjunto y otro baseline. & Se reemplazó por el criterio de elección declarado antes de comparar. & Aplicado a los cuatro candidatos y registrado antes de usar la reserva. & Resuelta \\
+D2 & La validación anidada (0,784) no tiene script fuente; no se puede afirmar que el MIL sea «óptimo». & La validación anidada quedó registrada con su rama y su \textit{commit}; el MIL se comparó con otras tres arquitecturas en un protocolo común. & El MIL corregido queda tercero (\MILDevF{}). «Óptimo» ya no se afirma. & Resuelta \\
+D3 & IDs duplicados de caballos (par 123/169). & Se confirmó con fotogramas que son el mismo caballo y se midió el efecto sin rehacer las particiones. & Quitar sus \ParClips{} clips cambia el \textit{F}\textsubscript{1} agrupado en \ParFusionDif{} (fusión), \ParRFDif{} (RF), \ParMILDif{} (MIL) y \ParBaseDif{} (baseline); el ranking no cambia. & Resuelta \\
+D4 & La interfaz procesa el video entero y elige la mejor ventana, que puede no ser el tramo etiquetado. & La aplicación informa el tramo analizado y recomienda subir un video recortado. & El usuario sabe qué parte del video se clasificó. Prueba \texttt{tests/test\_tramo\_analizado.py}. & Resuelta \\
+D5 & La utilidad para el público objetivo no fue medida; no hay test externo. & La reserva da la única estimación fuera de muestra; la prueba de textos con una persona ajena (n = 1) no se repitió. & Sin validación con veterinarios ni test externo. Reserva: \FusionReservaF{}, IC95 \FusionReservaIC{}. & Abierta \\
+D6 & No hay un relevamiento bibliográfico formal en el repositorio. & No se atendió en el tramo del 08/10: corresponde al informe final. & Pendiente en esa fecha; el relevamiento verificado se incorporó después a los Capítulos~2 y~3 de este informe. & Abierta \\
+\end{longtable}
+\endgroup
+
+\section{Anexo E. Resultados por Repetición y por Sesión}
+\subsection{Resumen por Candidato}
+\begin{table}[H]
+\caption{\fmacro{} de los cuatro candidatos en los tres análisis}\label{tab:a-resumen}
+{\singlespacing\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Candidato & 5$\times$4 (pliegues) & 5$\times$4 limpio & Una sesión afuera & Sesión limpio \\
+\midrule
+Fusión pose y visual & \FusionDevF{} $\pm$ \FusionDevDE{} & \FusionLimpioF{} & \FusionSesionF{} & \FusionSesionLimpioF{} \\
+Bosque aleatorio de pose & \RFPoseDevF{} $\pm$ \RFPoseDevDE{} & \RFPoseLimpioF{} & \RFPoseSesionF{} & \RFPoseSesionLimpioF{} \\
+MIL corregido & \MILDevF{} $\pm$ \MILDevDE{} & \MILLimpioF{} & \MILSesionF{} & \MILSesionLimpioF{} \\
+Línea de base & \BaseDevF{} $\pm$ \BaseDevDE{} & \BaseLimpioF{} & \BaseSesionF{} & \BaseSesionLimpioF{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{La primera columna es la media y el desvío de las \Evaluaciones{} evaluaciones por pliegue; el resto son \fmacro{} agrupadas de las predicciones fuera de muestra (media de las 5 repeticiones en el 5$\times$4). Subconjunto limpio: \CriterioLimpio{}.}
+\end{table}
+
+\subsection{F1 por Clase}
+\begin{table}[H]
+\caption{\textit{F}\textsubscript{1} por clase en el 5$\times$4 y dejando afuera una sesión}\label{tab:a-porclase}
+{\singlespacing\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{5$\times$4 (media $\pm$ desvío)} & \multicolumn{3}{c}{Una sesión afuera} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Candidato & \clase{Disg.} & \clase{Int.} & \clase{Ser.} & \clase{Disg.} & \clase{Int.} & \clase{Ser.} \\
+\midrule
+Fusión & \FusionDevFDisg{} $\pm$ \FusionDevFDisgDE{} & \FusionDevFInt{} $\pm$ \FusionDevFIntDE{} & \FusionDevFSer{} $\pm$ \FusionDevFSerDE{} & \FusionSesionFDisg{} & \FusionSesionFInt{} & \FusionSesionFSer{} \\
+Bosque aleatorio & \RFPoseDevFDisg{} $\pm$ \RFPoseDevFDisgDE{} & \RFPoseDevFInt{} $\pm$ \RFPoseDevFIntDE{} & \RFPoseDevFSer{} $\pm$ \RFPoseDevFSerDE{} & \RFPoseSesionFDisg{} & \RFPoseSesionFInt{} & \RFPoseSesionFSer{} \\
+MIL & \MILDevFDisg{} $\pm$ \MILDevFDisgDE{} & \MILDevFInt{} $\pm$ \MILDevFIntDE{} & \MILDevFSer{} $\pm$ \MILDevFSerDE{} & \MILSesionFDisg{} & \MILSesionFInt{} & \MILSesionFSer{} \\
+Línea de base & \BaseDevFDisg{} $\pm$ \BaseDevFDisgDE{} & \BaseDevFInt{} $\pm$ \BaseDevFIntDE{} & \BaseDevFSer{} $\pm$ \BaseDevFSerDE{} & \BaseSesionFDisg{} & \BaseSesionFInt{} & \BaseSesionFSer{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{\clase{Disg.} = \clase{Disgustado}; \clase{Int.} = \clase{Interesado}; \clase{Ser.} = \clase{Sereno}.}
+\end{table}
+
+\subsection{Resultados por Repetición}
+Las Tablas~\ref{tab:a-rep} y~\ref{tab:a-replim} dan la \fmacro{} agrupada de las predicciones fuera de muestra de cada repetición del 5$\times$4, en todo el desarrollo y en el subconjunto limpio.
+
+\begin{table}[H]
+\caption{\fmacro{} agrupada por repetición del 5$\times$4}\label{tab:a-rep}
+{\singlespacing\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+Repetición & Semilla & Fusión & Bosque aleatorio & MIL & Línea de base \\
+\midrule
+1 & 1101 & 0,871 & 0,834 & 0,782 & 0,700 \\
+2 & 1102 & 0,846 & 0,827 & 0,668 & 0,666 \\
+3 & 1103 & 0,858 & 0,831 & 0,688 & 0,691 \\
+4 & 1104 & 0,857 & 0,838 & 0,695 & 0,694 \\
+5 & 1105 & 0,878 & 0,849 & 0,743 & 0,727 \\
+\midrule
+Media & & \FusionAgrupF{} & \RFPoseAgrupF{} & \MILAgrupF{} & \BaseAgrupF{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{Cada repetición es una partición distinta de los caballos en 4 pliegues; las \Evaluaciones{} predicciones fuera de muestra de sus pliegues se agrupan y se calcula una única \fmacro{}. Intervalos bootstrap por caballo de la media: fusión \FusionAgrupIC{}, bosque aleatorio \RFPoseAgrupIC{}, MIL \MILAgrupIC{}, línea de base \BaseAgrupIC{}.}
+\end{table}
+
+\begin{table}[H]
+\caption{\fmacro{} agrupada por repetición en el subconjunto limpio}\label{tab:a-replim}
+{\singlespacing\small
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+Repetición & Semilla & Fusión & Bosque aleatorio & MIL & Línea de base \\
+\midrule
+1 & 1101 & 0,748 & 0,711 & 0,719 & 0,593 \\
+2 & 1102 & 0,697 & 0,698 & 0,540 & 0,539 \\
+3 & 1103 & 0,739 & 0,708 & 0,586 & 0,586 \\
+4 & 1104 & 0,744 & 0,725 & 0,581 & 0,591 \\
+5 & 1105 & 0,774 & 0,750 & 0,664 & 0,677 \\
+\midrule
+Media & & \FusionAgrupLimpioF{} & \RFPoseAgrupLimpioF{} & \MILAgrupLimpioF{} & \BaseAgrupLimpioF{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{Subconjunto limpio: \CriterioLimpio{} (\ClipsLimpioDesarrollo{} clips de \CaballosLimpioDesarrollo{} caballos). Intervalos bootstrap por caballo de la media: fusión \FusionAgrupLimpioIC{}, bosque aleatorio \RFPoseAgrupLimpioIC{}, MIL \MILAgrupLimpioIC{}, línea de base \BaseAgrupLimpioIC{}.}
+\end{table}
+
+\subsection{Resultados por Sesión}
+La Tabla~\ref{tab:a-sesion} muestra, para cada una de las \SesionesEvaluadas{} sesiones con clips de desarrollo, el tamaño de la prueba, la cantidad de clips de entrenamiento perdidos por la exclusión de caballos y la exactitud de la fusión y del bosque aleatorio de pose. Con tan pocos clips por sesión, la exactitud de cada una es muy variable; la comparación entre candidatos se hace con la métrica agrupada de la Tabla~\ref{tab:a-resumen}.
+
+\begin{table}[H]
+\caption{Validación dejando afuera una sesión: detalle por sesión}\label{tab:a-sesion}
+{\singlespacing\small
+\begin{tabular}{@{}lrrcrrr@{}}
+\toprule
+Sesión & Clips de prueba & Caballos & \clase{Disg.}--\clase{Int.}--\clase{Ser.} & Clips excluidos & Exactitud fusión & Exactitud RF \\
+\midrule
+S001 & 24 & 9 & 2--22--0 & 0 & 0,96 & 0,96 \\
+S003 & 1 & 1 & 0--1--0 & 0 & 1,00 & 1,00 \\
+S005 & 4 & 1 & 0--4--0 & 0 & 0,75 & 1,00 \\
+S006 & 33 & 8 & 15--12--6 & 1 & 0,70 & 0,55 \\
+S008 & 4 & 2 & 1--1--2 & 0 & 1,00 & 1,00 \\
+S010 & 1 & 1 & 0--0--1 & 0 & 1,00 & 1,00 \\
+S011 & 18 & 9 & 1--16--1 & 0 & 0,78 & 0,78 \\
+S012 & 3 & 3 & 0--3--0 & 0 & 1,00 & 1,00 \\
+S013 & 1 & 1 & 1--0--0 & 0 & 1,00 & 1,00 \\
+S014 & 2 & 1 & 2--0--0 & 0 & 0,50 & 0,50 \\
+S015 & 1 & 1 & 0--1--0 & 0 & 1,00 & 1,00 \\
+S016 & 11 & 6 & 5--4--2 & 0 & 0,91 & 0,91 \\
+S017 & 43 & 12 & 13--9--21 & 0 & 0,84 & 0,84 \\
+S018 & 13 & 6 & 0--3--10 & 21 & 0,85 & 0,77 \\
+S019 & 24 & 7 & 3--7--14 & 13 & 0,96 & 0,79 \\
+S020 & 85 & 38 & 20--19--46 & 4 & 0,87 & 0,86 \\
+S021 & 2 & 2 & 2--0--0 & 0 & 1,00 & 1,00 \\
+S022 & 1 & 1 & 1--0--0 & 0 & 1,00 & 1,00 \\
+S023 & 6 & 4 & 6--0--0 & 0 & 1,00 & 1,00 \\
+S024 & 14 & 8 & 14--0--0 & 1 & 1,00 & 1,00 \\
+\bottomrule
+\end{tabular}}
+\notatabla{Clips excluidos: clips de entrenamiento que se quitan por pertenecer a caballos presentes en la sesión de prueba (\ClipsTrainPerdidos{} en total). Las sesiones S004 y S009 no tienen clips de desarrollo y por eso no figuran en la tabla.}
+\end{table}
+
+\section{Anexo F. Aplicación: Pantallas y Textos}
+La aplicación (\texttt{app\_inferencia.py}) se levanta localmente con \texttt{./correr\_local.sh interfaz}. Este anexo describe sus pantallas y los textos que ve la persona usuaria, en el orden en que aparecen. No se incluyen capturas de pantalla.
+
+\begin{enumerate}
+  \item \textbf{Aviso de alcance (siempre visible, en un recuadro rojo).} Título: «Esta herramienta NO constituye un instrumento de diagnóstico veterinario». Explica que la aplicación analiza videos de caballos y los clasifica en tres categorías, que es experimental y puede cometer errores, y que no debe usarse para decisiones sobre la salud, el bienestar o el manejo de los animales. Responde «¿Cuál es su nivel de precisión?» con el porcentaje de aciertos en la reserva (\FusionReservaAcc{} de los videos de \CaballosReserva{} caballos no usados en el entrenamiento) y aclara que no garantiza el mismo nivel con videos nuevos, que la evaluación fue sobre pocos animales y que la iluminación, el ángulo, la calidad del video y otras condiciones pueden influir.
+  \item \textbf{Instrucciones.} Un texto invita a subir una toma corta de la cara del caballo. Un desplegable, «Antes de subir: qué esperar», indica el video recomendado (de 5 a 7~s, máximo 15~s, con la cara bien visible), los formatos admitidos, la demora (entre 1 y 3 minutos) y que el sistema puede no responder, lo que es normal y no un error del video; con los videos de este trabajo pudo responder en 9 de cada 10.
+  \item \textbf{Carga y análisis.} Selector de archivo, reproductor del video subido y botón «Analizar». Durante el análisis un panel de estado informa la etapa: lectura del video, estimación de puntos clave en todos los fotogramas (la que más tarda), elección del mejor tramo y alineación de la cara, extracción de características y clasificación.
+  \item \textbf{Negativa.} Si no se puede clasificar, aparece «No se puede clasificar esta toma» con el motivo, la aclaración de que es un resultado esperable y no una falla (el modelo sólo acepta tomas donde pueda medir el ojo y el hocico durante un tramo continuo) y, cuando corresponde, cuántos de los 16 fotogramas necesarios se pudieron alinear.
+  \item \textbf{Resultado.} Dos cifras destacadas: la expresión que detectó el modelo y qué tan seguro está con ese video. Debajo, «¿Cuánto confiar en esta respuesta?», con frases del tipo «cuando el modelo dice \clase{Disgustado}, acierta entre X y Y de cada diez», derivadas de la precisión por clase medida en el desarrollo y en la reserva, y el detalle de cuántas veces dijo esa clase y cuántas acertó en cada prueba. Si la precisión de la clase es menor de 0,5, aparece una advertencia de que el resultado no debe usarse para ninguna decisión sobre el animal.
+  \item \textbf{Tramo analizado.} Informa el segundo de inicio y de fin de la ventana clasificada y la duración total del video; si éste supera los 7~s, recomienda subir una toma recortada al momento de interés.
+  \item \textbf{Probabilidades.} Una barra por clase, con la probabilidad y la frase de confiabilidad correspondiente. Aclara que un reparto parejo significa que el modelo dudó.
+  \item \textbf{Cómo llegó a esta respuesta.} Explica en palabras que el modelo mira el video de dos maneras ---la postura de la cara y el aspecto de la imagen--- y junta ambas opiniones con el peso de la postura; muestra la lectura de cada una por separado y señala con un mensaje verde si coinciden o con uno amarillo, que aconseja cautela, si no.
+  \item \textbf{Pesos de atención (sólo con el modelo MIL, opcional).} Gráfico de barras con el peso que el modelo asignó a cada fotograma, con la aclaración de que el modelo decide sobre toda la secuencia y no fotograma a fotograma.
+  \item \textbf{Cómo se probó el modelo y qué tener en cuenta.} Desplegable con un resumen en lenguaje llano: el modelo aprendió con videos filmados en Tandil y etiquetados por una persona; siempre se probó con caballos que no había visto, primero varias veces con distintos grupos y luego, una única vez, con los \CaballosReserva{} reservados; no es un diagnóstico; necesita ver el ojo y el hocico durante varios segundos; la postura de la cara es la que más pesa y una parte de lo que mide depende de cómo se filmó el video, por lo que con videos filmados todos de la misma manera acierta algo menos; la versión de la aplicación se reentrenó al final con todos los caballos, de modo que las cifras estiman cuánto acierta y no son una medida exacta de esta versión.
+\end{enumerate}
+
+\section{Anexo G. Reproducibilidad}
+\subsection{Repositorio y Entorno}
+El código, las pruebas, los protocolos y la documentación están en \url{https://github.com/sergioyanez/Tesina-UGR}. El entorno se crea con Python 3.10 y las dependencias de \texttt{requirements-local.txt}. Dos variables de entorno indican dónde se escriben los artefactos (\texttt{TESINA\_EQUINOS\_RAIZ}) y dónde están los videos crudos (\texttt{TESINA\_EQUINOS\_VIDEOS}); los videos no se distribuyen con el repositorio.
+
+\subsection{Comandos}
+Los comandos se ejecutan desde la raíz del repositorio, con \texttt{TESINA\_EQUINOS\_RAIZ} apuntando a los artefactos.
+{\singlespacing\small
+\begin{verbatim}
+# Los cuatro candidatos sobre el desarrollo (5x4), uno por archivo
+python comparacion/correr_baseline.py
+python comparacion/candidato_rf_pose.py
+python comparacion/candidato_mil.py
+python comparacion/candidato_fusion.py
+
+# Validación dejando afuera una sesión (enmienda del protocolo)
+python comparacion/validacion_por_sesion.py
+
+# Modelo final de la aplicación (fusión, entrenada con todos los clips)
+python comparacion/entrenar_modelo_final.py
+
+# Aplicación de inferencia
+./correr_local.sh interfaz
+
+# Cifras (cifras.tex) y figuras del informe, desde los JSON
+informe/generar.sh
+
+# Pruebas automatizadas (guiones, no pytest)
+for t in tests/test_*.py; do PYTHONPATH="$PWD" python3 "$t"; done
+\end{verbatim}}
+
+\subsection{Huellas}
+Cada resultado guardado en \texttt{comparacion/resultados/} lleva las huellas del conjunto de datos, de la reserva y de las particiones con que se generó; los cuatro candidatos comparten las mismas:
+
+\begin{itemize}
+  \item huella del conjunto de datos: \texttt{912974f3e222b91e};
+  \item huella de la reserva: \texttt{3902d7fa2237e283};
+  \item huella de las particiones: \texttt{089b347d4d6b8d5e}.
+\end{itemize}
+
+La reserva se usó una única vez (08/10/2026); la bitácora \texttt{comparacion/reserva\_uso.log} deja constancia del uso y el evaluador se niega a un segundo. Las cifras del informe se generan con \texttt{informe/generar\_cifras.py}, que verifica que coincidan con las citadas en \texttt{comparacion/DECISION.md}; si los resultados cambian, se regeneran y se vuelven a subir.
