@@ -42,8 +42,14 @@ Detalle completo en `resultados/comparaciones_pareadas.json`.
   19 de 20 folds y 1,0 en uno.
 - Todos los candidatos caen entre 10 y 13 puntos en el subconjunto limpio. Las features de pose
   predicen la duración del clip (auditoría, R² 0,53): parte de la ventaja puede ser de filmación.
-- El MIL, que era el modelo de la tesina, queda tercero y las tres correcciones no lo mejoraron
-  (0,740 → 0,722).
+- El MIL, que era el modelo de la tesina, queda tercero: con el protocolo común obtiene 0,722. La
+  cifra previa de 0,740 se midió con otra partición (4 folds, sin repeticiones) y otro conjunto
+  (133 caballos), por lo que no son directamente comparables y no debe leerse como una caída
+  medida en igualdad de condiciones. Lo que sí muestra el protocolo común es que las tres
+  correcciones no lo acercaron a los otros dos candidatos.
+- Los JSON de los cuatro candidatos están ahora en `comparacion/resultados/` (el MIL y el RF de
+  pose se trajeron desde sus ramas `feat/candidato-mil` y `feat/candidato-rf-pose`), junto con
+  `comparaciones_pareadas.json`, que se reproduce con `comparacion.comparar`.
 
 ## Uso de la reserva
 
