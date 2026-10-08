@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from equinos import clasificacion, inferencia, rutas, secuencia
+from equinos import clasificacion, fusion, inferencia, rutas, secuencia
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
@@ -45,8 +45,9 @@ st.set_page_config(page_title="Expresiones faciales en equinos", page_icon="🐴
 
 @st.cache_resource
 def _precisiones():
+    """Precisión por clase del modelo que corre la app: la fusión (`inferencia.MODELO_POR_OMISION`)."""
     rutas.inicializar(verbose=False)
-    return clasificacion.precision_por_clase()
+    return fusion.precision_por_clase()
 
 
 @st.cache_resource
@@ -59,7 +60,7 @@ def _metricas():
     las precisiones por clase es lo que garantiza que hablen del mismo modelo.
     """
     rutas.inicializar(verbose=False)
-    return clasificacion.metricas_globales()
+    return fusion.metricas_globales()
 
 
 st.title("Detección de expresiones faciales en equinos")
@@ -68,10 +69,13 @@ st.title("Detección de expresiones faciales en equinos")
 _m = _metricas()
 st.error(
     "**Esto NO es una herramienta de diagnóstico veterinario.** Es la demostración de un "
-    f"trabajo de tesina. El modelo acierta **{_m['accuracy']:.0%} de las veces** "
-    f"(F1 macro {_m['f1_macro']:.3f}), medido sobre {_m['clips']} tomas de "
-    f"{_m['ejemplares']} caballos que no usó para entrenarse, y su acierto depende mucho de la "
-    "clase: consultá el detalle que acompaña a cada resultado."
+    f"trabajo de tesina. El modelo (fusión de pose y apariencia) obtuvo F1 macro "
+    f"**{_m['f1_macro_reserva']:.3f}** sobre {_m['clips_reserva']} tomas de "
+    f"{_m['caballos_reserva']} caballos reservados que nunca usó para entrenarse ni para elegirlo "
+    f"({_m['accuracy_reserva']:.0%} de aciertos), y {_m['f1_macro_desarrollo']:.3f} en validación "
+    f"cruzada por caballo. Su acierto depende de la clase y baja si la toma no se filmó en "
+    f"condiciones parejas (F1 {_m['f1_limpio_reserva']:.3f} en la reserva, tomas parejas): "
+    "consultá el detalle que acompaña a cada resultado."
 )
 
 st.markdown(
@@ -158,8 +162,12 @@ if archivo is not None:
         st.markdown("---")
         st.markdown("#### Probabilidades del modelo")
         st.caption(
-            "El modelo procesa toda la secuencia junta (arquitectura MIL) y emite esta distribución final. "
-            "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que elegir una etiqueta."
+            + ("El modelo procesa toda la secuencia junta (arquitectura MIL) y emite esta "
+               "distribución final. " if resultado.modelo == "mil" else
+               "El modelo combina dos lecturas de la toma —la pose de la cara y su apariencia— y "
+               "promedia sus probabilidades. ")
+            + "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que "
+            "elegir una etiqueta."
         )
         for clase, probabilidad in sorted(resultado.probabilidades.items(),
                                           key=lambda kv: -kv[1]):
@@ -167,45 +175,63 @@ if archivo is not None:
                         text=f"{clase} — {probabilidad:.0%}  "
                              f"(acierta {precisiones[clase]['precision']:.0%} cuando lo dice)")
 
-        st.markdown("---")
-        st.markdown("#### Explicabilidad (XAI): Pesos de Atención")
-        st.caption(
-            "Muestra a qué fotogramas de la secuencia el modelo le prestó más atención "
-            "para tomar su decisión. Los picos altos indican los momentos más informativos de la toma. "
-            "El nombre dentro de cada barra es la expresión hacia la que empuja ese fotograma por "
-            "separado; el modelo no decide fotograma a fotograma, decide sobre la secuencia entera."
-        )
-        import altair as alt
-        import pandas as pd
-        df_atencion = pd.DataFrame({
-            "Fotograma": [str(i + 1) for i in range(len(resultado.atencion))],
-            "Atención": resultado.atencion,
-            "Expresión": resultado.clases_por_frame,
-            "base": [0.0] * len(resultado.atencion),
-        })
-        colores = alt.Color(
-            "Expresión:N",
-            title="Empuja hacia",
-            scale=alt.Scale(domain=CLASES, range=COLORES_CLASE),
-        )
-        base = alt.Chart(df_atencion).encode(
-            x=alt.X("Fotograma:N", sort=None, title="Fotograma de la secuencia"),
-        )
-        barras = base.mark_bar().encode(
-            y=alt.Y("Atención:Q", title="Peso de atención"),
-            color=colores,
-            tooltip=["Fotograma", alt.Tooltip("Atención:Q", format=".1%", title="Atención"),
-                     "Expresión"],
-        )
-        # Texto oscuro y no blanco: sobre el amarillo de `Interesado` el blanco no se lee, y en
-        # las barras bajas la etiqueta sobresale del relleno y queda sobre el fondo del gráfico.
-        etiquetas = base.mark_text(
-            align="left", baseline="middle", angle=270, dx=4, color="#1b2a32", fontSize=11,
-        ).encode(
-            y=alt.Y("base:Q"),
-            text="Expresión:N",
-        )
-        st.altair_chart((barras + etiquetas).properties(height=280))
+        if resultado.detalle:
+            st.markdown("---")
+            st.markdown("#### Qué dijo cada lectura")
+            w = resultado.detalle["peso_pose"]
+            st.caption(
+                f"La respuesta final pesa la pose con {w:.0%} y la apariencia con {1 - w:.0%}. "
+                "Si las dos lecturas no coinciden, la toma es dudosa aunque el reparto final "
+                "parezca claro.")
+            col_pose, col_visual = st.columns(2)
+            for col, titulo, clave in ((col_pose, "Pose de la cara", "pose"),
+                                       (col_visual, "Apariencia", "visual")):
+                with col:
+                    st.caption(titulo)
+                    for clase, probabilidad in sorted(resultado.detalle[clave].items(),
+                                                      key=lambda kv: -kv[1]):
+                        st.progress(probabilidad, text=f"{clase} — {probabilidad:.0%}")
+
+        if resultado.atencion:
+            st.markdown("---")
+            st.markdown("#### Explicabilidad (XAI): Pesos de Atención")
+            st.caption(
+                "Muestra a qué fotogramas de la secuencia el modelo le prestó más atención "
+                "para tomar su decisión. Los picos altos indican los momentos más informativos de la toma. "
+                "El nombre dentro de cada barra es la expresión hacia la que empuja ese fotograma por "
+                "separado; el modelo no decide fotograma a fotograma, decide sobre la secuencia entera."
+            )
+            import altair as alt
+            import pandas as pd
+            df_atencion = pd.DataFrame({
+                "Fotograma": [str(i + 1) for i in range(len(resultado.atencion))],
+                "Atención": resultado.atencion,
+                "Expresión": resultado.clases_por_frame,
+                "base": [0.0] * len(resultado.atencion),
+            })
+            colores = alt.Color(
+                "Expresión:N",
+                title="Empuja hacia",
+                scale=alt.Scale(domain=CLASES, range=COLORES_CLASE),
+            )
+            base = alt.Chart(df_atencion).encode(
+                x=alt.X("Fotograma:N", sort=None, title="Fotograma de la secuencia"),
+            )
+            barras = base.mark_bar().encode(
+                y=alt.Y("Atención:Q", title="Peso de atención"),
+                color=colores,
+                tooltip=["Fotograma", alt.Tooltip("Atención:Q", format=".1%", title="Atención"),
+                         "Expresión"],
+            )
+            # Texto oscuro y no blanco: sobre el amarillo de `Interesado` el blanco no se lee, y en
+            # las barras bajas la etiqueta sobresale del relleno y queda sobre el fondo del gráfico.
+            etiquetas = base.mark_text(
+                align="left", baseline="middle", angle=270, dx=4, color="#1b2a32", fontSize=11,
+            ).encode(
+                y=alt.Y("base:Q"),
+                text="Expresión:N",
+            )
+            st.altair_chart((barras + etiquetas).properties(height=280))
 
         st.markdown("---")
         with st.expander("Cómo se midió"):
@@ -214,9 +240,26 @@ if archivo is not None:
 La confiabilidad sale de **validación cruzada agrupada por caballo**: ningún animal usado para
 entrenar aparece en la evaluación, así que el modelo no puede acertar reconociendo al ejemplar en
 lugar de su expresión.
-
-Este sistema utiliza una arquitectura **Multimodal MIL (Multiple Instance Learning)** que procesa 
-la secuencia de fotogramas entera. Combina la postura geométrica (orejas, hocico, ojos) y las 
-características visuales para emitir una única predicción.
 """
             )
+            if resultado.modelo == "mil":
+                st.markdown(
+                    "Este sistema utiliza una arquitectura **Multimodal MIL (Multiple Instance "
+                    "Learning)** que procesa la secuencia de fotogramas entera. Combina la postura "
+                    "geométrica (orejas, hocico, ojos) y las características visuales para emitir "
+                    "una única predicción.")
+            else:
+                st.markdown(
+                    """
+Este sistema es una **fusión tardía de pose y apariencia**. Un bosque aleatorio lee 160
+medidas de la pose de la cara en los 16 fotogramas (distancias, ángulos de orejas, apertura de la
+boca, velocidades) y una regresión logística lee el promedio de las características visuales de
+una red ResNet-18 congelada; las probabilidades de ambos se promedian.
+
+Dos límites que conviene tener presentes. **La pose domina la decisión**, y sus medidas también
+delatan cómo se filmó la toma (por ejemplo, su duración), así que parte de la ventaja puede deberse
+a la filmación y no a la expresión: sobre tomas filmadas en condiciones parejas el F1 baja. Y
+**las cifras de arriba son las de la validación**; el modelo en uso se ajustó con todos los clips,
+incluidos los reservados, y no tiene una medida propia.
+"""
+                )
