@@ -31,6 +31,8 @@ Cada camino que se siguió, por qué se adoptó o se descartó y con qué eviden
 ├── 03_clasificacion.ipynb              Objetivo 3: líneas de base, MIL y evaluación (reproduce los scripts)
 ├── 04_figuras_tesis.ipynb              Figuras de la tesis a partir de los resultados vigentes
 ├── app_inferencia.py                   Objetivo 4: interfaz Streamlit
+├── comparacion/                        Protocolo, reserva, candidatos, resultados y DECISION.md
+├── informe/                            Informe final en LaTeX (APA 7): capítulos, cifras.tex, figuras
 ├── equinos/                            Paquete del pipeline
 │   ├── catalogo.py · rutas.py · …      Catálogo de videos, rutas, checkpoints, caché
 │   ├── pose.py · secuencia.py          Keypoints y selección de los 16 frames por ventana
@@ -45,7 +47,7 @@ Cada camino que se siguió, por qué se adoptó o se descartó y con qué eviden
 │   ├── evaluar_v2.py                   Evaluación vigente y modelo de producción
 │   └── evaluar_lineas_de_base.py       Líneas de base sobre los mismos folds
 ├── tests/                              Guiones de prueba (python3 tests/test_X.py)
-├── docs/                               Plan de trabajo, informes, registro de experimentos
+├── docs/                               Plan de trabajo, caminos explorados, informes, registro de sesiones
 └── openspec/                           Contexto (project.md), specs y changes
 ```
 
@@ -306,7 +308,28 @@ Por eso la interfaz muestra ese número al lado de la etiqueta y con el mismo ta
 dejarlo en un descargo al pie. Una pantalla que devuelve «Disgustado, 87 %» es indistinguible, para
 quien la mira, de una herramienta validada.
 
-## El resultado del objetivo 3, con sus líneas de base
+## El resultado del objetivo 3: comparación de cuatro modelos (08/10/2026)
+
+Protocolo declarado antes de medir (`comparacion/PROTOCOLO.md`): reserva del 15 % de los caballos
+(20 caballos, 68 clips, un solo uso), 5 repeticiones × 4 pliegues por caballo sobre el desarrollo
+(113 caballos, 291 clips) y criterio de elección fijo. Decisión y detalle en
+[`comparacion/DECISION.md`](comparacion/DECISION.md).
+
+| Candidato | F1 macro 5×4 | Subconjunto limpio | Dejando afuera una sesión |
+|---|---:|---:|---:|
+| **Fusión tardía pose + visual (ganador)** | **0,868 ± 0,046** | 0,740 | 0,864 |
+| Bosque aleatorio de pose (160 rasgos tipo SimBA) | 0,844 ± 0,059 | 0,718 | 0,831 |
+| MIL multimodal corregido | 0,722 ± 0,102 | 0,618 | 0,690 |
+| Línea de base: regresión logística sobre la media visual | 0,694 ± 0,062 | 0,597 | 0,628 |
+
+- **Reserva (único uso, con el ganador):** F1 macro 0,834, IC95 por caballo [0,698; 0,925].
+- La ventaja de la fusión sobre el bosque aleatorio es mínima: +0,026 [+0,002; +0,051] en el 5×4
+  y no distinguible de cero al dejar afuera una sesión (+0,032 [−0,006; +0,072]).
+- El orden de los fotogramas no aporta, y en el subconjunto limpio (1080×1920, ≥ 5 s) todos caen
+  entre 10 y 13 puntos: el confusor de filmación se mide y se declara, no se elimina.
+- Cada camino probado y por qué se adoptó o descartó: [`docs/caminos_explorados.md`](docs/caminos_explorados.md).
+
+### Antecedente: el MIL y sus líneas de base (25/09/2026, protocolo anterior)
 
 Sobre los mismos 4 folds por caballo (359 clips, 133 caballos):
 
@@ -316,7 +339,7 @@ Sobre los mismos 4 folds por caballo (359 clips, 133 caballos):
 | Azar estratificado | 0,325 ± 0,025 |
 | Metadatos de filmación (duración, fps, resolución), sin mirar la cara | 0,618 ± 0,034 |
 | Visual, 1 frame central | 0,679 ± 0,024 |
-| **MIL multimodal (vigente)** | **0,740 ± 0,052** |
+| MIL multimodal (vigente hasta el 08/10/2026) | 0,740 ± 0,052 |
 | Visual, media de los 16 frames | 0,741 ± 0,020 |
 
 - El modelo **lee la cara**: supera a los metadatos (+0,121, IC95 por caballo [+0,031; +0,209]) y
