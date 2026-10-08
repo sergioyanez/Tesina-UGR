@@ -37,6 +37,7 @@ Qué número sale de qué código y rama: [`docs/registro_de_experimentos.md`](d
 │   ├── particion.py                    Clips íntegros y partición por caballo
 │   ├── caracteristicas.py              ResNet-18 congelada y su caché
 │   ├── clasificacion.py                Métricas, MIL multimodal, validación cruzada, producción
+│   ├── fusion.py                       Modelo de fusión pose + visual para inferir y su confiabilidad
 │   ├── lineas_de_base.py               Líneas de base, confusor de filmación, bootstrap por caballo
 │   └── inferencia.py                   De un video a una predicción, o a una negativa explicada
 ├── scripts/
@@ -242,8 +243,15 @@ Recibe una toma corta de la cara de un caballo y devuelve la expresión predicha
 `Interesado` o `Disgustado`— **junto con la confiabilidad medida de esa predicción**. La lógica
 vive en `equinos/inferencia.py`; `app_inferencia.py` es sólo la presentación.
 
-**Qué necesita:** la máquina con GPU, el entorno de `requirements-local.txt`, y el modelo de
-producción en `modelos/objetivo3_v2/mil_multimodal_produccion.pt`. Corre DeepLabCut sobre todos los
+**Modelo (desde el 08/10/2026):** la **fusión tardía pose + visual**, ganadora de la comparación de
+modelos (`comparacion/DECISION.md`), reemplaza al MIL por omisión. Se entrena con todos los clips
+(`python comparacion/entrenar_modelo_final.py`, peso de la pose w = 0,75) y se guarda en
+`<raíz>/modelos/fusion_pose_visual/fusion_pose_visual.joblib` (fuera del repo, junto con sus
+metadatos: versión de scikit-learn, huella del dataset, fecha, lista de clips). El MIL sigue
+disponible con `inferencia.clasificar_video(ruta, modelo="mil")`.
+
+**Qué necesita:** la máquina con GPU, el entorno de `requirements-local.txt`, y el modelo
+anterior (`modelos/objetivo3_v2/mil_multimodal_produccion.pt`) sólo si se pide el MIL. Corre DeepLabCut sobre todos los
 fotogramas del video, así que tarda **alrededor de 80 s para una toma de 7 s** (medido el 18/09). La
 preparación es la misma función que fabricó el conjunto de entrenamiento
 (`alineado.preparar_secuencia`); YOLO ya no participa.
@@ -259,9 +267,21 @@ preparación es la misma función que fabricó el conjunto de entrenamiento
   interesa.
 - **No reentrena, no procesa lotes y no guarda nada** del video que se le sube.
 
-**El límite del entregable, medido y no supuesto.** El modelo vigente —MIL multimodal— tiene F1
-macro **0,740 ± 0,052** sobre caballos que nunca vio (`objetivo3_evaluacion_v2.json`). Cuando dice
-una clase, acierta:
+**El límite del entregable, medido y no supuesto.** La fusión tiene F1 macro **0,868 ± 0,046** en
+desarrollo (113 caballos, 291 clips, 5×4 por caballo) y **0,834** en la reserva (20 caballos, 68
+clips, un solo uso; IC95 [0,698; 0,925]); en tomas filmadas en condiciones parejas baja a 0,740 y
+0,767. Los números que muestra la app salen de `comparacion/resultados/`. Cuando dice una clase,
+acierta (desarrollo / reserva):
+
+| la fusión dice | desarrollo (clips por repetición) | reserva (68 clips) |
+|---|---:|---:|
+| `Disgustado` | 72 de 89 — 81 % | 16 de 20 — 80 % |
+| `Interesado` | 90 de 102 — 88 % | 12 de 17 — 71 % |
+| `Sereno` | 90 de 100 — 89 % | 30 de 31 — 97 % |
+
+Con la reserva, cada precisión se apoya en pocas decenas de clips. La ventaja sobre el RF de pose
+es mínima y la pose domina la decisión (puede arrastrar rasgos de filmación). El modelo en uso se
+ajustó con desarrollo + reserva: no tiene una medida propia. Para comparar, el MIL anterior (F1 0,740 ± 0,052, `objetivo3_evaluacion_v2.json`):
 
 | el modelo dice | acierta |
 |---|---:|
@@ -269,7 +289,7 @@ una clase, acierta:
 | `Interesado` | 94 de 123 — 76 % |
 | `Sereno` | 102 de 140 — 73 % |
 
-Y hay que decir con la misma claridad lo que ese número **no** demuestra: un promedio lineal de las
+Y hay que decir con la misma claridad lo que el número del MIL **no** demostraba: un promedio lineal de las
 características de los 16 frames rinde lo mismo (0,741 ± 0,020), y la duración y la resolución del
 clip, sin mirar la cara, ya dan 0,618 (`objetivo3_lineas_de_base.json`). Ver la sección siguiente.
 

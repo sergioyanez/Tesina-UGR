@@ -44,7 +44,7 @@ faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
 | 1. Base de datos de videos cortos | 🟢 Cumplido y ampliado — **274 videos → 393 clips → 359 clips íntegros** (133 caballos; cifras vigentes según la auditoría del 25/09/2026; las de 249/368/5888 son del 28/08/2026) |
 | 2. Pipeline de preprocesamiento | 🟢 Ejecutado sobre 393 clips (359 íntegros); **el dataset admite partición por caballo** desde el 28/08/2026. Cobertura 73,5 % con estimadas, 68,7 % sólo detectadas — pero el global dejó de ser el criterio (ver "El número que hay que citar"). **Encuadre corregido el 28/08/2026 para incluir las orejas** (ver abajo) |
 | 3. Clasificación orientada a video | 🟡 **Modelo vigente: MIL multimodal, F1 macro 0,740 ± 0,052** (359 clips, 133 caballos; `objetivo3_evaluacion_v2.json`). Supera a los metadatos de filmación (0,618) pero **empata con un promedio estático lineal (0,741)**: el aporte de la arquitectura y del orden temporal no está demostrado. Sobreajuste moderado. Ver «Estado al 25/09/2026» |
-| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo el MIL vigente (`mil_multimodal_produccion.pt`), con la preparación compartida con el entrenamiento y, desde el 07/10/2026, la lectura del video igualada a la del notebook 01 (orientación y `mp4v`; change `base-comun-comparacion-de-modelos`). La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
+| 4. Aplicación / interfaz | 🟢 Interfaz en Streamlit sirviendo, desde el 08/10/2026, la **fusión pose + visual** (`modelos/fusion_pose_visual/fusion_pose_visual.joblib`, change `app-modelo-fusion`; el MIL queda como opción `modelo="mil"`), con la preparación compartida con el entrenamiento y, desde el 07/10/2026, la lectura del video igualada a la del notebook 01 (orientación y `mp4v`; change `base-comun-comparacion-de-modelos`). La tasa de negativa (42 %) es anterior a la selección por ventana y **no se volvió a medir** |
 
 ### Base común para comparar modelos (07/10/2026)
 
@@ -261,7 +261,7 @@ MyDrive/tesina_equinos/            <- RAIZ en Colab (equinos.rutas.NOMBRE_PROYEC
 ├── cache/<etapa>.zip              frames empaquetados + manifiesto .json
 ├── checkpoints/<etapa>.json       estado de reanudación + CSV parcial
 ├── ejecuciones/<etapa>_<ts>.ipynb copias ejecutadas por papermill
-├── modelos/                       pesos entrenados (objetivo 3)
+├── modelos/                       pesos entrenados (objetivo 3; `fusion_pose_visual/` es el modelo de la app)
 └── codigo/equinos/                copia del paquete, para el bootstrap en Colab
 ```
 
