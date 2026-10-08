@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from equinos import clasificacion, fusion, inferencia, rutas
+from equinos import clasificacion, fusion, inferencia, rutas, secuencia
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
@@ -88,6 +88,22 @@ def _metricas():
     return fusion.metricas_globales()
 
 
+def _coma(x: float) -> str:
+    """Número con coma decimal y una cifra: 2,4."""
+    return f"{x:.1f}".replace(".", ",")
+
+
+def texto_del_tramo(tramo: dict, ventana_max: float) -> list[str]:
+    """Qué tramo se analizó, en palabras; con un aviso si el video es más largo que la ventana."""
+    textos = [f"Se analizó el tramo del segundo {_coma(tramo['inicio_seg'])} al segundo "
+              f"{_coma(tramo['fin_seg'])} del video (de {_coma(tramo['duracion_seg'])} s en total)."]
+    if tramo["duracion_seg"] > ventana_max:
+        textos.append(
+            "La respuesta corresponde sólo a ese tramo. Si interesa otro momento del video, "
+            "conviene subir un video recortado a ese momento (de 5 a 7 segundos).")
+    return textos
+
+
 st.title("Detección de expresiones faciales en equinos")
 
 # --- Alcance, visible sin buscarlo (tarea 5.5) -------------------------------------------------
@@ -128,7 +144,8 @@ with st.expander("Antes de subir: qué esperar"):
         f"""
 - **Qué video subir:** uno corto, de **5 a 7 segundos** (como máximo
   {inferencia.DURACION_MAXIMA_SEG:.0f} s), donde se vea bien la cara del caballo. Así eran los
-  videos con los que aprendió el modelo; con videos más largos no funciona bien.
+  videos con los que aprendió el modelo. Si el video es más largo, el sistema analiza sólo un tramo
+  de hasta 7 s y lo informa.
 - **Formatos que acepta:** {", ".join(FORMATOS)}.
 - **Cuánto tarda:** entre **1 y 3 minutos**, y más cuanto más largo sea el video. Primero ubica la
   cara y sus puntos clave cuadro por cuadro, y eso es lo que lleva tiempo; la respuesta en sí es
@@ -211,6 +228,10 @@ if archivo is not None:
                 f"«{resultado.clase}» {resultado.veces_que_lo_dijo} veces y acertó "
                 f"{resultado.acertadas} ({resultado.precision:.0%})."
             )
+
+        if resultado.tramo:
+            for _texto in texto_del_tramo(resultado.tramo, secuencia.VENTANA_MAXIMA_SEG):
+                st.markdown(_texto)
 
         if resultado.precision < 0.5:
             st.error(
