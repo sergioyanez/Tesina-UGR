@@ -26,6 +26,6 @@
 - [x] 6.3 `openspec/project.md` actualizado
 
 ## 7. Pendientes (no son de este change)
-- [ ] 7.1 Sergio completa `lugar` y `sesion_confirmada` en la tabla de sesiones
+- [x] 7.1 Sergio completa `lugar` y `sesion_confirmada` en la tabla de sesiones (08/10: todo Tandil; 22 sesiones, los 28 sin fecha asignados según `comparacion/propuesta_sesiones_sin_fecha.csv`)
 - [ ] 7.2 Implementar los candidatos 2, 3 y 4 en sus worktrees con `comparacion.evaluar`
 - [ ] 7.3 Uso único de la reserva con el ganador (el criterio ya está declarado; sólo se ejecuta tras fijar el ganador)
