@@ -67,3 +67,71 @@ Autorizado por Sergio el 08/10/2026, una sola vez, con el ganador. Resultado en
 
 Está dentro de lo esperado por el desarrollo (0,868 ± 0,046; limpio 0,740). Con 20 caballos el
 intervalo es ancho: no se usa para comparar candidatos.
+
+## Validación por sesión de filmación (análisis complementario)
+
+Fecha: 08/10/2026. Diseño declarado antes de correr en la enmienda de `PROTOCOLO.md`; código en
+`validacion_por_sesion.py`; resultados en `resultados/validacion_por_sesion.json`. **No cambia el
+ganador ni toca la reserva**: el criterio de elección estaba fijado antes (§5 del protocolo).
+
+**Qué se hizo.** Para cada una de las 20 sesiones de filmación con clips de desarrollo (de las 22 de
+la tabla), el test son los clips de esa sesión y el train son los de las otras sesiones, sin los de
+ningún caballo presente en la sesión de test. Ninguna sesión se saltó (el train siempre conservó las
+tres clases). La exclusión por caballo quitó 40 clips de train en total (2,0 por sesión en promedio;
+máximo 21, en S018). Los cuatro candidatos usaron exactamente la misma partición, con un candidato
+nuevo por sesión. Se obtuvo una predicción fuera de muestra para cada uno de los 291 clips.
+
+| Candidato | F1 macro agrupado [IC95] | Accuracy | F1 limpio (188 clips) [IC95] | 5×4 (F1 fuera de muestra) | Caída | 5×4 limpio | Caída limpio |
+|---|---|---|---|---|---|---|---|
+| Fusión pose + visual | 0,864 [0,793; 0,921] | 0,866 | 0,744 [0,665; 0,830] | 0,862 | −0,002 | 0,740 | −0,003 |
+| RF de pose tipo SimBA | 0,831 [0,774; 0,885] | 0,832 | 0,715 [0,613; 0,781] | 0,836 | +0,005 | 0,718 | +0,003 |
+| MIL multimodal corregido | 0,690 [0,606; 0,763] | 0,698 | 0,587 [0,481; 0,706] | 0,715 | +0,025 | 0,618 | +0,031 |
+| Baseline LogReg media de frames | 0,628 [0,555; 0,696] | 0,632 | 0,534 [0,452; 0,613] | 0,696 | +0,068 | 0,597 | +0,063 |
+
+La comparación con el 5×4 usa el F1 agrupado de las predicciones fuera de muestra de cada
+repetición (media de las 5), que es la magnitud equivalente al F1 agrupado de este análisis; no es
+el F1 medio por fold de la tabla de arriba (0,868 para la fusión). «Caída» = 5×4 − validación por
+sesión; un valor negativo significa que no cayó. Los dos protocolos usan los mismos 291 clips pero
+distintos entrenamientos (el train de cada sesión tiene entre 202 y 290 clips; el del 5×4, unos 218),
+así que la comparación es orientativa.
+
+F1 por clase de la fusión: Disgustado 0,823, Interesado 0,878, Sereno 0,891. Matriz de confusión
+(filas = real; Disgustado, Interesado, Sereno): [72, 10, 4], [7, 90, 5], [10, 3, 90]. Las matrices y
+los F1 por clase de los otros tres están en el JSON.
+
+**Diferencias pareadas, fusión − otro (IC95 bootstrap por caballo, 2 000 réplicas, semilla 7).**
+
+| Diferencia | Todo (291 clips, 113 caballos) | Limpio (188 clips, 71 caballos) |
+|---|---|---|
+| fusión − RF de pose | +0,032 [−0,006; +0,072] | +0,028 [−0,028; +0,117] |
+| fusión − MIL | +0,174 [+0,105; +0,245] | +0,156 [+0,039; +0,253] |
+| fusión − baseline | +0,236 [+0,177; +0,301] | +0,210 [+0,126; +0,294] |
+
+**Interpretación.**
+
+- **El ranking se sostiene**: fusión, RF de pose, MIL y baseline, en el mismo orden que en el 5×4. La
+  fusión sigue primera y su ventaja sobre el MIL y el baseline es clara, también en el subconjunto limpio.
+- **El nivel de acierto de los dos candidatos con pose se sostiene** (la fusión pierde 0 puntos y el
+  RF 0,5); el MIL pierde 2,5 y el baseline 6,8. Los candidatos que dependen más de la apariencia
+  visual son los que más caen ante sesiones no vistas, lo que es coherente con que la apariencia
+  arrastre rasgos de cada filmación.
+- **La ventaja de la fusión sobre el RF de pose ya no se distingue de cero** (+0,032, IC que
+  incluye 0; en el 5×4 era +0,026 con límite inferior +0,002). Es una **limitación para la elección**:
+  si la regla de empate del §5 (gana el más simple) se aplicara con este resultado, el RF de pose
+  sería el elegido. Por mandato del protocolo el ganador no cambia, pero el informe no debe
+  presentar a la fusión como claramente superior al RF de pose; la diferencia es mínima en ambos análisis.
+- **Qué implica para el confusor de filmación**: ver una sesión nueva no baja el acierto de los
+  modelos con pose, así que la ventaja **no se explica por rasgos propios de cada sesión** (un
+  modelo que memorizara el contexto de una sesión habría caído). Pero **no descarta el confusor**: el
+  subconjunto limpio sigue unos 12 puntos por debajo en los dos candidatos con pose (0,744 contra
+  0,864 en la fusión; 0,715 contra 0,831 en el RF), igual que en el 5×4. Los rasgos que delatan la
+  clase —sobre todo la duración del clip, que las features de pose predicen— parecen ser propiedades del
+  protocolo de filmación de cada clase y no de una sesión en particular (la mediana de Disgustado es
+  más corta, C-04 de `docs/caminos_explorados.md`), así que dejar afuera una sesión no los neutraliza. Lo que este análisis
+  muestra es robustez ante sesiones nuevas, no ausencia de atajo de duración.
+- **Límites del análisis**: 20 sesiones muy desiguales (S020 concentra 85 de 291 clips y 38 caballos;
+  varias sesiones tienen 1 a 4 clips o una sola clase, por eso la métrica es agrupada); sesiones del
+  mismo día o de fechas cercanas (S011/S012, S016/S017) pueden compartir condiciones aunque figuren
+  como sesiones distintas; las sesiones se asocian con la clase en parte (S023 y S024 sólo tienen
+  Disgustado), y el IC de la fusión sigue siendo ancho ([0,793; 0,921]). El análisis usa sólo el
+  desarrollo; el único número fuera de muestra sigue siendo el de la reserva (0,834).

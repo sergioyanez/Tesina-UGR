@@ -802,11 +802,25 @@ notas de trabajo, no verificado en el repo»**.
 - **Qué se intentó:** una validación que deje afuera sesiones de filmación completas, no solo caballos.
 - **Por qué:** caballos de una misma sesión pueden quedar a ambos lados de la partición, y el contexto
   de captura contiene señal.
-- **Resultado:** la tabla de sesiones se completó el 08/10: todos los videos se filmaron en Tandil,
-  22 sesiones. **No hay ninguna evaluación leave-session-out** en el repositorio.
-- **Decisión:** **Pendiente.** Habilitada, no ejecutada; el motivo de no haberla corrido antes de la
-  reserva no está documentado.
-- **Evidencia:** `comparacion/sesiones_de_filmacion.csv`; commit `a3bd933`; `comparacion/PROTOCOLO.md` §7.
+- **Resultado:** la tabla de sesiones se completó el 08/10 (todos los videos se filmaron en Tandil, 22
+  sesiones) y ese mismo día se ejecutó el análisis (change `validacion-por-sesion`). Partición: test =
+  una sesión; train = las otras sesiones sin los caballos presentes en la de test; 20 sesiones con
+  clips de desarrollo, ninguna saltada, 40 clips de train perdidos por la exclusión; 291 predicciones
+  fuera de muestra, sin tocar la reserva. F1 macro agrupado [IC95 bootstrap por caballo]: fusión 0,864
+  [0,793; 0,921], RF de pose 0,831 [0,774; 0,885], MIL corregido 0,690 [0,606; 0,763], baseline 0,628
+  [0,555; 0,696]. Respecto del 5×4 (mismas métricas agrupadas) la fusión y el RF no caen (−0,002 y
+  +0,005), el MIL cae 0,025 y el baseline 0,068. Fusión − RF: +0,032 [−0,006; +0,072], ya no se
+  distingue de cero; fusión − MIL: +0,174 [+0,105; +0,245]; fusión − baseline: +0,236 [+0,177; +0,301].
+  En el subconjunto limpio (188 clips) la fusión da 0,744 y el RF 0,715, unos 12 puntos por debajo
+  del total, como en el 5×4.
+- **Decisión:** **Adoptado como análisis complementario** (ya no pendiente). El ranking y el nivel de
+  los candidatos con pose se sostienen ante sesiones no vistas, así que la ventaja no se explica por
+  rasgos de cada sesión; el confusor de duración y formato no se descarta (limpio sigue unos 12
+  puntos abajo). La ventaja de la fusión sobre el RF de pose no se distingue de cero: se declara como
+  limitación; el ganador no cambia, porque el criterio estaba fijado antes (`PROTOCOLO.md` §5).
+- **Evidencia:** `comparacion/validacion_por_sesion.py`, `comparacion/resultados/validacion_por_sesion.json`;
+  `comparacion/DECISION.md` (sección «Validación por sesión de filmación»); `comparacion/PROTOCOLO.md`
+  (enmienda del 08/10/2026); `comparacion/sesiones_de_filmacion.csv`; commit `a3bd933`.
 
 ### F. Entorno de ejecución
 
@@ -936,7 +950,7 @@ notas de trabajo, no verificado en el repo»**.
 | C-39 | Validación cruzada anidada | Validación | Descartado: peor | Triplica el desvío de la época sobre el canal real | `feat/validacion-cruzada-anidada-NestedCV` |
 | C-40 | Protocolo 5×4 con reserva del 15 % | Validación | Adoptado | Incertidumbre acotada y una estimación final fuera de muestra | `PROTOCOLO.md`, `cceea65` |
 | C-41 | Subconjunto limpio; recortar clips a igual duración | Validación | Adoptado / Sin medición | Los candidatos pierden 10–13 puntos; igualar duración cambia el dataset | `mejoras-prioridad-alta` (D4) |
-| C-42 | Leave-session-out | Validación | Pendiente | Habilitado el 08/10; no ejecutado | `a3bd933` |
+| C-42 | Leave-session-out | Validación | Adoptado (análisis complementario) | El ranking y el nivel de la fusión se sostienen con sesiones no vistas (0,864); fusión − RF ya no se distingue de cero | `validacion_por_sesion.json`, `DECISION.md` |
 | C-43 | Colab a máquina local con GPU | Entorno | Adoptado | Colab cortó la GPU; driver 580, Python del sistema y abandonar Colab descartados | `ejecucion-local-con-gpu` |
 | C-44 | Persistencia y orquestación (papermill) | Entorno | Adoptado | Cortes de sesión; reanudar con otra configuración mezcla corridas | `persistencia-y-orquestacion-colab` |
 | C-45 | Modelo servido por la app | App | Fusión adoptada; anteriores Reemplazados | Cada reemplazo se apoya en una medición | `app-modelo-fusion` |
