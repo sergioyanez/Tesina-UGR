@@ -40,3 +40,5 @@
 ## Cierre (08/10/2026)
 
 No se ejecutaron 3.1 a 4.2: quedaron superadas por el encuadre vigente (224×343) y el barrido de separación canónica no forma parte del modelo final. Las tareas sin marcar quedan descartadas por decisión de Sergio de cerrar el trabajo; se dejan sin tildar para no registrarlas como hechas.
+
+Se archiva con `--skip-specs`: su delta modifica el requisito «Región de interés cuadrada», que ya no existe en `openspec/specs/preprocesamiento-facial/spec.md` porque cambios posteriores lo reemplazaron. Sus requisitos quedan registrados en este change archivado y no se sincronizan a la spec vigente.
