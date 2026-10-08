@@ -1,0 +1,611 @@
+% ============================================================
+% INFORME FINAL DE TESINA — formato APA 7.ª edición (trabajo de estudiante)
+% Compilar con pdfLaTeX + Biber (en Overleaf: Menu → Compiler: pdfLaTeX; se usa Biber
+% automáticamente al detectar biblatex). Requiere referencias.bib en la misma carpeta.
+% Entrega: 29 de octubre de 2026.
+% ============================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+% ------------------------------------------------------------
+% IDIOMA, TIPOGRAFÍA Y PÁGINA (APA 7, sección 2.19–2.24)
+% ------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-tabla,es-nodecimaldot,es-noindentfirst]{babel}
+\usepackage{newtxtext,newtxmath}          % Times, 12 pt
+\usepackage[margin=2.54cm]{geometry}      % márgenes de 2,54 cm en los cuatro lados
+\usepackage{setspace}
+\doublespacing                            % doble espacio en todo el cuerpo
+\usepackage{ragged2e}                     % alineado a la izquierda, sin justificar
+\setlength{\RaggedRightParindent}{1.27cm} % sangría de primera línea de 1,27 cm
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{0pt}
+\usepackage{microtype}
+\usepackage{csquotes}
+
+% ------------------------------------------------------------
+% TABLAS, FIGURAS Y LISTAS
+% ------------------------------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{threeparttable}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=1.27cm}
+\usepackage{amsmath}
+\usepackage{url}
+
+% Rótulos APA: «Tabla 1» en negrita, título en cursiva en la línea siguiente, ambos arriba y
+% alineados a la izquierda; numeración correlativa en todo el documento.
+\usepackage{caption}
+\captionsetup{labelfont=bf,textfont=it,labelsep=newline,justification=RaggedRight,
+  singlelinecheck=false,skip=6pt,font={stretch=1.0}}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=top}
+\usepackage{chngcntr}
+\counterwithout{table}{chapter}
+\counterwithout{figure}{chapter}
+% Nota de tabla al pie, en el formato APA («Nota.» en cursiva).
+\newcommand{\notatabla}[1]{\par\vspace{2pt}{\singlespacing\small\RaggedRight\noindent\textit{Nota.} #1\par}}
+
+% ------------------------------------------------------------
+% ENCABEZADOS APA
+%   Nivel 1 (capítulo): centrado, negrita.  Nivel 2 (section): izquierda, negrita.
+%   Nivel 3 (subsection): izquierda, negrita cursiva.
+% Los capítulos conservan la numeración del índice propuesto en el plan de trabajo; las
+% secciones no se numeran (APA 7, sección 2.27).
+% ------------------------------------------------------------
+\usepackage{titlesec}
+\setcounter{secnumdepth}{-1}
+\titleformat{\chapter}[block]{\normalfont\normalsize\bfseries\filcenter}{}{0pt}{}
+\titlespacing*{\chapter}{0pt}{0pt}{12pt}
+\titleformat{\section}{\normalfont\normalsize\bfseries}{}{0pt}{}
+\titlespacing*{\section}{0pt}{12pt}{0pt}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\itshape}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{12pt}{0pt}
+% Los capítulos se numeran a mano para que el título y el índice digan «Capítulo N.» una sola vez.
+\newcommand{\capitulo}[1]{\stepcounter{chapter}%
+  \chapter*{Capítulo \arabic{chapter}. #1}%
+  \addcontentsline{toc}{chapter}{Capítulo \arabic{chapter}. #1}}
+
+% Número de página arriba a la derecha (APA 7, sección 2.18); sin encabezado corrido.
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyhead[R]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% ------------------------------------------------------------
+% REFERENCIAS APA 7
+% ------------------------------------------------------------
+\usepackage[style=apa,backend=biber]{biblatex}
+\addbibresource{referencias.bib}
+
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Detección automática de expresiones faciales en equinos mediante aprendizaje profundo en secuencias de video},
+  pdfauthor={Héctor R. Liceaga; Sergio M. Yañez}
+}
+
+\newcommand{\fmacro}{\textit{F}\textsubscript{1} macro}
+\newcommand{\clase}[1]{\textit{#1}}
+
+\begin{document}
+\RaggedRight
+
+% ============================================================
+% PORTADA (APA 7, trabajo de estudiante: sección 2.3)
+% ============================================================
+\thispagestyle{fancy}
+\begin{center}
+  \vspace*{3cm}
+  {\bfseries Detección Automática de Expresiones Faciales en Equinos mediante Aprendizaje Profundo en Secuencias de Video\par}
+  \vspace{1.5cm}
+  Héctor R. Liceaga y Sergio M. Yañez\par
+  \vspace{1cm}
+  Licenciatura en Ciencias de Datos, Universidad del Gran Rosario\par
+  Seminario de Trabajo Final\par
+  Docentes: Alejandro Hernández, Brian Gauna y Jorge Fernández\par
+  29 de octubre de 2026\par
+\end{center}
+\clearpage
+
+% ============================================================
+% RESUMEN (APA 7, sección 2.9)
+% ============================================================
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+\noindent Este trabajo desarrolla y evalúa un sistema de clasificación automática de expresiones faciales equinas a partir de videos cortos, en tres clases: \clase{Sereno}, \clase{Interesado} y \clase{Disgustado}. Ante la falta de un conjunto público adecuado, se construyó uno propio de 274 videos filmados en establecimientos de la provincia de Buenos Aires y etiquetados por una médica veterinaria codificadora certificada de EquiFACS. Cada video se segmenta en clips; la pose facial se estima con DeepLabCut SuperAnimal-Quadruped sobre todos los fotogramas, se eligen 16 fotogramas medidos dentro de la mejor ventana temporal y se alinea la cara con el eje ojo--hocico. Cada fotograma se describe con 512 características de una ResNet18 congelada y 9 geométricas, y un modelo de aprendizaje de múltiples instancias con atención produce la clase. Con validación cruzada de cuatro particiones agrupadas por caballo sobre 359 clips de 133 animales, el modelo obtuvo un \fmacro{} de 0,740 ($DE = 0{,}052$), por encima del criterio fijado de antemano (0,691) y de las líneas de base de azar (0,325) y de metadatos de filmación (0,618). Sin embargo, una regresión logística sobre el promedio de las características de los 16 fotogramas alcanzó 0,741, sin diferencia apreciable. Se concluye que la clasificación es factible con este conjunto, pero no se demostró que modelar el orden temporal ni la arquitectura de atención aporten sobre un resumen estático de varios fotogramas. Las principales limitaciones son el etiquetado por un único observador y la asociación parcial entre clase y contexto de filmación.
+
+\medskip
+\noindent\hspace{1.27cm}\textit{Palabras clave:} equinos, expresiones faciales, aprendizaje profundo, visión por computadora, bienestar animal, aprendizaje de múltiples instancias
+
+\clearpage
+{\singlespacing\tableofcontents}
+\clearpage
+
+% ============================================================
+% CAPÍTULO 1
+% ============================================================
+\capitulo{Introducción}
+
+\section{Problemática Observada}
+La evaluación del estado emocional de los animales es central para su bienestar \parencite{mendl2010}. En los equinos depende hoy casi exclusivamente de la observación humana, que puede ser subjetiva, requiere entrenamiento y es difícil de sostener de manera continua. Las herramientas estandarizadas, como el sistema de codificación de la acción facial equina EquiFACS \parencite{wathan2015} o la escala de muecas de dolor \parencite{dallacosta2014}, describen la cara con precisión, pero su aplicación manual es lenta.
+
+La visión por computadora ofrece una vía para automatizar parte de esa observación. Los trabajos recientes sobre reconocimiento de dolor y emociones animales a partir de imágenes y video muestran que el problema es abordable con aprendizaje profundo, aunque señalan como dificultades recurrentes la escasez de datos etiquetados, la definición de las etiquetas y la generalización a individuos nuevos \parencite{broome2023}. En equinos, la mayor parte de los antecedentes se concentra en el dolor: su reconocimiento automático a partir de expresiones faciales con redes convolucionales \parencite{lencioni2021,andersen2021} o de la pose a lo largo del video \parencite{rashid2022}. El reconocimiento de estados emocionales distintos del dolor está menos explorado y se ha abordado principalmente sobre imágenes aisladas \parencite{corujo2021}. En el caso del dolor equino, además, se reportó que la dinámica temporal del video aporta información que una imagen aislada no contiene \parencite{broome2019}.
+
+Este trabajo estudia la factibilidad de un sistema que, a partir de un video corto de la cara de un caballo, produzca una clasificación automática de su expresión. No busca reemplazar la evaluación de un especialista sino explorar si la información visual de una secuencia breve puede convertirse en una predicción reproducible y cuantificable que sirva de apoyo.
+
+\section{Hipótesis de Investigación}
+El plan de trabajo formuló la siguiente hipótesis general:
+
+\begin{quote}
+Es factible desarrollar un modelo computacional basado en arquitecturas de aprendizaje profundo capaz de identificar y clasificar automáticamente expresiones faciales asociadas a diferentes estados emocionales en equinos a partir de secuencias de video cortas, logrando un nivel de precisión útil para la asistencia de expertos humanos.
+\end{quote}
+
+Para hacerla verificable, antes de entrenar el modelo final se fijó como criterio de aceptación un \fmacro{} de 0,691, equivalente al rendimiento del modelo de referencia más un desvío estándar.
+
+Durante el desarrollo se formuló además una hipótesis temporal más específica: \textit{modelar explícitamente el orden de los fotogramas mejora la clasificación respecto de modelos que usan varios fotogramas pero son invariantes al orden}. La distinción importa porque un modelo puede procesar 16 fotogramas e ignorar por completo su orden si los promedia, los vota o los pondera con atención sin información posicional. Para sostener la hipótesis temporal, un modelo sensible al orden debería superar de manera consistente a una alternativa equivalente que no lo utilice.
+
+\section{Objetivos}
+\subsection{Objetivo General}
+Construir un sistema informático para la detección automatizada de expresiones faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
+
+\subsection{Objetivos Específicos}
+\begin{enumerate}
+  \item Conformar una base de datos de videos cortos de rostros de equinos.
+  \item Desarrollar un \textit{pipeline} que permita el preprocesamiento de los videos, incluyendo la extracción de fotogramas clave y la detección de la región de interés.
+  \item Aplicar técnicas de clasificación de aprendizaje automático orientadas a video para identificar estados emocionales.
+  \item Desarrollar una aplicación o interfaz para el uso del modelo resultante.
+\end{enumerate}
+
+\section{Organización del Informe}
+El Capítulo 2 presenta los aspectos de la etología equina relevantes para el problema y el criterio con que se etiquetó el conjunto de datos. El Capítulo 3 introduce las técnicas de ciencia de datos y visión por computadora utilizadas. El Capítulo 4 describe el desarrollo experimental: materiales, métodos y algoritmos. El Capítulo 5 reúne los resultados y su discusión, y el Capítulo 6 las conclusiones y el trabajo futuro. Siguen la bibliografía y los anexos.
+
+% ============================================================
+% CAPÍTULO 2
+% ============================================================
+\capitulo{Descripción y Etología del Equino}
+
+\section{La Expresión Facial Equina}
+El caballo es una especie social cuya comunicación depende en buena medida de señales visuales. Su cara presenta una musculatura capaz de producir un repertorio amplio de movimientos: EquiFACS identifica 17 unidades de acción facial, además de descriptores de acción y de movimientos de orejas, y fue desarrollado a partir de la anatomía muscular de la especie \parencite{wathan2015}. Las orejas, por su movilidad, son una fuente de información especialmente rica.
+
+EquiFACS describe movimientos, no emociones: codifica qué músculo se contrae, sin atribuirle un significado. El vínculo entre una configuración facial y un estado afectivo proviene de los etogramas, que describen las conductas observadas en la especie y el contexto en que aparecen \parencite{waring1983,mcdonnell2002,mullard2017,torresborda2024,lewis2025}. Este trabajo se apoya en esa combinación: EquiFACS como vocabulario para describir la cara y los etogramas como marco para interpretarla.
+
+\section{Clases de Expresión Consideradas}
+El conjunto de datos distingue tres clases. La etiquetadora, la médica veterinaria Bárbara Zimmermann, especialista en producción equina y codificadora certificada de EquiFACS, documentó por escrito el criterio de cada una (Tabla~\ref{tab:criterio}). Las unidades de acción figuran como rasgos que \textit{pueden} estar presentes, no como condiciones obligatorias.
+
+\begin{table}[H]
+\caption{Criterio de etiquetado por clase}\label{tab:criterio}
+{\singlespacing\small
+\begin{tabularx}{\textwidth}{@{}p{2.4cm}X@{}}
+\toprule
+Clase & Rasgos observables \\
+\midrule
+\clase{Sereno} & Orejas laterales o hacia caudal, en línea con la nariz; ollar neutro; puede haber labio mandibular descendido (AD160). Cabeza por debajo de la cruz o apoyada en la puerta del box. Puede incluir animales echados. \\
+\addlinespace
+\clase{Disgustado} & Pueden presentarse orejas hacia caudal (EAD103), ángulo caudal del ollar elevado (AUH13) o esclerótica visible (AD1). Puede incluir movimientos amenazantes de la cabeza, apertura bucal con dientes expuestos (AU10, AU16, AU17, AU18) y tensión en el lateral de la cara (AUH21). \\
+\addlinespace
+\clase{Interesado} & Orejas hacia craneal (EAD101), posiblemente aducidas (EAD102). Cabeza y cuello neutros o elevados. Puede presentar ollares dilatados (AD38) o esclerótica visible (AD1). \\
+\bottomrule
+\end{tabularx}}
+\notatabla{Códigos de EquiFACS \parencite{wathan2015} tal como los consignó la etiquetadora. AU = unidad de acción; AD = descriptor de acción; EAD = descriptor de acción de las orejas. Además de la cara, el criterio considera las condiciones ambientales, el comportamiento y la postura corporal.}
+\end{table}
+
+\section{Contexto de Filmación de Cada Clase}
+Todos los videos fueron filmados por la misma etiquetadora entre 2023 y 2026 en hipódromos (Tandil y Azul), haras (Maryland y General Lavalle), quintas particulares y el campus de la Universidad Nacional del Centro de la Provincia de Buenos Aires, y una estancia en San Cayetano. Las expresiones son espontáneas y surgen, en muchos casos, de la comunicación entre animales. El contexto difiere entre clases:
+
+\begin{itemize}
+  \item \clase{Interesado}, la clase más frecuente, aparece en todos los establecimientos. En los hipódromos los caballos estaban en box y se filmaron al abrir la puerta superior, por lo que casi todo el material de hipódromo pertenece a esta clase.
+  \item \clase{Sereno} se filmó en hipódromos durante el horario de descanso del personal, con los animales alimentados, y en cría extensiva en lotes o corrales.
+  \item \clase{Disgustado} proviene sobre todo de la cría extensiva, de interacciones dentro de la manada en las que los animales dominantes desplazan a otros del alimento o del agua. Hubo pocos casos en box.
+\end{itemize}
+
+Esta asociación entre clase y contexto es parte de la naturaleza del fenómeno, pero también una fuente potencial de atajos para un modelo, que podría aprender el contexto en lugar de la cara \parencite{geirhos2020}. El Capítulo 5 la cuantifica.
+
+\section{Procedimiento de Etiquetado y su Alcance}
+Después de cada sesión de filmación, la etiquetadora revisó todos los videos y recortó los tramos en que se manifestaba cada expresión; esos tramos son los videos del conjunto. La etiqueta se asigna al video entero y se hereda a sus clips, un supuesto que el recorte por tramos sostiene.
+
+En un estudio piloto previo, investigadores en comportamiento animal de la Universidad de Milán clasificaron imágenes con el mismo criterio y obtuvieron un acuerdo de $\kappa = 0{,}99$ \parencite{fleiss1971}. Las clases sin coincidencia entre observadores en ese piloto se excluyeron del conjunto: miedo, expresiones de intensidad elevada, conductas repetitivas y caballos atados. Los videos del conjunto, en cambio, los etiquetó una sola persona, la misma que los filmó y observó el contexto. El acuerdo entre observadores sobre este conjunto no se midió.
+
+En consecuencia, el modelo aprende a reproducir el criterio de esta etiquetadora y debe interpretarse como un clasificador de las categorías definidas en el conjunto, no como una herramienta diagnóstica de estados emocionales en sentido clínico o etológico estricto.
+
+% ============================================================
+% CAPÍTULO 3
+% ============================================================
+\capitulo{Técnicas de Ciencia de Datos y Visión por Computadora}
+
+\section{Visión General del Sistema}
+El sistema transforma cada clip en una \textit{bolsa} de 16 instancias. Cada instancia es un fotograma facial alineado, descrito por un vector visual de 512 dimensiones y uno geométrico de 9. La secuencia de procesamiento es: (a) segmentación del video en clips; (b) estimación de pose sobre todos los fotogramas; (c) selección de 16 fotogramas válidos; (d) alineación espacial de la cara; (e) extracción de características visuales y geométricas, y (f) fusión y clasificación mediante aprendizaje de múltiples instancias con atención.
+
+\section{Estimación de Pose}
+DeepLabCut estima la posición de puntos anatómicos sin marcadores mediante redes profundas \parencite{mathis2018}. Este trabajo usa el modelo preentrenado SuperAnimal-Quadruped, entrenado sobre una gran colección de cuadrúpedos y aplicable sin anotar datos propios \parencite{ye2024}. El modelo devuelve 39 puntos con una confianza para cada uno. Un fotograma se considera válido cuando el ojo y el hocico superan una confianza de 0,50.
+
+En las primeras versiones del sistema se usaba además un detector de objetos YOLO \parencite{redmon2016,jocher2024} para localizar al caballo antes de estimar la pose. Se retiró del sistema final porque DeepLabCut ya localiza al animal y la combinación de ambos agregaba costo sin una mejora proporcional.
+
+\section{Normalización Espacial}
+Con el ojo y el hocico de cada fotograma se estima una transformación de similitud que corrige rotación, escala y traslación, y lleva la cara a una posición canónica. El recorte resultante mide $224 \times 343$ píxeles; la altura adicional respecto del formato cuadrado habitual conserva las orejas. Los bordes se rellenan replicando los píxeles vecinos para no introducir bandas negras cuyo tamaño dependa del encuadre. El objetivo es reducir la posibilidad de que el modelo aprenda diferencias de encuadre en lugar de diferencias de expresión.
+
+\section{Aprendizaje por Transferencia con ResNet18}
+Las redes residuales permiten entrenar redes convolucionales profundas mediante conexiones de atajo entre capas \parencite{he2016}. Una ResNet18 entrenada sobre ImageNet \parencite{deng2009} se utiliza como extractor de características: se elimina su clasificador y se conserva la salida del \textit{pooling} global, un vector de 512 dimensiones por fotograma. Las capas convolucionales aprenden representaciones generales que se transfieren a tareas nuevas \parencite{yosinski2014}.
+
+La red se mantiene congelada: sus parámetros no se actualizan. Con 133 caballos, entrenar sus 11 millones de parámetros favorecería la memorización de los individuos. Congelada, permite además precalcular las características una sola vez.
+
+\section{Características Geométricas}
+Para cada fotograma se calculan las coordenadas del ojo, el hocico y la oreja, expresadas respecto del punto medio ojo--hocico y escaladas por la distancia entre ambos, más un indicador de validez por punto: 9 valores en total. La representación es aproximadamente invariante al tamaño y a la posición de la cara en la imagen.
+
+\section{Agregación de Fotogramas}
+Se compararon varias formas de combinar los fotogramas de un clip: el voto entre clasificaciones individuales, el promedio de representaciones, redes recurrentes sensibles al orden ---GRU \parencite{cho2014} y CNN--LSTM \parencite{hochreiter1997}---, atención con codificación posicional y aprendizaje de múltiples instancias. La comparación entre modelos sensibles e invariantes al orden es la base de la evaluación de la hipótesis temporal.
+
+\section{Aprendizaje de Múltiples Instancias}
+En el aprendizaje de múltiples instancias (MIL, por sus siglas en inglés), cada ejemplo es una bolsa de instancias con una única etiqueta \parencite{dietterich1997}. La variante con atención aprende un peso para cada instancia y forma la representación de la bolsa como un promedio ponderado \parencite{ilse2018}. Aquí cada clip es una bolsa de 16 fotogramas. La atención sin información posicional es, por construcción, invariante al orden de las instancias.
+
+\section{Validación Agrupada por Caballo}
+Si clips del mismo caballo aparecen en entrenamiento y en prueba, el modelo puede reconocer al animal en lugar de la expresión, una forma de fuga de información que infla las métricas \parencite{kaufman2012}. Cuando los datos tienen estructura jerárquica, la validación cruzada debe respetarla \parencite{roberts2017}. Por eso todas las particiones agrupan los clips por caballo: ningún animal aparece a la vez en entrenamiento y en prueba.
+
+\section{Métricas}
+La métrica principal es el \fmacro{}, el promedio no ponderado del \textit{F}\textsubscript{1} de cada clase, adecuado ante clases desbalanceadas porque les da el mismo peso \parencite{sokolova2009}. Se informan también la exactitud, la precisión, la sensibilidad y la matriz de confusión. La incertidumbre de las diferencias entre modelos se estima con intervalos de confianza por \textit{bootstrap} \parencite{efron1993}, remuestreando caballos y no clips.
+
+% ============================================================
+% CAPÍTULO 4
+% ============================================================
+\capitulo{Desarrollo Experimental: Materiales, Métodos y Algoritmos}
+
+\section{Materiales}
+El sistema se implementó en Python con PyTorch \parencite{paszke2019}, scikit-learn \parencite{pedregosa2011}, OpenCV \parencite{bradski2000} y DeepLabCut \parencite{mathis2018}. La estimación de pose se ejecutó con una GPU NVIDIA RTX 3070 de 8 GB; el modelado no requiere GPU porque opera sobre características precalculadas. El código, las pruebas y la documentación se versionaron en un repositorio Git.
+
+\section{Conjunto de Datos}
+No existía un conjunto público con estas tres clases, por lo que se construyó uno propio a partir de videos filmados con teléfono celular. Los videos se organizaron en carpetas por clase, y el identificador del caballo se tomó del prefijo numérico del nombre de archivo; ese identificador es el que permite particionar sin fuga. La Tabla~\ref{tab:tamano} resume el tamaño del conjunto y la Tabla~\ref{tab:clases}, su distribución por clase.
+
+\begin{table}[H]
+\caption{Tamaño del conjunto de datos}\label{tab:tamano}
+{\singlespacing
+\begin{tabular}{@{}lr@{}}
+\toprule
+Elemento & Cantidad \\
+\midrule
+Videos originales catalogados & 274 \\
+Clips candidatos & 393 \\
+Clips utilizados & 359 \\
+Caballos distintos & 133 \\
+\bottomrule
+\end{tabular}}
+\notatabla{Un clip candidato se descarta cuando no contiene una ventana con suficientes fotogramas medidos (ver la sección sobre selección de fotogramas). Se utiliza el 91,3~\% de los candidatos.}
+\end{table}
+
+\begin{table}[H]
+\caption{Distribución por clase del conjunto utilizado}\label{tab:clases}
+{\singlespacing
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Clase & Clips & Caballos \\
+\midrule
+\clase{Disgustado} & 103 & 57 \\
+\clase{Interesado} & 118 & 60 \\
+\clase{Sereno} & 138 & 52 \\
+\midrule
+Total & 359 & 133 \\
+\bottomrule
+\end{tabular}}
+\notatabla{La suma de caballos por clase supera 133 porque 29 animales aparecen en más de una clase: la etiqueta describe un momento, no al individuo.}
+\end{table}
+
+\section{Problemas Detectados en los Datos}
+Durante la construcción del conjunto se detectaron y corrigieron: un video duplicado en dos clases, videos con la orientación guardada como metadato, una copia local incompleta de la fuente de datos, archivos auxiliares de DeepLabCut mezclados con los clips, desenfoque de movimiento y cabezas parcialmente fuera de cuadro. Se adoptó una única fuente de datos declarada, corrección automática de la orientación y controles de duplicados.
+
+Persiste una diferencia de duración entre clases: la mediana de duración de los clips es de 3,2~s en \clase{Disgustado} y de 6,0~s en \clase{Interesado} y \clase{Sereno}. Es coherente con el contexto de filmación ---las interacciones que originan \clase{Disgustado} son breves y bruscas---, pero constituye una señal que el modelo podría aprovechar sin mirar la cara. Se la controla en el Capítulo 5.
+
+\section{Generación de Clips}
+Los videos se segmentan en ventanas de alrededor de 6~s sin solapamiento, absorbiendo un resto final de hasta 7~s. La duración mínima para conservar un video corto se fijó en 1~s para no descartar de manera preferencial la clase \clase{Disgustado}.
+
+\section{Estimación de Pose sobre Todos los Fotogramas}
+DeepLabCut se ejecutó sobre todos los fotogramas de los 393 clips candidatos, alrededor de 73\,000. Es la etapa más costosa, pero se ejecuta una sola vez y su resultado se almacena, lo que permite cambiar el criterio de selección de fotogramas sin repetir el cálculo.
+
+\section{Selección de los 16 Fotogramas}
+La versión inicial fijaba 16 posiciones equiespaciadas antes de saber qué fotogramas tenían mediciones válidas; un fotograma fallido se recuperaba por interpolación o anotación manual. Con ese enfoque sólo 153 de los 393 clips resultaban utilizables.
+
+La versión vigente invierte el orden: primero mide y después elige. El algoritmo (a) busca la ventana temporal más larga, de hasta 7~s, que contenga al menos 16 fotogramas válidos y ningún hueco sin medición mayor a 0,5~s; (b) distribuye 16 posiciones equiespaciadas en esa ventana, y (c) ancla cada posición al fotograma válido de mayor confianza dentro de una tolerancia de 0,10~s. No se interpolan puntos ni se anotan fotogramas a mano: si un clip no ofrece una ventana suficiente, se descarta. Este cambio elevó los clips utilizables de 153 a 359 sin filmar videos nuevos.
+
+\section{Representaciones Visual y Geométrica}
+Cada fotograma seleccionado se alinea, se guarda en JPEG con calidad 95 y se procesa con la ResNet18 congelada, que produce 512 características. La aplicación de inferencia reproduce exactamente este recorrido, incluida la compresión, para que el modelo reciba en producción la misma distribución de imágenes que en el entrenamiento. En paralelo se calcula el vector geométrico de 9 valores.
+
+\section{Arquitectura del Modelo}
+Para cada fotograma, el vector geométrico pasa por un perceptrón multicapa ($9 \rightarrow 64 \rightarrow 128$) y se concatena con las 512 características visuales, lo que da una representación de 640 dimensiones. Un mecanismo de atención asigna un peso a cada uno de los 16 fotogramas; la suma ponderada forma la representación del clip, que una capa lineal convierte en puntuaciones para las tres clases. El modelo tiene 132\,355 parámetros entrenables, sin contar la ResNet18.
+
+\section{Protocolo de Evaluación}
+La evaluación usa validación cruzada con cuatro particiones externas agrupadas por caballo. Dentro de cada partición, el conjunto de entrenamiento se divide otra vez por caballo en entrenamiento interno y validación interna. La validación interna selecciona la época mediante parada temprana \parencite{prechelt2012}: hasta 100 épocas, con paciencia de 10, conservando el punto de control de mejor \fmacro{} en validación. El conjunto de prueba de cada partición se evalúa una sola vez. Las predicciones fuera de muestra de las cuatro particiones se combinan para calcular las métricas globales.
+
+Para interpretar el resultado se evaluaron, sobre las mismas particiones, líneas de base que aíslan cada fuente de señal: la clase mayoritaria, el azar estratificado, la duración del clip, los metadatos de filmación (duración, cuadros por segundo, resolución y ventana), la geometría sola, un único fotograma central y el promedio de las características visuales de los 16 fotogramas. Las líneas de base usan regresión logística con hiperparámetros fijados de antemano y estandarización ajustada sólo con el entrenamiento de cada partición.
+
+El modelo de producción se reentrenó con todos los datos durante 29 épocas, valor cercano a la media de las mejores épocas observadas (28,5).
+
+\section{Aplicación de Inferencia}
+Se implementó una aplicación web con Streamlit que comparte con el entrenamiento el mismo código de selección, alineación y extracción. Una prueba automatizada verifica sobre clips reales que ambas ramas eligen los mismos fotogramas y producen recortes idénticos píxel a píxel; esa prueba detectó durante el desarrollo un cambio de umbral que había desalineado la aplicación respecto del modelo entrenado. La aplicación procesa un video nuevo, informa la clase estimada con su confianza y el peso de atención de cada fotograma, y se niega a clasificar ---indicando el motivo--- cuando el video no ofrece una secuencia válida.
+
+\section{Evolución del Desarrollo}
+La Tabla~\ref{tab:hitos} resume los hitos principales.
+
+\begin{table}[H]
+\caption{Hitos principales del desarrollo}\label{tab:hitos}
+{\singlespacing\small
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}X@{}}
+\toprule
+Fecha (2026) & Hito \\
+\midrule
+Mayo & Plan de trabajo, objetivos e hipótesis general. \\
+13--17/08 & Primer \textit{pipeline}: preparación del conjunto, detección con YOLO y pose con DeepLabCut. \\
+18--21/08 & Diagnóstico de cobertura, orientación de los videos y encuadre. \\
+28/08 & Primera evaluación de la clasificación sobre 141 clips. \\
+05/09 & Ampliación a 153 clips; modelo de promedio con \fmacro{} 0,704. \\
+15/09 & Modelo MIL multimodal. \\
+17--18/09 & Auditoría del \textit{pipeline}; selección por ventana temporal, 359 clips, validación interna y parada temprana. \\
+19--23/09 & Ablaciones y experimentos de mejora. \\
+25/09 & Líneas de base del conjunto vigente, control del confusor de filmación y registro del sobreajuste. \\
+28/09--07/10 & Documentación del protocolo de etiquetado y verificación de la equivalencia entre entrenamiento e inferencia. \\
+\bottomrule
+\end{tabularx}}
+\end{table}
+
+% ============================================================
+% CAPÍTULO 5
+% ============================================================
+\capitulo{Resultados y Discusión}
+
+\section{Rendimiento del Modelo}
+Sobre 359 clips de 133 caballos, el modelo MIL multimodal obtuvo un \fmacro{} de 0,740 ($DE = 0{,}052$ entre particiones; IC 95~\% por \textit{bootstrap} de caballos [0,677; 0,797]) y una exactitud de 0,744. Supera el criterio de aceptación fijado antes de entrenar (0,691). La Tabla~\ref{tab:porclase} detalla las métricas por clase y la Tabla~\ref{tab:confusion}, la matriz de confusión.
+
+\begin{table}[H]
+\caption{Métricas por clase del modelo MIL multimodal}\label{tab:porclase}
+{\singlespacing
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Clase & Precisión & Sensibilidad & \textit{F}\textsubscript{1} & \textit{n} \\
+\midrule
+\clase{Disgustado} & 0,740 & 0,689 & 0,714 & 103 \\
+\clase{Interesado} & 0,764 & 0,797 & 0,780 & 118 \\
+\clase{Sereno} & 0,729 & 0,739 & 0,734 & 138 \\
+\bottomrule
+\end{tabular}}
+\notatabla{Predicciones fuera de muestra de las cuatro particiones agrupadas por caballo.}
+\end{table}
+
+\begin{table}[H]
+\caption{Matriz de confusión del modelo MIL multimodal}\label{tab:confusion}
+{\singlespacing
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& \multicolumn{3}{c}{Clase predicha} \\
+\cmidrule(l){2-4}
+Clase real & \clase{Disgustado} & \clase{Interesado} & \clase{Sereno} \\
+\midrule
+\clase{Disgustado} & 71 & 13 & 19 \\
+\clase{Interesado} & 5 & 94 & 19 \\
+\clase{Sereno} & 20 & 16 & 102 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+El error dominante es la confusión entre \clase{Sereno} y \clase{Disgustado} (20 y 19 clips), más frecuente que la que parecería semánticamente más cercana. Algunos caballos son clasificados mal en todos sus clips; un error sistemático sobre un mismo animal es más compatible con una etiqueta discutible o con una apariencia atípica que con ruido del modelo, pero sin una segunda opinión sobre las etiquetas no es posible distinguir entre ambas causas.
+
+\section{Variabilidad entre Particiones}
+El \fmacro{} de prueba fue de 0,718, 0,769, 0,677 y 0,795 en las cuatro particiones. La dispersión indica que el rendimiento depende de qué caballos quedan en prueba, lo esperable cuando el tamaño efectivo de la muestra son 133 animales y no 359 clips independientes.
+
+\section{Líneas de Base}
+La Tabla~\ref{tab:lineas} compara el modelo con las líneas de base evaluadas sobre las mismas particiones.
+
+\begin{table}[H]
+\caption{Comparación con líneas de base}\label{tab:lineas}
+{\singlespacing
+\begin{threeparttable}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Modelo & \fmacro{} (\textit{DE}) & Exactitud \\
+\midrule
+Clase mayoritaria & 0,183 (0,033) & 0,384 \\
+Azar estratificado\tnote{a} & 0,325 (0,025) & --- \\
+Duración del clip & 0,544 (0,035) & 0,532 \\
+Geometría sola (media y desvío) & 0,607 (0,033) & 0,618 \\
+Metadatos de filmación & 0,618 (0,034) & 0,635 \\
+Visual, un fotograma central & 0,679 (0,024) & 0,688 \\
+Visual, promedio de 16 fotogramas & 0,741 (0,020) & 0,749 \\
+MIL multimodal (modelo final) & 0,740 (0,052) & 0,744 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item[a] Esperanza del \fmacro{} de predicciones aleatorias con las proporciones de clase; percentil 95: 0,367.
+\end{tablenotes}
+\end{threeparttable}}
+\notatabla{Todas las líneas de base son regresiones logísticas evaluadas con las mismas cuatro particiones por caballo que el modelo final. \textit{DE} = desvío estándar entre particiones.}
+\end{table}
+
+Tres resultados se desprenden de la comparación. Primero, el modelo supera con amplitud al azar y a la clase mayoritaria. Segundo, los metadatos de filmación por sí solos alcanzan 0,618: la forma en que se filmó cada clase contiene señal. El modelo los supera por 0,121 (IC 95~\% [0,031; 0,211]), de modo que su rendimiento no se reduce a esos metadatos. Tercero, y más importante, un clasificador lineal sobre el \textit{promedio} de las características visuales de los 16 fotogramas obtiene 0,741, prácticamente lo mismo que el modelo final: la diferencia es de $-0{,}005$ con IC 95~\% [$-0{,}068$; 0,058], que incluye el cero. Usar 16 fotogramas sí aporta respecto de uno solo (diferencia de 0,059, IC 95~\% [0,001; 0,116]), pero no se demuestra que la atención, la geometría ni el orden agreguen algo sobre un resumen estático de esos fotogramas.
+
+\section{Control del Contexto de Filmación}
+Para estimar cuánto del rendimiento depende de rasgos de la filmación, se restringió la evaluación a los clips que comparten resolución ($1080 \times 1920$) y tienen al menos 5~s de duración, sin reentrenar. Sobre esos 236 clips el modelo conserva un \fmacro{} de 0,705 y una exactitud de 0,746. El subconjunto contiene sólo 28 clips de \clase{Disgustado}, por lo que el resultado es indicativo; aun así, la caída es moderada y sugiere que el modelo no depende principalmente de la duración ni de la resolución.
+
+Este control no alcanza al contexto que la etiquetadora describe (box de hipódromo para \clase{Interesado}, interacción en manada para \clase{Disgustado}). Que la clase se asocie al entorno es inherente al fenómeno, pero el modelo puede aprovecharlo como pista: los videos con varios animales en cuadro pertenecen casi siempre a \clase{Disgustado} y el modelo los clasifica mejor que al resto de esa clase.
+
+\section{Sobreajuste}
+El registro por época del entrenamiento interno muestra un sobreajuste marcado: el \fmacro{} medio fue de 0,979 en entrenamiento, 0,712 en validación y 0,740 en prueba (Anexo~C). La parada temprana contiene el problema: el rendimiento de prueba se mantiene en línea con el de validación. Con 132\,355 parámetros y unos 200 clips de entrenamiento por partición, la memorización del conjunto de entrenamiento es esperable.
+
+\section{Evaluación de la Hipótesis Temporal}
+La hipótesis temporal no queda respaldada. La GRU y la atención con codificación posicional, sensibles al orden, no superaron de manera consistente a las variantes invariantes. En el modelo de promedio, permutar los fotogramas no cambia el resultado por construcción, y el modelo final, cuya atención no usa la posición, es igualmente invariante al orden. La comparación con el promedio estático refuerza la conclusión: un resumen sin orden ni atención alcanza el mismo rendimiento.
+
+La conclusión es acotada. No implica que la dinámica sea irrelevante en la expresión equina ---en dolor equino se reportó lo contrario \parencite{broome2019}---, sino que \textit{con este conjunto, esta ventana de hasta 7~s y estas representaciones, no se encontró evidencia de que el orden de los 16 fotogramas mejore la clasificación}.
+
+\section{Variantes No Adoptadas}
+El ajuste fino parcial de la ResNet18 (última etapa convolucional) obtuvo 0,747 ($DE = 0{,}057$), una diferencia pequeña frente a la variabilidad entre particiones que no justificaba el costo ni el riesgo adicional de sobreajuste. Tampoco mejoraron el modelo un canal geométrico con más puntos anatómicos, puntos de boca y ollares, la validación cruzada anidada para elegir la época, el enmascarado de clips incompletos ni una representación del movimiento de la cabeza. La geometría resultó útil sólo como complemento: el MIL visual sin geometría obtuvo 0,686.
+
+\section{Limitaciones}
+\begin{enumerate}
+  \item \textbf{Un único observador.} El acuerdo se midió en un piloto sobre imágenes, no sobre este conjunto. Se desconoce el techo de rendimiento que impone la ambigüedad de las etiquetas.
+  \item \textbf{El criterio de etiquetado no es sólo facial.} Incluye ambiente, comportamiento y postura, información a la que el modelo, que ve un recorte de la cara, no accede por completo.
+  \item \textbf{Asociación entre clase y contexto.} La clase se relaciona parcialmente con el establecimiento, la situación y la duración de la toma.
+  \item \textbf{Tamaño efectivo.} Los 133 caballos limitan la precisión de las estimaciones, como muestra la variabilidad entre particiones.
+  \item \textbf{Sin validación externa.} No se evaluó el modelo con videos de otras fuentes, cámaras o regiones.
+  \item \textbf{Validación interna pequeña.} La elección de la época se apoya en pocos caballos por partición.
+  \item \textbf{Pose sin adaptación.} DeepLabCut se usa sin entrenamiento adicional sobre este conjunto.
+  \item \textbf{Costo de inferencia.} Procesar un video nuevo demora de uno a tres minutos con GPU.
+\end{enumerate}
+
+\section{Discusión General}
+Los resultados muestran que la cara del caballo, tal como la captura un video corto de celular, contiene señal suficiente para discriminar las tres clases definidas en el conjunto, y que esa señal se generaliza a animales no vistos durante el entrenamiento. El rendimiento es comparable entre clases y supera claramente a las líneas de base que no miran la cara.
+
+Al mismo tiempo, el trabajo muestra que la complejidad del modelo no fue lo que determinó el resultado. Los avances más grandes provinieron de decisiones metodológicas: eliminar la fuga por identidad, corregir la orientación de los videos, ampliar el encuadre para incluir las orejas, rediseñar la selección de fotogramas y unificar entrenamiento e inferencia. Un clasificador lineal sobre un resumen estático de varios fotogramas iguala a la arquitectura final. Con un conjunto de este tamaño, la calidad de los datos y el control de sesgos pesan más que la arquitectura.
+
+% ============================================================
+% CAPÍTULO 6
+% ============================================================
+\capitulo{Conclusiones}
+
+\section{Cumplimiento de los Objetivos}
+\subsection{Conjunto de Datos}
+Se conformó un conjunto propio de 274 videos y 393 clips de equinos, de los cuales el sistema utiliza 359, correspondientes a 133 caballos, con un criterio de etiquetado documentado y referido a EquiFACS.
+
+\subsection{Preprocesamiento}
+Se implementó un \textit{pipeline} reproducible que estima la pose, elige una ventana temporal medida, selecciona 16 fotogramas, alinea la cara y genera representaciones visuales y geométricas, con un aprovechamiento del 91,3~\% de los clips.
+
+\subsection{Clasificación}
+El modelo MIL multimodal alcanza un \fmacro{} de 0,740 y una exactitud de 0,744 con evaluación agrupada por caballo, por encima del criterio de aceptación fijado de antemano.
+
+\subsection{Aplicación}
+Se implementó una aplicación de inferencia que usa el mismo código que el entrenamiento, verificado por pruebas automatizadas, y que se niega a clasificar cuando el video no permite una medición suficiente.
+
+\section{Conclusión sobre la Hipótesis General}
+La hipótesis general se considera respaldada dentro de los límites del conjunto: es factible clasificar automáticamente las tres expresiones definidas a partir de videos cortos, con generalización a caballos no observados y un rendimiento por encima del criterio establecido. La afirmación se refiere a las categorías y al criterio de una etiquetadora; no constituye una validación clínica ni etológica externa.
+
+\section{Conclusión sobre la Hipótesis Temporal}
+La hipótesis temporal no fue demostrada. Los modelos sensibles al orden no superaron a los invariantes, y un resumen estático de los 16 fotogramas alcanza el mismo rendimiento que el modelo final. Utilizar varios fotogramas sí resultó útil; ordenarlos o ponderarlos, no.
+
+\section{Aportes}
+\begin{itemize}
+  \item Un conjunto de datos propio de expresiones faciales equinas con criterio de etiquetado documentado.
+  \item La identificación y el control de la fuga de información por identidad.
+  \item Un método de selección de fotogramas que mide antes de elegir y más que duplicó el aprovechamiento de los clips.
+  \item Un sistema de líneas de base que permite atribuir el rendimiento a sus fuentes y detectar atajos.
+  \item La equivalencia verificada entre el procesamiento de entrenamiento y el de inferencia.
+  \item El registro de resultados negativos y de variantes descartadas.
+\end{itemize}
+
+\section{Trabajo Futuro}
+\begin{enumerate}
+  \item Medir el acuerdo entre observadores sobre una muestra del conjunto: que una segunda persona etiquete a ciegas unos 60 clips con el criterio documentado y se calcule el $\kappa$ de Cohen \parencite{cohen1960}.
+  \item Incorporar más caballos, en particular de \clase{Disgustado} en contextos distintos de la manada.
+  \item Validar el modelo con videos de otras fuentes y establecimientos.
+  \item Equilibrar el contexto de filmación entre clases o controlarlo explícitamente.
+  \item Estudiar representaciones temporales sólo si nuevos datos muestran señal temporal que el esquema actual no captura.
+  \item Reducir el costo de la estimación de pose en inferencia.
+\end{enumerate}
+
+\section{Conclusión Final}
+Un sistema de clasificación de expresiones faciales equinas puede construirse con un \textit{pipeline} reproducible y evaluarse con rigor evitando la fuga por identidad. El mejor resultado no provino de aumentar la complejidad del modelo sino de mejorar el aprovechamiento de los datos, la coherencia metodológica y el control de sesgos. La información de varios fotogramas resulta útil, pero con los datos y escalas estudiados no se encontró evidencia de que su orden sea determinante. El trabajo futuro debería orientarse a ampliar y diversificar el conjunto y a medir la confiabilidad de sus etiquetas antes que a arquitecturas temporales más complejas.
+
+% ============================================================
+% CAPÍTULO 7 — BIBLIOGRAFÍA
+% ============================================================
+\clearpage
+\chapter*{Bibliografía}
+\addcontentsline{toc}{chapter}{Capítulo 7. Bibliografía}
+\begingroup
+\setlength{\bibhang}{1.27cm}
+\printbibliography[heading=none]
+\endgroup
+
+% ============================================================
+% CAPÍTULO 8 — ANEXOS
+% ============================================================
+\clearpage
+\chapter*{Anexos}
+\addcontentsline{toc}{chapter}{Capítulo 8. Anexos}
+
+\section{Anexo A. Parámetros del Sistema}
+\begin{table}[H]
+\caption{Parámetros principales}\label{tab:parametros}
+{\singlespacing
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+Parámetro & Valor \\
+\midrule
+Fotogramas por clip & 16 \\
+Ventana temporal máxima & 7,0~s \\
+Hueco máximo entre mediciones & 0,5~s \\
+Tolerancia de anclaje & 0,10~s \\
+Confianza mínima de ojo y hocico & 0,50 \\
+Tamaño del recorte & $224 \times 343$ píxeles \\
+Extractor visual & ResNet18 preentrenada en ImageNet, congelada \\
+Dimensión visual / geométrica & 512 / 9 \\
+Proyección geométrica & $9 \rightarrow 64 \rightarrow 128$ \\
+Particiones externas & 4, agrupadas por caballo \\
+Épocas máximas / paciencia & 100 / 10 \\
+Épocas del modelo de producción & 29 \\
+Parámetros entrenables & 132\,355 \\
+\bottomrule
+\end{tabularx}}
+\end{table}
+
+\section{Anexo B. Componentes del Software}
+\begin{itemize}
+  \item \texttt{equinos/catalogo.py}: catálogo de videos por clase.
+  \item \texttt{equinos/reproceso.py}: estimación de pose sobre todos los fotogramas.
+  \item \texttt{equinos/secuencia.py}: selección temporal de fotogramas.
+  \item \texttt{equinos/alineado.py}: alineación de la cara.
+  \item \texttt{equinos/dataset.py}: construcción de los recortes.
+  \item \texttt{equinos/caracteristicas.py}: extracción con ResNet18.
+  \item \texttt{equinos/clasificacion.py}: modelo, entrenamiento y evaluación.
+  \item \texttt{equinos/particion.py}: particiones por caballo.
+  \item \texttt{equinos/inferencia.py} y \texttt{app\_inferencia.py}: aplicación de inferencia.
+  \item \texttt{scripts/evaluar\_v2.py} y \texttt{scripts/evaluar\_lineas\_de\_base.py}: evaluación del modelo y de las líneas de base.
+  \item \texttt{tests/}: pruebas automatizadas, entre ellas la de equivalencia entre entrenamiento e inferencia.
+\end{itemize}
+
+\section{Anexo C. Resultados por Partición}
+\begin{table}[H]
+\caption{Entrenamiento, validación y prueba por partición}\label{tab:folds}
+{\singlespacing
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Partición & Mejor época & \textit{F}\textsubscript{1} entrenamiento & \textit{F}\textsubscript{1} validación & \textit{F}\textsubscript{1} prueba \\
+\midrule
+1 & 28 & 0,973 & 0,700 & 0,718 \\
+2 & 26 & 0,994 & 0,766 & 0,769 \\
+3 & 20 & 0,969 & 0,641 & 0,677 \\
+4 & 40 & 0,981 & 0,742 & 0,795 \\
+\midrule
+Media & 28,5 & 0,979 & 0,712 & 0,740 \\
+\bottomrule
+\end{tabular}}
+\notatabla{\textit{F}\textsubscript{1} macro. El entrenamiento se evalúa sin \textit{dropout} con los pesos de la mejor época.}
+\end{table}
+
+\section{Anexo D. Variantes Evaluadas}
+\begingroup\singlespacing\small
+\setlength{\LTleft}{0pt}
+\begin{longtable}{@{}p{0.27\textwidth}p{0.42\textwidth}p{0.23\textwidth}@{}}
+\caption{Modelos y variantes evaluados}\label{tab:modelos}\\
+\toprule
+Modelo & Descripción & Resultado \\
+\midrule
+\endfirsthead
+\toprule
+Modelo & Descripción & Resultado \\
+\midrule
+\endhead
+Un fotograma y voto & Regresión logística por fotograma y voto entre 16 predicciones. & 0,660 sobre 153 clips. \\
+Modelo de promedio & Proyección compartida y promedio de 16 fotogramas. & 0,704 sobre 153 clips. \\
+GRU & Recurrente, sensible al orden. & No superó a los invariantes. \\
+Atención con posición & Atención con codificación posicional. & Sin mejora consistente. \\
+CNN--LSTM & ResNet18 seguida de LSTM. & No integrada. \\
+MIL visual & MIL sólo con características visuales. & 0,686. \\
+MIL multimodal & Visual, geometría y atención. & Modelo final: 0,740. \\
+Ajuste fino parcial & Última etapa de la ResNet18 entrenable. & 0,747; no adoptado. \\
+Canal geométrico ampliado & Más puntos anatómicos. & Peor o más inestable. \\
+Puntos de boca y ollares & Puntos faciales adicionales. & Sin mejora. \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\end{document}
