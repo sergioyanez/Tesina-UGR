@@ -1,0 +1,123 @@
+/* Estilo del informe: imita el de «Evolución completa del proyecto de tesina» (24/09/2026). */
+:root {
+  --navy: #0e2747;
+  --azul: #2563eb;
+  --tinta: #1a2233;
+  --gris: #6b7385;
+  --linea: #d9deea;
+  --suave: #f4f6fb;
+  --verde: #1d7a55;
+  --ambar: #a86a0c;
+  --rojo: #a63a2b;
+}
+
+@page {
+  size: A4;
+  margin: 24mm 20mm 22mm 20mm;
+  @top-left { content: string(seccion); font: 7.6pt "DejaVu Sans"; color: var(--gris); }
+  @top-right { content: "Estado actual y métricas · Expresiones faciales en equinos";
+               font: 7.6pt "DejaVu Sans"; color: var(--gris); }
+  @bottom-center { content: counter(page); font: 8pt "DejaVu Sans"; color: var(--gris); }
+}
+@page portada { margin: 0; background: var(--navy);
+  @top-left { content: none; } @top-right { content: none; } @bottom-center { content: none; } }
+
+html { font: 9.6pt/1.42 "DejaVu Serif", serif; color: var(--tinta); }
+body { margin: 0; }
+p { margin: 0 0 6pt 0; text-align: justify; hyphens: auto; }
+a { color: inherit; text-decoration: none; }
+code { font: 0.82em "DejaVu Sans Mono", monospace; background: var(--suave); padding: 0 2pt; border-radius: 2pt; }
+em { font-style: italic; }
+ul, ol { margin: 0 0 6pt 0; padding-left: 15pt; }
+li { margin-bottom: 2.5pt; text-align: justify; }
+
+h1 { font: bold 17pt "DejaVu Sans"; color: var(--navy); margin: 0 0 10pt 0; padding-bottom: 4pt;
+     border-bottom: 2pt solid var(--azul); string-set: seccion content(); page-break-before: always;
+     page-break-after: avoid; }
+h1 .num { color: var(--azul); }
+h1.sin-salto { page-break-before: auto; }
+h2 { font: bold 11.5pt "DejaVu Sans"; color: var(--navy); margin: 13pt 0 5pt 0; page-break-after: avoid; }
+h2 .num { color: var(--azul); }
+h3 { font: bold 9.4pt "DejaVu Sans"; color: var(--tinta); margin: 9pt 0 3pt 0; page-break-after: avoid; }
+
+/* Portada */
+.portada { page: portada; color: #fff; position: relative; height: 297mm; padding: 0; page-break-after: always; }
+.portada .interior { padding: 27mm 24mm 0 24mm; }
+.portada code { background: transparent; color: #cfe0fb; }
+.portada .kicker { font: 7.4pt "DejaVu Sans"; letter-spacing: 1.2pt; color: #7fb0ff; text-transform: uppercase; }
+.portada h1 { font: bold 29pt/1.12 "DejaVu Sans"; color: #fff; border: 0; margin: 30mm 0 6mm 0;
+              padding: 0; string-set: none; page-break-before: auto; }
+.portada .sub { font: 10.4pt/1.45 "DejaVu Sans"; color: #cfe0fb; margin: 0 0 3mm 0; text-align: left; }
+.portada .tiles { display: flex; gap: 4mm; margin-top: 15mm; }
+.portada .tile { flex: 1; border: 0.8pt solid #2f6ee0; border-radius: 3mm; padding: 4mm 3.5mm; }
+.portada .tile b { display: block; font: bold 15pt "DejaVu Sans"; color: #fff; }
+.portada .tile span { display: block; font: 6.6pt/1.35 "DejaVu Sans"; color: #b9cdee; margin-top: 1.5mm; }
+.portada .pie { position: absolute; left: 24mm; right: 24mm; bottom: 24mm; border-top: 0.8pt solid #2f6ee0;
+                padding-top: 4mm; font: 7.4pt/1.5 "DejaVu Sans"; color: #b9cdee; }
+.portada .pie p { text-align: left; margin: 0 0 1mm 0; }
+
+/* Índice */
+.toc { page-break-before: always; }
+.toc h1 { page-break-before: auto; string-set: seccion "Índice"; }
+.toc ul { list-style: none; padding: 0; margin: 0; font: 8.4pt "DejaVu Sans"; }
+.toc li { margin: 0; padding: 1.6pt 0; text-align: left; }
+.toc li.n2 { padding-left: 13pt; font-size: 7.8pt; color: #3b4457; }
+.toc a::after { content: leader('.') target-counter(attr(href), page); color: var(--gris); }
+.toc li.n1 { font-weight: bold; padding-top: 3pt; }
+
+/* Tablas */
+table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt 0; font: 7.7pt/1.3 "DejaVu Sans"; }
+th { background: var(--navy); color: #fff; text-align: left; padding: 3.2pt 4.5pt; font-weight: bold; }
+td { padding: 3pt 4.5pt; border-bottom: 0.5pt solid var(--linea); vertical-align: top; }
+tr:nth-child(even) td { background: #f8f9fc; }
+tr { page-break-inside: avoid; }
+table { page-break-inside: avoid; }
+table.larga { page-break-inside: auto; }
+table.res th:first-child, table.res td:first-child { width: 30%; }
+table.fija td.num, table.fija th.num { white-space: normal; }
+thead { display: table-header-group; }
+td.num, th.num { text-align: right; white-space: nowrap; }
+td.c, th.c { text-align: center; }
+table.compacta { font-size: 7.1pt; }
+table.compacta td, table.compacta th { padding: 2.4pt 3.6pt; }
+table.fija { table-layout: fixed; }
+tr.dest td { background: #e6eefc !important; font-weight: bold; }
+.fuente { font: italic 7.2pt "DejaVu Sans"; color: var(--gris); margin: -4pt 0 8pt 0; text-align: left; }
+
+/* Etiquetas de estado */
+.tag { display: inline-block; font: bold 6.6pt "DejaVu Sans"; padding: 1pt 4pt; border-radius: 2.5pt; color: #fff;
+       white-space: nowrap; }
+.ok { background: var(--verde); } .par { background: var(--ambar); } .ab { background: var(--rojo); }
+
+/* Recuadros */
+.recuadro { border-left: 3pt solid var(--azul); background: var(--suave); padding: 6pt 9pt 3pt 9pt; margin: 7pt 0 9pt 0;
+            page-break-inside: avoid; }
+.recuadro h3 { margin-top: 0; font-size: 9pt; color: var(--navy); }
+.recuadro p, .recuadro li { font: 8.4pt/1.4 "DejaVu Sans"; text-align: left; }
+.recuadro.alerta { border-left-color: var(--ambar); background: #fbf5e8; }
+.recuadro.honesto { border-left-color: var(--rojo); background: #faeeec; }
+
+/* Indicadores */
+.kpis { display: flex; gap: 6pt; margin: 8pt 0 10pt 0; page-break-inside: avoid; }
+.kpi { flex: 1; border: 0.8pt solid var(--linea); border-radius: 4pt; padding: 6pt 4pt; text-align: center; }
+.kpi b { display: block; font: bold 14pt "DejaVu Sans"; color: var(--navy); }
+.kpi span { display: block; font: 6.5pt/1.3 "DejaVu Sans"; color: var(--gris); margin-top: 2pt; }
+
+/* Figuras */
+figure { margin: 8pt 0 10pt 0; page-break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; }
+figcaption { font: 7.4pt/1.35 "DejaVu Sans"; color: var(--gris); text-align: left; margin-top: 3pt; }
+
+/* Cuadrículas */
+.dos { display: flex; gap: 10pt; }
+.dos > div { flex: 1; }
+.tarjeta { border: 0.8pt solid var(--linea); border-radius: 4pt; padding: 6pt 9pt 3pt 9pt; margin: 6pt 0; page-break-inside: avoid; }
+.tarjeta h3 { margin-top: 0; }
+.tarjeta .lema { font: italic 8.4pt "DejaVu Sans"; color: var(--gris); margin-bottom: 4pt; text-align: left; }
+.tarjeta p, .tarjeta li { font-size: 8.9pt; }
+.cm td, .cm th { text-align: center; padding: 3pt 2pt; font-size: 7.2pt; }
+.cm th:first-child, .cm td:first-child { text-align: left; }
+.cm td.diag { background: #cfdcf6 !important; font-weight: bold; }
+.cm caption { caption-side: top; text-align: left; font: bold 7.6pt "DejaVu Sans"; padding-bottom: 2pt; color: var(--navy); }
+.salto { page-break-before: always; }
+.sinsalto { page-break-inside: avoid; }
