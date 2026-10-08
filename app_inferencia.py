@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from equinos import clasificacion, fusion, inferencia, rutas, secuencia
+from equinos import clasificacion, fusion, inferencia, rutas
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
