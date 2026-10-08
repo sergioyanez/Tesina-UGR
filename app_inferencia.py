@@ -226,20 +226,37 @@ if archivo is not None:
 
         if resultado.detalle:
             st.markdown("---")
-            st.markdown("#### Qué dijo cada lectura")
+            st.markdown("#### Cómo llegó a esta respuesta")
             w = resultado.detalle["peso_pose"]
-            st.caption(
-                f"La respuesta final pesa la pose con {w:.0%} y la apariencia con {1 - w:.0%}. "
-                "Si las dos lecturas no coinciden, la toma es dudosa aunque el reparto final "
-                "parezca claro.")
+            st.markdown(
+                "El modelo mira el video de dos maneras distintas y después junta las dos "
+                "opiniones:\n"
+                "- **Postura de la cara:** dónde están las orejas, los ojos, el hocico y la boca, y "
+                "cómo se mueven a lo largo del video.\n"
+                "- **Aspecto de la imagen:** cómo se ve la cabeza en conjunto, como lo vería una "
+                "persona mirando la foto.\n\n"
+                f"La opinión de la postura cuenta un {w:.0%} y la del aspecto un {1 - w:.0%}, "
+                "porque en las pruebas la postura resultó más confiable."
+            )
             col_pose, col_visual = st.columns(2)
-            for col, titulo, clave in ((col_pose, "Pose de la cara", "pose"),
-                                       (col_visual, "Apariencia", "visual")):
+            ganadoras = {}
+            for col, titulo, clave in ((col_pose, "Según la postura de la cara", "pose"),
+                                       (col_visual, "Según el aspecto de la imagen", "visual")):
+                lectura = resultado.detalle[clave]
+                ganadoras[clave] = max(lectura, key=lectura.get)
                 with col:
-                    st.caption(titulo)
-                    for clase, probabilidad in sorted(resultado.detalle[clave].items(),
-                                                      key=lambda kv: -kv[1]):
+                    st.markdown(f"**{titulo}:** {ganadoras[clave]}")
+                    for clase, probabilidad in sorted(lectura.items(), key=lambda kv: -kv[1]):
                         st.progress(probabilidad, text=f"{clase} — {probabilidad:.0%}")
+            # El acuerdo se dice con palabras: un reparto final claro puede esconder dos lecturas
+            # que se contradicen, y eso es justo lo que una persona sin formación no puede ver.
+            if ganadoras["pose"] == ganadoras["visual"]:
+                st.success(f"Las dos maneras de mirar el video coinciden en «{ganadoras['pose']}». "
+                           "Eso hace la respuesta más sólida.")
+            else:
+                st.warning(f"Las dos maneras de mirar el video no coinciden: la postura dice "
+                           f"«{ganadoras['pose']}» y el aspecto dice «{ganadoras['visual']}». "
+                           "Tomá la respuesta con más cautela.")
 
         if resultado.atencion:
             st.markdown("---")
@@ -283,32 +300,34 @@ if archivo is not None:
             st.altair_chart((barras + etiquetas).properties(height=280))
 
         st.markdown("---")
-        with st.expander("Cómo se midió"):
+        with st.expander("Cómo se probó el modelo y qué tener en cuenta"):
+            m = _metricas()
             st.markdown(
-                """
-La confiabilidad sale de **validación cruzada agrupada por caballo**: ningún animal usado para
-entrenar aparece en la evaluación, así que el modelo no puede acertar reconociendo al ejemplar en
-lugar de su expresión.
+                f"""
+**Cómo se probó**
+
+- El modelo aprendió con videos de caballos filmados en Tandil. Una persona miró cada video y lo
+  etiquetó como Sereno, Interesado o Disgustado.
+- Para saber cuánto acierta, **siempre se lo probó con caballos que no había visto al aprender**.
+  Así no puede acertar porque reconoce al caballo: tiene que leer su expresión.
+- Primero se lo probó varias veces con distintos grupos de caballos. Después, una única vez, con
+  {m['caballos_reserva']} caballos que se habían guardado aparte desde el principio. Con esos
+  caballos acertó en {m['accuracy_reserva']:.0%} de los videos. De esas dos pruebas salen las cifras
+  de «¿Cuánto confiar en esta respuesta?».
+
+**Qué tener en cuenta**
+
+- **No es un diagnóstico veterinario.** Es una ayuda que puede equivocarse.
+- Necesita ver el ojo y el hocico del caballo durante varios segundos seguidos. Si no puede,
+  prefiere no responder.
+- La postura de la cara es la que más pesa en la decisión, y una parte de lo que mide también
+  depende de cómo se filmó el video (por ejemplo, cuánto dura). Con videos filmados todos de la
+  misma manera, el modelo acierta algo menos.
+- La versión que usa esta aplicación se volvió a entrenar al final con todos los caballos,
+  incluidos los {m['caballos_reserva']} de la prueba final, para aprovechar todos los datos. Por eso
+  las cifras son una estimación de cuánto acierta, no una medida exacta de esta versión.
 """
             )
             if resultado.modelo == "mil":
-                st.markdown(
-                    "Este sistema utiliza una arquitectura **Multimodal MIL (Multiple Instance "
-                    "Learning)** que procesa la secuencia de fotogramas entera. Combina la postura "
-                    "geométrica (orejas, hocico, ojos) y las características visuales para emitir "
-                    "una única predicción.")
-            else:
-                st.markdown(
-                    """
-Este sistema es una **fusión tardía de pose y apariencia**. Un bosque aleatorio lee 160
-medidas de la pose de la cara en los 16 fotogramas (distancias, ángulos de orejas, apertura de la
-boca, velocidades) y una regresión logística lee el promedio de las características visuales de
-una red ResNet-18 congelada; las probabilidades de ambos se promedian.
-
-Dos límites que conviene tener presentes. **La pose domina la decisión**, y sus medidas también
-delatan cómo se filmó la toma (por ejemplo, su duración), así que parte de la ventaja puede deberse
-a la filmación y no a la expresión: sobre tomas filmadas en condiciones parejas el F1 baja. Y
-**las cifras de arriba son las de la validación**; el modelo en uso se ajustó con todos los clips,
-incluidos los reservados, y no tiene una medida propia.
-"""
-                )
+                st.caption("Esta respuesta la dio el modelo anterior (MIL), elegido a mano. Lo que "
+                           "dice este recuadro describe al modelo principal de la aplicación.")
