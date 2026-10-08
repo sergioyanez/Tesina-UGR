@@ -1,0 +1,142 @@
+[
+ {
+  "mejor_epoca": 17,
+  "f1_validacion": 0.8298052222547394,
+  "epocas_corridas": 27,
+  "clips_train_interno": 163,
+  "clips_validacion": 64
+ },
+ {
+  "mejor_epoca": 18,
+  "f1_validacion": 0.6594592100406054,
+  "epocas_corridas": 28,
+  "clips_train_interno": 163,
+  "clips_validacion": 63
+ },
+ {
+  "mejor_epoca": 14,
+  "f1_validacion": 0.7406462585034014,
+  "epocas_corridas": 24,
+  "clips_train_interno": 165,
+  "clips_validacion": 59
+ },
+ {
+  "mejor_epoca": 13,
+  "f1_validacion": 0.812385099177552,
+  "epocas_corridas": 23,
+  "clips_train_interno": 139,
+  "clips_validacion": 57
+ },
+ {
+  "mejor_epoca": 11,
+  "f1_validacion": 0.7532467532467533,
+  "epocas_corridas": 21,
+  "clips_train_interno": 176,
+  "clips_validacion": 54
+ },
+ {
+  "mejor_epoca": 14,
+  "f1_validacion": 0.788059163059163,
+  "epocas_corridas": 24,
+  "clips_train_interno": 177,
+  "clips_validacion": 32
+ },
+ {
+  "mejor_epoca": 11,
+  "f1_validacion": 0.7855424447244816,
+  "epocas_corridas": 21,
+  "clips_train_interno": 161,
+  "clips_validacion": 43
+ },
+ {
+  "mejor_epoca": 5,
+  "f1_validacion": 0.6686709836571075,
+  "epocas_corridas": 15,
+  "clips_train_interno": 179,
+  "clips_validacion": 51
+ },
+ {
+  "mejor_epoca": 24,
+  "f1_validacion": 0.6890269151138716,
+  "epocas_corridas": 34,
+  "clips_train_interno": 187,
+  "clips_validacion": 49
+ },
+ {
+  "mejor_epoca": 18,
+  "f1_validacion": 0.8341430499325236,
+  "epocas_corridas": 28,
+  "clips_train_interno": 139,
+  "clips_validacion": 60
+ },
+ {
+  "mejor_epoca": 32,
+  "f1_validacion": 0.9130844645550528,
+  "epocas_corridas": 42,
+  "clips_train_interno": 184,
+  "clips_validacion": 46
+ },
+ {
+  "mejor_epoca": 31,
+  "f1_validacion": 0.7686909581646423,
+  "epocas_corridas": 41,
+  "clips_train_interno": 164,
+  "clips_validacion": 44
+ },
+ {
+  "mejor_epoca": 14,
+  "f1_validacion": 0.8745795423214778,
+  "epocas_corridas": 24,
+  "clips_train_interno": 181,
+  "clips_validacion": 55
+ },
+ {
+  "mejor_epoca": 2,
+  "f1_validacion": 0.7223129992737837,
+  "epocas_corridas": 12,
+  "clips_train_interno": 138,
+  "clips_validacion": 60
+ },
+ {
+  "mejor_epoca": 10,
+  "f1_validacion": 0.6107692307692307,
+  "epocas_corridas": 20,
+  "clips_train_interno": 156,
+  "clips_validacion": 65
+ },
+ {
+  "mejor_epoca": 9,
+  "f1_validacion": 0.9431306306306307,
+  "epocas_corridas": 19,
+  "clips_train_interno": 165,
+  "clips_validacion": 53
+ },
+ {
+  "mejor_epoca": 11,
+  "f1_validacion": 0.7098098053925246,
+  "epocas_corridas": 21,
+  "clips_train_interno": 169,
+  "clips_validacion": 54
+ },
+ {
+  "mejor_epoca": 21,
+  "f1_validacion": 0.7826797385620915,
+  "epocas_corridas": 31,
+  "clips_train_interno": 149,
+  "clips_validacion": 45
+ },
+ {
+  "mejor_epoca": 10,
+  "f1_validacion": 0.7801587301587302,
+  "epocas_corridas": 20,
+  "clips_train_interno": 169,
+  "clips_validacion": 42
+ },
+ {
+  "mejor_epoca": 19,
+  "f1_validacion": 0.8581349206349206,
+  "epocas_corridas": 29,
+  "clips_train_interno": 180,
+  "clips_validacion": 65
+ }
+]
