@@ -108,3 +108,7 @@ como terminan siendo una nota al pie.
 - [x] 7.4 `openspec validate interfaz-de-inferencia` sin errores.
 - [x] 7.5 Commits separados por unidad lógica. Cuatro: modelo de producción y confiabilidad;
       inferencia e interfaz; tasa de negativa, revisión de honestidad y documentación.
+
+## Cierre (08/10/2026)
+
+No se ejecutaron 6.2 y 6.3: la interfaz se revisó directamente con Sergio el 08/10/2026 y sus textos se reescribieron en lenguaje llano en el change `app-modelo-fusion`. Las tareas sin marcar quedan descartadas por decisión de Sergio de cerrar el trabajo; se dejan sin tildar para no registrarlas como hechas.
