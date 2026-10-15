@@ -63,14 +63,14 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 fuente = (RAIZ / "app_inferencia.py").read_text(encoding="utf-8")
 for viejo in ('archivo = st.file_uploader("Video de la toma", type=FORMATOS)',
               "st.video(archivo)", 'st.button("Analizar", type="primary")',
-              "inferencia.clasificar_video(ruta, progreso=avisar)"):
+              "inferencia.clasificar_video(ruta, progreso=avisar, info=info)"):
     assert viejo in fuente, viejo
 fuente = (fuente
           .replace('archivo = st.file_uploader("Video de la toma", type=FORMATOS)',
                    "archivo = _Falso()")
           .replace("st.video(archivo)", "pass")
           .replace('st.button("Analizar", type="primary")', "True")
-          .replace("inferencia.clasificar_video(ruta, progreso=avisar)", "PRED"))
+          .replace("inferencia.clasificar_video(ruta, progreso=avisar, info=info)", "PRED"))
 PRELUDIO = '''
 import sys
 sys.path.insert(0, %r)
