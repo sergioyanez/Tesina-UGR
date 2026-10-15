@@ -19,7 +19,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from equinos import clasificacion, fusion, inferencia, rutas, secuencia
+from equinos import clasificacion, fusion, inferencia, rutas
 
 FORMATOS = ["mp4", "mov", "avi", "mkv", "webm"]
 
@@ -44,38 +44,6 @@ st.set_page_config(page_title="Expresiones faciales en equinos", page_icon="🐴
 
 
 @st.cache_resource
-def _precisiones():
-    """Precisión por clase del modelo que corre la app: la fusión (`inferencia.MODELO_POR_OMISION`)."""
-    rutas.inicializar(verbose=False)
-    return fusion.precision_por_clase()
-
-
-@st.cache_resource
-def _reserva():
-    """Precisión por clase de la fusión en la reserva (20 caballos, un solo uso)."""
-    rutas.inicializar(verbose=False)
-    return fusion.precision_reserva()
-
-
-def _rango_de_cada_diez(a: float, b: float) -> str:
-    """Dos mediciones en una frase: «entre 7 y 9 de cada 10 veces», o una sola cifra si coinciden."""
-    lo, hi = sorted((min(round(a * 10), 10), min(round(b * 10), 10)))
-    if lo == hi:
-        return _de_cada_diez(a)
-    return f"entre {lo} y {hi} de cada 10 veces"
-
-
-def _de_cada_diez(precision: float) -> str:
-    """«unas 7 de cada 10 veces»: la proporción en palabras, para quien no lee porcentajes."""
-    n = round(precision * 10)
-    if n >= 10:
-        return "más de 9 de cada 10 veces"
-    if n <= 0:
-        return "casi nunca"
-    return f"unas {n} de cada 10 veces"
-
-
-@st.cache_resource
 def _metricas():
     """Las métricas del modelo que esta app está ejecutando. **Ningún número escrito a mano.**
 
@@ -86,22 +54,6 @@ def _metricas():
     """
     rutas.inicializar(verbose=False)
     return fusion.metricas_globales()
-
-
-def _coma(x: float) -> str:
-    """Número con coma decimal y una cifra: 2,4."""
-    return f"{x:.1f}".replace(".", ",")
-
-
-def texto_del_tramo(tramo: dict, ventana_max: float) -> list[str]:
-    """Qué tramo se analizó, en palabras; con un aviso si el video es más largo que la ventana."""
-    textos = [f"Se analizó el tramo del segundo {_coma(tramo['inicio_seg'])} al segundo "
-              f"{_coma(tramo['fin_seg'])} del video (de {_coma(tramo['duracion_seg'])} s en total)."]
-    if tramo["duracion_seg"] > ventana_max:
-        textos.append(
-            "La respuesta corresponde sólo a ese tramo. Si interesa otro momento del video, "
-            "conviene subir un video recortado a ese momento (de 5 a 7 segundos).")
-    return textos
 
 
 st.title("Detección de expresiones faciales en equinos")
@@ -195,7 +147,6 @@ if archivo is not None:
             st.stop()
 
         # --- Resultado: la etiqueta y su confiabilidad, con el mismo peso (tarea 5.3) ---------
-        precisiones = _precisiones()
         st.markdown("---")
         izquierda, derecha = st.columns(2)
         with izquierda:
@@ -205,33 +156,6 @@ if archivo is not None:
             confianza = max(resultado.probabilidades.values())
             st.caption("Qué tan seguro está el modelo con este video")
             st.markdown(f"# {confianza:.0%}")
-
-        # Cuánto confiar en la etiqueta, en palabras. Con la fusión hay dos mediciones fuera de
-        # muestra (desarrollo 5×4 y reserva); cuando no coinciden se da el rango, no una sola cifra.
-        if resultado.detalle:
-            pr = resultado.detalle["precision_reserva"]
-            rango = _rango_de_cada_diez(pr["precision"], resultado.precision)
-            st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
-                        f"«{resultado.clase}», acierta **{rango}**.")
-            st.caption(
-                "Lo comprobamos dos veces, siempre con caballos que el modelo no había visto. "
-                f"En la primera prueba dijo «{resultado.clase}» {resultado.veces_que_lo_dijo} veces "
-                f"y acertó {resultado.acertadas}; en la prueba final, con otros 20 caballos, lo dijo "
-                f"{pr['veces_que_lo_dijo']} veces y acertó {pr['acertadas']}."
-                + (" Como las dos pruebas no dieron lo mismo, damos un rango y no un número exacto." if "entre" in rango else "")
-            )
-        else:
-            st.markdown(f"**¿Cuánto confiar en esta respuesta?** Cuando el modelo dice "
-                        f"«{resultado.clase}», acierta **{_de_cada_diez(resultado.precision)}**.")
-            st.caption(
-                f"Lo comprobamos con caballos que el modelo no había visto al entrenar: dijo "
-                f"«{resultado.clase}» {resultado.veces_que_lo_dijo} veces y acertó "
-                f"{resultado.acertadas} ({resultado.precision:.0%})."
-            )
-
-        if resultado.tramo:
-            for _texto in texto_del_tramo(resultado.tramo, secuencia.VENTANA_MAXIMA_SEG):
-                st.markdown(_texto)
 
         if resultado.precision < 0.5:
             st.error(
@@ -250,15 +174,9 @@ if archivo is not None:
             + "Un reparto parejo significa que el modelo dudó, aunque igual haya tenido que "
             "elegir una etiqueta."
         )
-        # La misma frase que el recuadro de arriba: el rango entre desarrollo y reserva (fusión).
-        reserva = _reserva() if resultado.detalle else None
         for clase, probabilidad in sorted(resultado.probabilidades.items(),
                                           key=lambda kv: -kv[1]):
-            p_dev = precisiones[clase]["precision"]
-            frase = (_rango_de_cada_diez(reserva[clase]["precision"], p_dev) if reserva
-                     else _de_cada_diez(p_dev))
-            st.progress(probabilidad,
-                        text=f"{clase} — {probabilidad:.0%}  (cuando dice «{clase}», acierta {frase})")
+            st.progress(probabilidad, text=f"{clase} — {probabilidad:.0%}")
 
         if resultado.detalle:
             st.markdown("---")
@@ -335,35 +253,3 @@ if archivo is not None:
             )
             st.altair_chart((barras + etiquetas).properties(height=280))
 
-        st.markdown("---")
-        with st.expander("Cómo se probó el modelo y qué tener en cuenta"):
-            m = _metricas()
-            st.markdown(
-                f"""
-**Cómo se probó**
-
-- El modelo aprendió con videos de caballos filmados en Tandil. Una persona miró cada video y lo
-  etiquetó como Sereno, Interesado o Disgustado.
-- Para saber cuánto acierta, **siempre se lo probó con caballos que no había visto al aprender**.
-  Así no puede acertar porque reconoce al caballo: tiene que leer su expresión.
-- Primero se lo probó varias veces con distintos grupos de caballos. Después, una única vez, con
-  {m['caballos_reserva']} caballos que se habían guardado aparte desde el principio. Con esos
-  caballos acertó en {m['accuracy_reserva']:.0%} de los videos. De esas dos pruebas salen las cifras
-  de «¿Cuánto confiar en esta respuesta?».
-
-**Qué tener en cuenta**
-
-- **No es un diagnóstico veterinario.** Es una ayuda que puede equivocarse.
-- Necesita ver el ojo y el hocico del caballo durante varios segundos seguidos. Si no puede,
-  prefiere no responder.
-- La postura de la cara es la que más pesa en la decisión, y una parte de lo que mide también
-  depende de cómo se filmó el video (por ejemplo, cuánto dura). Con videos filmados todos de la
-  misma manera, el modelo acierta algo menos.
-- La versión que usa esta aplicación se volvió a entrenar al final con todos los caballos,
-  incluidos los {m['caballos_reserva']} de la prueba final, para aprovechar todos los datos. Por eso
-  las cifras son una estimación de cuánto acierta, no una medida exacta de esta versión.
-"""
-            )
-            if resultado.modelo == "mil":
-                st.caption("Esta respuesta la dio el modelo anterior (MIL), elegido a mano. Lo que "
-                           "dice este recuadro describe al modelo principal de la aplicación.")

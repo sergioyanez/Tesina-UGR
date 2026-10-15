@@ -1,4 +1,4 @@
-"""La predicción informa el tramo analizado y la app lo muestra.
+"""La predicción informa el tramo analizado; la app ya no lo muestra.
 
 Necesita las variables del proyecto (ver `tests/test_entorno.py`):
     TESINA_EQUINOS_RAIZ=<repo>/datos_equinos TESINA_EQUINOS_VIDEOS=~/videos_de_prueba
@@ -96,21 +96,17 @@ def correr(tramo):
     return app, textos
 
 
-app, textos = correr({"inicio_seg": 2.4, "fin_seg": 8.9, "duracion_seg": 12.0})
-check("sin excepciones (video largo)", not app.exception, [e.value for e in app.exception])
-frase = "Se analizó el tramo del segundo 2,4 al segundo 8,9 del video (de 12,0 s en total)."
-check("muestra el tramo con coma decimal", frase in textos, [x for x in textos if "tramo" in x])
-check("avisa que conviene recortar", any("conviene subir un video recortado" in x for x in textos))
-
-app, textos = correr({"inicio_seg": 0.0, "fin_seg": 5.9, "duracion_seg": 6.2})
-check("sin excepciones (video corto)", not app.exception, [e.value for e in app.exception])
-check("muestra el tramo", any(x.startswith("Se analizó el tramo") for x in textos))
-check("no avisa si el video cabe en la ventana",
-      not any("conviene subir un video recortado" in x for x in textos))
-
-app, textos = correr(None)
-check("sin tramo no dibuja la sección y no falla",
-      not app.exception and not any(x.startswith("Se analizó") for x in textos))
+# La app ya no muestra el tramo, la confiabilidad en palabras ni el recuadro de cómo se probó:
+# se quitaron a pedido (15/10). Acá se comprueba que no vuelvan y que la pantalla no falle.
+for tramo in ({"inicio_seg": 2.4, "fin_seg": 8.9, "duracion_seg": 12.0}, None):
+    app, textos = correr(tramo)
+    check(f"sin excepciones (tramo={tramo})", not app.exception, [e.value for e in app.exception])
+    check("no muestra el tramo", not any("Se analizó el tramo" in x for x in textos))
+    check("no muestra «¿Cuánto confiar?»", not any("Cuánto confiar" in x for x in textos))
+    check("no muestra el recuadro de cómo se probó",
+          not any("Cómo se probó" in e.label for e in app.expander))
+    check("las barras sólo dicen clase y porcentaje",
+          all("acierta" not in str(b.proto) for b in app.get("progress")))
 
 print()
 if fallos:
