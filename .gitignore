@@ -86,3 +86,20 @@ $RECYCLE.BIN/
 
 # Cachés y modelos de la comparación (regenerables)
 artefactos_base/
+
+# Archivos auxiliares de la compilación LaTeX del informe (se regeneran al compilar)
+informe/*.aux
+informe/*.bbl
+informe/*.bcf
+informe/*.blg
+informe/*.log
+informe/*.out
+informe/*.run.xml
+informe/*.synctex.gz
+informe/*.toc
+informe/*.lof
+informe/*.lot
+informe/*.fls
+informe/*.fdb_latexmk
+informe/*.pdf
+informe/__pycache__/

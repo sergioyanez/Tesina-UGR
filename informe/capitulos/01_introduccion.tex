@@ -1,0 +1,60 @@
+% ============================================================
+% CAPÍTULO 1
+% ============================================================
+\capitulo{Introducción}
+
+\section{Problemática Observada}
+La evaluación del estado mental y emocional de los animales es clave para su bienestar \parencite{mendl2010}. En los equinos depende hoy casi exclusivamente de la observación humana, que puede ser subjetiva, requiere entrenamiento y mucho tiempo, y es difícil de sostener de manera continua. La falta de herramientas tecnológicas estandarizadas dificulta el monitoreo continuo de la calidad de vida y del rendimiento de los caballos de deporte. Existen sistemas de descripción estandarizados, como el sistema de codificación de la acción facial equina \parencite[EquiFACS;][]{wathan2015} o la escala de muecas de dolor \parencite{dallacosta2014}, que describen la cara con precisión, pero su aplicación manual es lenta y exige observadores formados.
+
+La visión por computadora ofrece una vía para automatizar parte de esa observación. Los trabajos recientes sobre reconocimiento de dolor y emociones animales a partir de imágenes y video muestran que el problema es abordable con aprendizaje profundo, aunque señalan como dificultades recurrentes la escasez de datos etiquetados, la definición de las etiquetas y la generalización a individuos nuevos \parencite{broome2023}. En equinos, la mayor parte de los antecedentes se concentra en el dolor: su reconocimiento automático a partir de expresiones faciales con redes convolucionales \parencite{lencioni2021,andersen2021} o de la pose a lo largo del video \parencite{rashid2022}. El reconocimiento de estados emocionales distintos del dolor está menos explorado y se ha abordado principalmente sobre imágenes aisladas \parencite{corujo2021}.
+
+El plan de trabajo agregaba un argumento adicional: los enfoques basados en imágenes estáticas perderían información crucial, porque las expresiones faciales y los comportamientos asociados a las emociones son eventos dinámicos, y capturar su evolución temporal en pocos segundos resultaría fundamental para una clasificación robusta. El argumento tiene respaldo en la literatura sobre dolor equino, donde se reportó que la dinámica temporal del video aporta información que una imagen aislada no contiene \parencite{broome2019}. Como se verá, ese fue también el punto del plan que los resultados de este trabajo no lograron sostener.
+
+El presente trabajo estudia la factibilidad de un sistema que, a partir de un video corto de la cara de un caballo, produzca una clasificación automática de su expresión en tres categorías: \clase{Sereno}, \clase{Interesado} y \clase{Disgustado}. No busca reemplazar la evaluación de un especialista, sino explorar si la información visual de una secuencia breve puede convertirse en una predicción reproducible y cuantificable que sirva de apoyo, y establecer con qué grado de confianza puede afirmarse que lo logra.
+
+\section{Hipótesis de Investigación}
+\subsection{Hipótesis General}
+El plan de trabajo formuló la siguiente hipótesis, que se transcribe textualmente:
+
+\begin{quote}
+«Es factible desarrollar un modelo computacional basado en arquitecturas de aprendizaje profundo capaz de identificar y clasificar automáticamente expresiones faciales asociadas a diferentes estados emocionales en equinos a partir de secuencias de video cortas, logrando un nivel de precisión útil para la asistencia de expertos humanos.»
+\end{quote}
+
+El plan no definía qué es un nivel de precisión útil. En este informe se lo interpreta como un \fmacro{} (promedio de las tres clases con igual peso) claramente superior al del azar, que es de alrededor de un tercio, y al de líneas de base simples, medido sobre caballos que el modelo no vio durante el entrenamiento y acompañado de un intervalo de confianza. Para que la verificación no dependiera de las expectativas previas, el procedimiento de comparación y el criterio con que se eligió el modelo final se escribieron y se versionaron antes de medir, y una parte de los caballos (\CaballosReserva{} de \CaballosTotal{}) se apartó para ser usada una sola vez (Capítulo~4).
+
+\subsection{Hipótesis Temporal}
+Durante el desarrollo se formuló una hipótesis más específica, implícita en el plan: \textit{modelar explícitamente el orden de los fotogramas mejora la clasificación respecto de modelos que usan varios fotogramas pero son invariantes al orden}. La distinción importa porque un modelo puede procesar 16 fotogramas e ignorar por completo su orden si los promedia, los vota o los pondera con atención sin información posicional. Para sostener la hipótesis temporal, un modelo sensible al orden debería superar de manera consistente a una alternativa equivalente que no lo utilice.
+
+\subsection{Una Aclaración sobre el Carácter Espacio-temporal}
+El plan proponía procesar secuencias espacio-temporales. El desarrollo mostró que esa descripción no se corresponde con lo que el sistema hace. El modelo con que se trabajó inicialmente, que ponderaba con atención los fotogramas de cada clip, resultó ser invariante al orden: al barajar o invertir los fotogramas, ninguna de sus predicciones cambió. Un promedio estático de los fotogramas, procesado con un clasificador lineal, alcanzó un rendimiento equivalente. Por eso el sistema final no debe describirse como espacio-temporal. Lo que hace es agregar la información de varios fotogramas de un mismo clip, tanto de su pose facial como de su apariencia, sin aprovechar el orden en que ocurren. El título del trabajo conserva la expresión «secuencias de video» porque la entrada del sistema es un video corto, no porque se haya demostrado que la secuencia temporal aporte. Los Capítulos~5 y~6 retoman este punto con la evidencia.
+
+\section{Objetivos}
+\subsection{Objetivo General}
+Construir un sistema informático para la detección automatizada de expresiones faciales en caballos mediante el procesamiento de secuencias espacio-temporales.
+
+\subsection{Objetivos Específicos}
+\begin{enumerate}
+  \item Conformar una base de datos de videos cortos (5 a 7 segundos) de rostros de equinos.
+  \item Desarrollar un \textit{pipeline} que permita el preprocesamiento de los videos, incluyendo la extracción de fotogramas clave y detección de la región de interés (ROI).
+  \item Aplicar técnicas de clasificación de aprendizaje automático orientadas a video para identificar estados emocionales.
+  \item Desarrollar una aplicación o interfaz para el uso del modelo resultante.
+\end{enumerate}
+
+\subsection{Alcance y Delimitación}
+El trabajo se delimita de la siguiente manera. Primero, las clases son tres categorías de trabajo definidas operativamente por una médica veterinaria codificadora de EquiFACS (Capítulo~2); no se afirma que correspondan a categorías emocionales de la literatura ni se infiere un estado interno del animal. Segundo, los videos se filmaron con teléfono celular en establecimientos de la región de Tandil, en la provincia de Buenos Aires, por lo que los resultados describen esa población y esas condiciones de captura. Tercero, las etiquetas provienen de un único observador y no se midió el acuerdo entre observadores sobre el conjunto. Cuarto, no hubo validación con veterinarios ni prueba con videos de otras fuentes. Estas restricciones se discuten en los Capítulos~5 y~6 y condicionan la lectura de todas las cifras.\footnote{En todo el informe los decimales se escriben con coma, conforme a la ortografía del español. Se trata de un desvío consciente de la norma APA (sección 6.36 de \textcite{apa2020}), que prescribe el punto decimal.}
+
+\section{Síntesis de lo Realizado}
+Para cumplir los objetivos se construyó un conjunto de datos propio de \VideosTotal{} videos de \SesionesTotal{} sesiones de filmación, del que se obtuvieron \ClipsTotal{} clips íntegros (segmentos de video de unos 6 segundos) de \CaballosTotal{} caballos. Se implementó un \textit{pipeline} (cadena de procesamiento) que estima la pose facial con DeepLabCut, selecciona \Fotogramas{} fotogramas por clip a partir de las mediciones válidas y los representa tanto por su pose como por su apariencia. Sobre esas representaciones se compararon cuatro modelos candidatos con un protocolo declarado de antemano, validación por caballo, intervalos de confianza por \textit{bootstrap} (remuestreo con reposición) y una reserva de caballos de un solo uso. El modelo elegido, una fusión tardía de un bosque aleatorio (\textit{random forest}) de pose y una regresión logística sobre la apariencia, obtuvo un \fmacro{} de \FusionDevF{} en el desarrollo y de \FusionReservaF{} (IC95 \FusionReservaIC{}) en la reserva. Sin embargo, su ventaja sobre un clasificador que sólo usa la pose es mínima, y existe un confusor de filmación que reduce el rendimiento unos 12 puntos cuando se lo controla. El modelo elegido se incorporó a una aplicación de inferencia que informa, en lenguaje llano, cuánto puede confiarse en cada respuesta.
+
+\section{Organización del Informe}
+El Capítulo~2 presenta los aspectos de la etología equina relevantes para el problema: la función comunicativa de la expresión facial, el sistema EquiFACS, las escalas faciales de dolor, los estados afectivos positivos y negativos, la definición operativa de las tres clases, el contexto de filmación de cada una y el alcance del procedimiento de etiquetado, incluida la limitación de contar con un único observador.
+
+El Capítulo~3 reúne el marco teórico y el estado del arte. Relata los antecedentes de reconocimiento automático de dolor y emoción animal y precisa el vacío que el trabajo busca cubrir. Presenta luego las técnicas que componen el sistema (estimación de pose, redes convolucionales y transferencia de aprendizaje, rasgos de pose con bosques aleatorios, aprendizaje de múltiples instancias, combinación de clasificadores) y los recaudos de validación y las métricas para conjuntos pequeños y desbalanceados.
+
+El Capítulo~4 describe el desarrollo experimental: los materiales, el conjunto de datos con sus sesiones y problemas conocidos, el preprocesamiento, los cuatro candidatos, el protocolo de evaluación con su reserva, su criterio de elección y su enmienda, la evolución del desarrollo que condujo del modelo inicial a la comparación, y la aplicación de inferencia.
+
+El Capítulo~5 reúne los resultados y su discusión: la comparación de los cuatro candidatos en el desarrollo, la aplicación del criterio de elección, el único uso de la reserva, la validación dejando afuera una sesión de filmación, el control del confusor de filmación, el sobreajuste, la hipótesis temporal, el efecto de un par de identificadores duplicados, las limitaciones y la relación con la literatura.
+
+El Capítulo~6 expone las conclusiones: el cumplimiento de cada objetivo específico, el veredicto sobre las hipótesis general y temporal, los aportes del trabajo y las líneas de trabajo futuro.
+
+El Capítulo~7 contiene la bibliografía. El Capítulo~8 reúne los anexos: los parámetros del sistema (Anexo A), el protocolo de comparación y su enmienda (Anexo B), los 47 caminos explorados y descartados (Anexo C), la devolución del docente y lo que se hizo con ella (Anexo D), los resultados por repetición y por sesión (Anexo E), las pantallas y los textos de la aplicación (Anexo F) y las instrucciones de reproducibilidad (Anexo G).

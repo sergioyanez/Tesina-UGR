@@ -1,0 +1,240 @@
+% ============================================================
+% CAPÍTULO 5
+% ============================================================
+\capitulo{Resultados y Discusión}
+
+Este capítulo presenta los resultados de la comparación de modelos descrita en el Capítulo~4, en el orden en que se produjeron: primero la comparación de los cuatro candidatos en el desarrollo (\CaballosDesarrollo{} caballos, \ClipsDesarrollo{} clips), luego la aplicación del criterio de elección fijado antes de medir, después el único uso de la reserva (\CaballosReserva{} caballos, \ClipsReserva{} clips) y, por último, los análisis que ponen a prueba la solidez del resultado: la validación dejando afuera una sesión de filmación, el control del confusor de filmación, el sobreajuste y la hipótesis temporal. El capítulo cierra con las limitaciones y con una discusión frente a la literatura. En todo el capítulo, las cifras con el rótulo de \fmacro{} corresponden al promedio de las tres clases con igual peso, y los intervalos de confianza al 95~\% (IC95) se obtuvieron por \textit{bootstrap} que remuestrea caballos (\ReplicasBootstrap{} réplicas, semilla \SemillaBootstrap{}), de modo que todos los clips de un mismo animal entran o salen juntos.
+
+\section{Resultados de la Comparación en el Desarrollo}
+\subsection{Rendimiento global de los cuatro candidatos}
+La Tabla~\ref{tab:c5-candidatos} resume el rendimiento de los cuatro candidatos en la validación por caballo de \Repeticiones{} repeticiones $\times$ \Folds{} pliegues (\Evaluaciones{} evaluaciones por candidato, con las mismas particiones para todos). La fusión tardía de pose y apariencia obtuvo el mayor \fmacro{} (\FusionDevF{}, $DE = \FusionDevDE{}$), seguida del bosque aleatorio (\textit{random forest}) de pose tipo SimBA (\RFPoseDevF{}), el modelo de aprendizaje múltiple de instancias (MIL) corregido (\MILDevF{}) y la línea de base logística sobre el promedio de los fotogramas (\BaseDevF{}). La Figura~\ref{fig:c5-f1-candidatos} muestra el mismo ordenamiento, tanto en el desarrollo completo como en el subconjunto limpio descrito en la sección dedicada al confusor de filmación.
+
+\begin{table}[H]
+\caption{Rendimiento de los cuatro candidatos en el desarrollo (validación 5\,$\times$\,4 por caballo)}\label{tab:c5-candidatos}
+{\singlespacing\small
+\begin{threeparttable}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.2\textwidth}*{5}{>{\centering\arraybackslash}X}@{}}
+\toprule
+Candidato & \fmacro{} (\textit{DE}) & Exactitud (\textit{DE}) & \fmacro{} limpio (\textit{DE})\tnote{a} & \fmacro{} en entrenamiento & Brecha (\textit{DE})\tnote{b} \\
+\midrule
+Fusión pose + visual & \FusionDevF{} (\FusionDevDE{}) & \FusionDevAcc{} (\FusionDevAccDE{}) & \FusionLimpioF{} (\FusionLimpioDE{}) & \FusionTrainF{} & \FusionGap{} (\FusionGapDE{}) \\
+Bosque aleatorio de pose & \RFPoseDevF{} (\RFPoseDevDE{}) & \RFPoseDevAcc{} (\RFPoseDevAccDE{}) & \RFPoseLimpioF{} (\RFPoseLimpioDE{}) & \RFPoseTrainF{} & \RFPoseGap{} (\RFPoseGapDE{}) \\
+MIL multimodal corregido & \MILDevF{} (\MILDevDE{}) & \MILDevAcc{} (\MILDevAccDE{}) & \MILLimpioF{} (\MILLimpioDE{}) & \MILTrainF{} & \MILGap{} (\MILGapDE{}) \\
+Línea de base logística & \BaseDevF{} (\BaseDevDE{}) & \BaseDevAcc{} (\BaseDevAccDE{}) & \BaseLimpioF{} (\BaseLimpioDE{}) & \BaseTrainF{} & \BaseGap{} (\BaseGapDE{}) \\
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}[flushleft]\footnotesize
+\item[a] Subconjunto de \ClipsLimpioDesarrollo{} clips de \CaballosLimpioDesarrollo{} caballos con formato \CriterioLimpio{}; el desvío es entre las \Repeticiones{} repeticiones.
+\item[b] Diferencia entre el \fmacro{} de entrenamiento y el de prueba.
+\end{tablenotes}
+\end{threeparttable}}
+\notatabla{Media y desvío estándar (\textit{DE}) de las \Evaluaciones{} evaluaciones de la validación por caballo (\Repeticiones{} repeticiones $\times$ \Folds{} pliegues; \CaballosDesarrollo{} caballos, \ClipsDesarrollo{} clips), salvo el \fmacro{} limpio. La exactitud es la proporción de clips bien clasificados.}
+\end{table}
+
+\begin{figure}[H]
+\caption{F1 macro de los cuatro candidatos en el desarrollo y en el subconjunto limpio}\label{fig:c5-f1-candidatos}
+\centering
+\includegraphics[width=\textwidth]{figuras/f1_candidatos.pdf}
+\notatabla{Barras: media de las \Evaluaciones{} evaluaciones de la validación 5\,$\times$\,4 por caballo (\Repeticiones{} repeticiones $\times$ \Folds{} pliegues; \CaballosDesarrollo{} caballos, \ClipsDesarrollo{} clips); barras de error: $\pm$ 1 desvío estándar (en el subconjunto limpio, de las \Repeticiones{} repeticiones; \ClipsLimpioDesarrollo{} clips).}
+\end{figure}
+
+Tres rasgos de la tabla merecen comentario. Primero, la distancia entre los dos candidatos que usan pose y los dos que dependen sólo de la apariencia visual es grande (de unos 12 a 17 puntos de \fmacro{}), mientras que la distancia entre la fusión y el bosque aleatorio es pequeña (\DifFusionRFDev{}). Segundo, el desvío entre evaluaciones es considerable en todos los casos, y mayor en el MIL (\MILDevDE{}) que en los demás: con unos \CaballosDesarrollo{} caballos y pliegues de unos 28 caballos, el resultado de cada evaluación depende de qué animales quedan en la prueba. Tercero, el \fmacro{} agrupado de las predicciones fuera de muestra, que concatena todas las predicciones de una repetición antes de calcular la métrica, es prácticamente igual al promedio por pliegue en los dos mejores candidatos (\FusionAgrupF{} para la fusión y \RFPoseAgrupF{} para el bosque aleatorio), lo que indica que el resultado no se debe a pliegues extremos.
+
+\subsection{Rendimiento por clase y errores de clasificación}
+La Figura~\ref{fig:c5-f1-clase} desglosa el \fmacro{} por clase. En la fusión, el \textit{F}\textsubscript{1} de \clase{Disgustado} fue \FusionDevFDisg{} ($DE = \FusionDevFDisgDE{}$), el de \clase{Interesado} \FusionDevFInt{} ($DE = \FusionDevFIntDE{}$) y el de \clase{Sereno} \FusionDevFSer{} ($DE = \FusionDevFSerDE{}$). El bosque aleatorio alcanzó \RFPoseDevFDisg{}, \RFPoseDevFInt{} y \RFPoseDevFSer{}, respectivamente. El MIL y la línea de base rinden peor sobre todo en \clase{Disgustado} (\MILDevFDisg{} y \BaseDevFDisg{}), la clase con menos clips en el desarrollo (\ClipsDevDisg{}, frente a \ClipsDevInt{} de \clase{Interesado} y \ClipsDevSer{} de \clase{Sereno}) y con la dispersión más alta entre evaluaciones en el MIL ($DE = \MILDevFDisgDE{}$). Los dos candidatos con pose rinden de manera relativamente pareja entre clases, sin que ninguna quede claramente rezagada. Los valores de las tres clases, junto con los de la validación por sesión, se reúnen en la Tabla~\ref{tab:a-porclase} del Anexo~E.
+
+\begin{figure}[H]
+\caption{F1 por clase de los cuatro candidatos en el desarrollo}\label{fig:c5-f1-clase}
+\centering
+\includegraphics[width=\textwidth]{figuras/f1_por_clase.pdf}
+\notatabla{Media de las \Evaluaciones{} evaluaciones del 5\,$\times$\,4; barras de error: $\pm$ 1 desvío estándar. \textit{n} = \ClipsDesarrollo{} clips.}
+\end{figure}
+
+La Figura~\ref{fig:c5-confusion-dev} presenta las matrices de confusión de los cuatro candidatos. Cada matriz suma las \Evaluaciones{} evaluaciones: como cada clip de desarrollo se predice una vez por repetición, aparece \Repeticiones{} veces en la suma, por lo que los conteos no son comparables con los de la reserva ni con el número de clips. Lo informativo es la forma: en los candidatos con pose, la diagonal domina y los errores se reparten entre las clases sin una confusión sistemática única, mientras que en el MIL y en la línea de base las celdas fuera de la diagonal son proporcionalmente más pesadas, en particular las que involucran a \clase{Disgustado}.
+
+\begin{figure}[H]
+\caption{Matrices de confusión de los cuatro candidatos en el desarrollo}\label{fig:c5-confusion-dev}
+\centering
+\includegraphics[width=\textwidth]{figuras/confusion_desarrollo.pdf}
+\notatabla{Suma de las \Evaluaciones{} evaluaciones de la validación 5\,$\times$\,4: cada uno de los \ClipsDesarrollo{} clips se predice una vez por repetición, así que aparece \Repeticiones{} veces. Filas: clase real.}
+\end{figure}
+
+\subsection{Estabilidad entre repeticiones}
+Las \Repeticiones{} repeticiones remuestrean la partición, no los datos, por lo que el desvío entre ellas no es un error estándar y no se usa para inferir. Aun así, sirve como indicador de sensibilidad a la partición. En el subconjunto limpio, el desvío del \fmacro{} entre repeticiones fue de \FusionLimpioDE{} en la fusión, \RFPoseLimpioDE{} en el bosque aleatorio, \MILLimpioDE{} en el MIL y \BaseLimpioDE{} en la línea de base. Los dos candidatos con pose son los más estables; el MIL es el más sensible a cómo se reparten los caballos. Para cuantificar la incertidumbre se recurre, en cambio, al \textit{bootstrap} por caballo, cuyos intervalos se informan a continuación: el \fmacro{} agrupado de la fusión es \FusionAgrupF{} con un IC95 de \FusionAgrupIC{}, el del bosque aleatorio \RFPoseAgrupF{} (IC95 \RFPoseAgrupIC{}), el del MIL \MILAgrupF{} (IC95 \MILAgrupIC{}) y el de la línea de base \BaseAgrupF{} (IC95 \BaseAgrupIC{}). Los intervalos de los dos primeros se superponen ampliamente entre sí y no se superponen con el de la línea de base.
+
+\section{Comparaciones Pareadas y Aplicación del Criterio de Elección}
+\subsection{Diferencias entre candidatos}
+Los intervalos individuales de la sección anterior no bastan para comparar candidatos, porque todos se evalúan sobre los mismos caballos y sus errores están correlacionados. Por eso el protocolo prescribió un \textit{bootstrap} pareado: en cada réplica se remuestrean los caballos del desarrollo y se calcula la diferencia de \fmacro{} entre los dos candidatos sobre el mismo remuestreo. La Tabla~\ref{tab:c5-pareadas} reúne las diferencias en el desarrollo completo y en el subconjunto limpio, y la Figura~\ref{fig:c5-ic-pareados} muestra las comparaciones de la fusión contra cada uno de los otros tres.
+
+\begin{table}[H]
+\caption{Diferencias de F1 macro entre candidatos con IC95 pareado por caballo}\label{tab:c5-pareadas}
+{\singlespacing\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Diferencia & Desarrollo completo & Subconjunto limpio \\
+\midrule
+Fusión $-$ bosque aleatorio de pose & \DifFusionRFDev{} \DifFusionRFDevIC{} & \DifFusionRFLimpio{} \DifFusionRFLimpioIC{} \\
+Fusión $-$ MIL & \DifFusionMILDev{} \DifFusionMILDevIC{} & \DifFusionMILLimpio{} \DifFusionMILLimpioIC{} \\
+Fusión $-$ línea de base & \DifFusionBaseDev{} \DifFusionBaseDevIC{} & \DifFusionBaseLimpio{} \DifFusionBaseLimpioIC{} \\
+Bosque aleatorio de pose $-$ MIL & \DifRFMILDev{} \DifRFMILDevIC{} & \DifRFMILLimpio{} \DifRFMILLimpioIC{} \\
+Bosque aleatorio de pose $-$ línea de base & \DifRFBaseDev{} \DifRFBaseDevIC{} & \DifRFBaseLimpio{} \DifRFBaseLimpioIC{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{Diferencia de \fmacro{} agrupado (media de las \Repeticiones{} repeticiones) con IC95 \textit{bootstrap} pareado por caballo entre corchetes (\ReplicasBootstrap{} réplicas, semilla \SemillaBootstrap{}). Desarrollo completo: \ClipsDesarrollo{} clips de \CaballosDesarrollo{} caballos; subconjunto limpio: \ClipsLimpioDesarrollo{} clips de \CaballosLimpioDesarrollo{} caballos. Un intervalo que incluye el cero no permite distinguir la diferencia de la nula.}
+\end{table}
+
+\begin{figure}[H]
+\caption{Diferencia de F1 macro entre la fusión y cada uno de los otros candidatos}\label{fig:c5-ic-pareados}
+\centering
+\includegraphics[width=\textwidth]{figuras/ic_pareados.pdf}
+\notatabla{Puntos: diferencia de \fmacro{} agrupado; segmentos: IC95 \textit{bootstrap} pareado por caballo (\ReplicasBootstrap{} réplicas, semilla \SemillaBootstrap{}). La línea punteada marca la diferencia nula. \textit{n} = \ClipsDesarrollo{} clips (\CaballosDesarrollo{} caballos); subconjunto limpio, \ClipsLimpioDesarrollo{} clips (\CaballosLimpioDesarrollo{} caballos).}
+\end{figure}
+
+La fusión supera al MIL (\DifFusionMILDev{}) y a la línea de base (\DifFusionBaseDev{}) con intervalos que excluyen el cero, también en el subconjunto limpio. El bosque aleatorio de pose, por su parte, supera al MIL y a la línea de base en el desarrollo completo; en limpio, su ventaja sobre el MIL tiene un intervalo que incluye el cero ({\DifRFMILLimpioIC{}}). En cambio, la ventaja de la fusión sobre el bosque aleatorio es pequeña: \DifFusionRFDev{} con un intervalo cuyo límite inferior está apenas por encima del cero.
+
+\subsection{Aplicación del criterio de elección}
+El criterio se fijó antes de medir (Capítulo~4) y se aplicó sin modificaciones, en tres pasos.
+
+\begin{enumerate}
+  \item \textit{Ordenamiento.} La fusión tiene el mayor \fmacro{} medio en las \Evaluaciones{} evaluaciones (\FusionDevF{}) y encabeza la lista.
+  \item \textit{No inferioridad en el subconjunto limpio.} Ninguna de las diferencias <<fusión $-$ otro>> en el subconjunto limpio tiene su límite superior por debajo de cero (Tabla~\ref{tab:c5-pareadas}); la fusión no es significativamente peor que ningún candidato donde la filmación no delata la clase. La condición se cumple.
+  \item \textit{Empate.} El IC95 pareado de <<fusión $-$ bosque aleatorio>> en el desarrollo es \DifFusionRFDevIC{} y no incluye el cero. No hay empate y, por lo tanto, no se aplica la regla de preferir al candidato más simple.
+\end{enumerate}
+
+El ganador, según el criterio, es la fusión tardía de pose y apariencia. Conviene leer este resultado con precisión: el límite inferior del intervalo (+0,002) está prácticamente sobre el cero, y en el subconjunto limpio la diferencia deja de distinguirse de la nula. La elección es correcta en términos del procedimiento declarado, pero la ventaja práctica de la fusión sobre un clasificador de pose solo es mínima.
+
+\subsection{El peso de la pose en la fusión}
+La fusión combina, mediante una combinación ponderada de sus salidas (véanse las reglas de combinación en \textcite{kittler1998}), un bosque aleatorio sobre los \PoseRasgos{} rasgos de pose y una regresión logística sobre el promedio de las características visuales. El peso $w$ de la pose se eligió en cada evaluación por validación interna dentro del conjunto de entrenamiento, nunca con la prueba del pliegue. El valor elegido fue \PesoPose{} en \PesoFoldsA{} de las \PesoFoldsTotal{} evaluaciones y \PesoPoseUno{} en la restante, es decir, que la rama visual sólo recibe un cuarto del peso en casi todos los casos y ninguno en uno. La fusión está, por lo tanto, dominada por la pose, lo que concuerda con que el bosque aleatorio de pose rinda casi tanto como la fusión y con que la línea de base visual quede muy por detrás. La rama visual aporta un complemento modesto, no una señal independiente de peso comparable.
+
+\section{Evaluación en la Reserva}
+La reserva de \CaballosReserva{} caballos (\ClipsReserva{} clips) se usó una sola vez, con el ganador ya fijado y registrado por escrito. El modelo se ajustó con todo el desarrollo y no se modificó después. La fusión obtuvo un \fmacro{} de \FusionReservaF{} (IC95 \FusionReservaIC{}) y una exactitud de \FusionReservaAcc{}: \ReservaAciertos{} de los \ClipsReserva{} clips fueron bien clasificados. En el subconjunto limpio de la reserva (\ClipsLimpioReserva{} clips) el \fmacro{} fue de \FusionReservaLimpio{}. La Tabla~\ref{tab:c5-reserva} presenta las métricas por clase y la Figura~\ref{fig:c5-confusion-reserva} la matriz de confusión.
+
+\begin{table}[H]
+\caption{Métricas por clase de la fusión pose + visual en la reserva}\label{tab:c5-reserva}
+{\singlespacing
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Clase & Precisión & Sensibilidad & \textit{F}\textsubscript{1} & \textit{n} \\
+\midrule
+\clase{Disgustado} & \FusionReservaPrecDisg{} & \FusionReservaRecDisg{} & \FusionReservaFDisg{} & \ClipsReservaDisg{} \\
+\clase{Interesado} & \FusionReservaPrecInt{} & \FusionReservaRecInt{} & \FusionReservaFInt{} & \ClipsReservaInt{} \\
+\clase{Sereno} & \FusionReservaPrecSer{} & \FusionReservaRecSer{} & \FusionReservaFSer{} & \ClipsReservaSer{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{\CaballosReserva{} caballos y \ClipsReserva{} clips no usados en el desarrollo. La sensibilidad es la proporción de clips de cada clase que el modelo identifica.}
+\end{table}
+
+\begin{figure}[H]
+\caption{Matriz de confusión de la fusión pose + visual en la reserva}\label{fig:c5-confusion-reserva}
+\centering
+\includegraphics[width=0.6\textwidth]{figuras/confusion_reserva.pdf}
+\notatabla{Conteos de clips; filas: clase real; columnas: clase predicha. \textit{n} = \ClipsReserva{} clips de \CaballosReserva{} caballos no usados en el desarrollo (único uso de la reserva).}
+\end{figure}
+
+El resultado está dentro de lo esperado por el desarrollo (\FusionDevF{} $\pm$ \FusionDevDE{}; en limpio, \FusionLimpioF{}): el \fmacro{} de la reserva queda unos 3 puntos por debajo del medio del desarrollo y el del subconjunto limpio queda algo por encima del promedio de ese subconjunto en el desarrollo. La lectura debe ser prudente. Con \CaballosReserva{} caballos, el intervalo es ancho ({\FusionReservaIC{}}) y abarca desde valores comparables al del bosque aleatorio hasta otros claramente más bajos; por eso la reserva se usa para estimar el rendimiento esperado del modelo elegido sobre animales nuevos, y no para comparar candidatos ni para confirmar la ventaja sobre el bosque aleatorio. Por clase, \clase{Interesado} es la más difícil (\FusionReservaFInt{}), con una precisión de \FusionReservaPrecInt{} y una sensibilidad de \FusionReservaRecInt{}, y \clase{Sereno} la mejor identificada (\FusionReservaFSer{}). Con \ClipsReservaInt{} clips de \clase{Interesado} en la reserva, un solo clip cambia varios puntos de las métricas de esa clase, de modo que las diferencias entre clases en este conjunto no deben interpretarse como un ordenamiento estable.
+
+\section{Validación Dejando Afuera una Sesión de Filmación}
+\subsection{Diseño y resultados}
+El agrupamiento por caballo evita que un mismo animal esté en el entrenamiento y en la prueba, pero no impide que caballos filmados el mismo día, en el mismo lugar y con el mismo dispositivo queden de lados distintos de la partición. Para estimar el rendimiento ante sesiones de filmación nuevas se realizó un análisis complementario, declarado como enmienda al protocolo antes de ejecutarlo. Para cada una de las \SesionesEvaluadas{} sesiones con clips de desarrollo (de las \SesionesTotal{} confirmadas), la prueba son los clips de esa sesión y el entrenamiento son los de las otras sesiones, sin los de ningún caballo presente en la sesión de prueba. Ninguna sesión se salteó; la exclusión por caballo retiró del entrenamiento \ClipsTrainPerdidos{} clips en total (\ClipsTrainPerdidosMedia{} por sesión en promedio), de modo que el entrenamiento de cada sesión tuvo entre \ClipsTrainSesionMin{} y \ClipsTrainSesionMax{} clips. Los cuatro candidatos usaron exactamente la misma partición, con un candidato nuevo por sesión y los hiperparámetros ya fijados, y cada uno de los \ClipsDesarrollo{} clips recibió una predicción fuera de muestra. Como muchas sesiones tienen pocos clips o una sola clase, la métrica principal es el \fmacro{} agrupado de todas las predicciones. La Tabla~\ref{tab:c5-sesion} presenta los resultados, y el detalle por sesión está en el Anexo~E.
+
+\begin{table}[H]
+\caption{Validación dejando afuera una sesión de filmación}\label{tab:c5-sesion}
+{\singlespacing\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Candidato & \fmacro{} agrupado [IC95] & Exactitud & \fmacro{} limpio [IC95] & Caída vs. 5\,$\times$\,4 \\
+\midrule
+Fusión pose + visual & \FusionSesionF{} \FusionSesionIC{} & \FusionSesionAcc{} & \FusionSesionLimpioF{} \FusionSesionLimpioIC{} & \FusionSesionCaida{} \\
+Bosque aleatorio de pose & \RFPoseSesionF{} \RFPoseSesionIC{} & \RFPoseSesionAcc{} & \RFPoseSesionLimpioF{} \RFPoseSesionLimpioIC{} & \RFPoseSesionCaida{} \\
+MIL multimodal corregido & \MILSesionF{} \MILSesionIC{} & \MILSesionAcc{} & \MILSesionLimpioF{} \MILSesionLimpioIC{} & \MILSesionCaida{} \\
+Línea de base logística & \BaseSesionF{} \BaseSesionIC{} & \BaseSesionAcc{} & \BaseSesionLimpioF{} \BaseSesionLimpioIC{} & \BaseSesionCaida{} \\
+\bottomrule
+\end{tabular}}
+\notatabla{\fmacro{} agrupado de las \ClipsDesarrollo{} predicciones fuera de muestra; IC95 \textit{bootstrap} por caballo. Subconjunto limpio: \ClipsLimpioDesarrollo{} clips. La caída es el \fmacro{} agrupado del 5\,$\times$\,4 menos el de la validación por sesión, ambos sobre los mismos clips (un valor negativo indica que no cayó); los entrenamientos difieren (entre \ClipsTrainSesionMin{} y \ClipsTrainSesionMax{} clips frente a unos 218 del 5\,$\times$\,4), por lo que la comparación es orientativa.}
+\end{table}
+
+\begin{figure}[H]
+\caption{F1 macro agrupado en la validación por caballo y dejando afuera una sesión de filmación}\label{fig:c5-sesion}
+\centering
+\includegraphics[width=\textwidth]{figuras/sesion_vs_5x4.pdf}
+\notatabla{\fmacro{} agrupado de las predicciones fuera de muestra (\textit{n} = \ClipsDesarrollo{} clips; 5\,$\times$\,4: media de \Repeticiones{} repeticiones; sesión: \SesionesEvaluadas{} sesiones evaluadas). Barras de error: IC95 \textit{bootstrap} por caballo.}
+\end{figure}
+
+\subsection{Interpretación}
+El orden de los candidatos se sostiene: fusión, bosque aleatorio de pose, MIL y línea de base, en el mismo orden que en el 5\,$\times$\,4 (Figura~\ref{fig:c5-sesion}). El nivel de acierto de los dos candidatos con pose prácticamente no cambia al enfrentarse a sesiones nuevas (caídas de \FusionSesionCaida{} y \RFPoseSesionCaida{}), mientras que el MIL cae \MILSesionCaida{} y la línea de base \BaseSesionCaida{}. Los candidatos que más dependen de la apariencia visual son los que más pierden ante sesiones no vistas, lo que es coherente con que la apariencia arrastre rasgos propios de cada filmación. Que la pose no caiga indica que su ventaja no se explica por rasgos particulares de cada sesión: un modelo que memorizara el contexto de una sesión habría rendido peor al verla por primera vez.
+
+Las diferencias pareadas con la fusión en este análisis son \DifFusionMILSesion{} \DifFusionMILSesionIC{} frente al MIL y \DifFusionBaseSesion{} \DifFusionBaseSesionIC{} frente a la línea de base, ambas claras, también en el subconjunto limpio (\DifFusionMILSesionLimpio{} \DifFusionMILSesionLimpioIC{} y \DifFusionBaseSesionLimpio{} \DifFusionBaseSesionLimpioIC{}). Frente al bosque aleatorio, en cambio, la diferencia es \DifFusionRFSesion{} con un IC95 de {\DifFusionRFSesionIC{}} (en limpio, \DifFusionRFSesionLimpio{} \DifFusionRFSesionLimpioIC{}), que incluye el cero. Esta es una limitación para la elección: si la regla de empate del criterio se aplicara con este resultado, ganaría el bosque aleatorio de pose, por ser el más simple. El ganador no cambia, porque el criterio se fijó antes de medir y el análisis por sesión se declaró como complementario; pero el informe no puede presentar a la fusión como claramente superior al bosque aleatorio. La diferencia es mínima en los dos análisis y su sentido es consistente, pero no concluyente.
+
+Esta validación tampoco descarta el confusor de filmación, como se verá a continuación: el subconjunto limpio sigue unos 12 puntos por debajo en los dos candidatos con pose, y esos rasgos de filmación parecen ser propiedades del protocolo de toma de cada clase y no de una sesión en particular, por lo que dejar afuera una sesión no los neutraliza. El análisis muestra robustez ante sesiones nuevas, no ausencia de atajo. Debe agregarse que sus límites son propios: las sesiones son muy desiguales (una sola reúne casi un tercio de los clips y más de un tercio de los caballos), algunas contienen un solo caballo o una sola clase, y sesiones de fechas cercanas pueden compartir condiciones aunque figuren como distintas.
+
+\section{Control del Confusor de Filmación}
+\subsection{El subconjunto limpio}
+La duración y el formato de los clips no son independientes de la clase (Tabla~\ref{tab:c5-filmacion}). La mediana de duración de \clase{Disgustado} es de 3,2~s, mientras que la de \clase{Interesado} y \clase{Sereno} es de 6,0~s; las resoluciones atípicas son de una sola clase (640\,$\times$\,480 sólo en \clase{Interesado} y \clase{Disgustado}, 2560\,$\times$\,1440 sólo en \clase{Disgustado}) y \clase{Sereno} es íntegramente de 1080\,$\times$\,1920. Esta asociación es en parte inherente al fenómeno (las interacciones que originan \clase{Disgustado} son breves), pero es también una vía para que un clasificador acierte sin mirar la expresión. De hecho, en las líneas de base de la auditoría, la sola duración del clip permitía un \fmacro{} de 0,544 y los metadatos de filmación en conjunto de 0,618, muy por encima del azar.
+
+\begin{table}[H]
+\caption{Duración y formato de los clips por clase}\label{tab:c5-filmacion}
+{\singlespacing\small
+\begin{threeparttable}
+\begin{tabular}{@{}lrrp{5.6cm}@{}}
+\toprule
+Clase & Mediana (s) & Rango intercuartílico (s) & Resoluciones (clips) \\
+\midrule
+\clase{Disgustado} & 3,2 & 2,3--5,7 & 1080\,$\times$\,1920 (93), 2560\,$\times$\,1440 (8), 640\,$\times$\,480 (2) \\
+\clase{Interesado} & 6,0 & 6,0--7,0 & 1080\,$\times$\,1920 (91), 640\,$\times$\,480 (26), 720\,$\times$\,1280 (1) \\
+\clase{Sereno} & 6,0 & 6,0--7,0 & 1080\,$\times$\,1920 (138) \\
+\bottomrule
+\end{tabular}
+\end{threeparttable}}
+\notatabla{Los \ClipsTotal{} clips del conjunto completo (desarrollo y reserva). Fuente: auditoría del conjunto de datos del proyecto.}
+\end{table}
+
+Para medir cuánto del rendimiento depende de esta asociación se definió el subconjunto limpio: los clips de formato \CriterioLimpio{}, que no delatan la clase por el formato. En el desarrollo contiene \ClipsLimpioDesarrollo{} clips de \CaballosLimpioDesarrollo{} caballos, de los cuales \ClipsLimpioDisg{} son de \clase{Disgustado}, \ClipsLimpioInt{} de \clase{Interesado} y \ClipsLimpioSer{} de \clase{Sereno}; es decir, sacrifica sobre todo a \clase{Disgustado}, que pasa de \ClipsDevDisg{} a \ClipsLimpioDisg{} clips. Todos los candidatos caen al medirse allí: la fusión de \FusionDevF{} a \FusionLimpioF{}, el bosque aleatorio de \RFPoseDevF{} a \RFPoseLimpioF{}, el MIL de \MILDevF{} a \MILLimpioF{} y la línea de base de \BaseDevF{} a \BaseLimpioF{}; en los dos mejores, la caída es de unos 12 puntos, y entre 10 y 13 puntos en los cuatro. El orden de los candidatos se conserva en el subconjunto limpio, y los intervalos pareados de la fusión frente al MIL y la línea de base siguen excluyendo el cero (Tabla~\ref{tab:c5-pareadas}).
+
+\subsection{Qué se puede y qué no se puede afirmar}
+La caída de unos 12 puntos no puede atribuirse por completo a un atajo, porque el subconjunto limpio es más pequeño, tiene muy pocos clips de \clase{Disgustado} y las métricas sobre pocos clips son más inestables; tampoco puede descartarse que parte del rendimiento en el desarrollo completo provenga de la filmación. Un elemento adicional apunta en esa dirección: en la auditoría del experimento con rasgos de pose, los \PoseRasgos{} rasgos permitían predecir la log-duración del clip con un coeficiente de determinación $R^2$ de 0,53 y el formato 1080\,$\times$\,1920 con un AUC (área bajo la curva ROC) de 0,73, aunque los rasgos son razones, ángulos y velocidades normalizadas, sin píxeles absolutos. Es decir, la pose codifica en parte la filmación, y el mismo problema afecta al MIL, de modo que la comparación entre candidatos es justa pero todos los resultados en el desarrollo completo pueden estar inflados por el contexto de captura. Este es un ejemplo de aprendizaje por atajos \parencite{geirhos2020}: un modelo puede acertar usando una propiedad correlacionada con la clase y no la señal de interés.
+
+Con la evidencia disponible, lo que puede afirmarse es lo siguiente. (i) En un subconjunto donde la filmación no delata la clase, la fusión alcanza un \fmacro{} de \FusionLimpioF{} en el desarrollo y de \FusionReservaLimpio{} en la reserva, valores muy por encima del azar y de la clase mayoritaria, de modo que hay señal que no se reduce a la filmación. (ii) La ventaja de los modelos con pose sobre los que dependen de la apariencia se mantiene en el subconjunto limpio. Lo que no puede afirmarse es que el rendimiento del desarrollo completo (\FusionDevF{}) sea una estimación de lo que se obtendría en filmaciones sin asociación entre formato y clase; la estimación más conservadora es la del subconjunto limpio, con su incertidumbre. Los intervalos del subconjunto limpio son anchos (por ejemplo, \FusionAgrupLimpioIC{} para la fusión), por lo que no permiten hablar con precisión de la magnitud del efecto.
+
+\section{Sobreajuste}
+Todos los candidatos aprenden el conjunto de entrenamiento casi por completo: el \fmacro{} de entrenamiento es de \FusionTrainF{} en la fusión y en la línea de base, \RFPoseTrainF{} en el bosque aleatorio y \MILTrainF{} en el MIL (Tabla~\ref{tab:c5-candidatos}). La brecha entre el rendimiento en entrenamiento y en prueba es de \FusionGap{} en la fusión, \RFPoseGap{} en el bosque aleatorio, \MILGap{} en el MIL y \BaseGap{} en la línea de base. Una brecha de esta magnitud es esperable con unos 200 clips de entrenamiento y cientos de rasgos, y los modelos de mejor rendimiento en prueba son los de menor brecha, de modo que el sobreajuste no explica el ordenamiento; es, en cambio, una señal de que ningún modelo está cerca de su techo de generalización y de que las estimaciones dependen de los caballos disponibles. Un \fmacro{} de entrenamiento de \FusionTrainF{} significa que la fusión reproduce todas las etiquetas de entrenamiento, algo habitual en bosques aleatorios y en regresiones con muchos rasgos, pero que impide usar el rendimiento de entrenamiento como evidencia de nada. La brecha de la línea de base (\BaseGap{}) es la mayor, coherente con una regresión logística sobre 512 rasgos visuales y muy pocos caballos.
+
+\section{La Hipótesis Temporal}
+La hipótesis inicial del trabajo era que el orden de los fotogramas aportaba información sobre la expresión. La auditoría del modelo anterior mostró que no podía sostenerse: al barajar o invertir los fotogramas de cada clip, \textit{0 de \ClipsTotal{}} predicciones cambiaron, con una diferencia máxima de las salidas del orden de $10^{-6}$. El modelo procesaba un conjunto de 16 imágenes y su atención, sin codificación de posición ni recurrencia, es invariante al orden. Esta observación coincide con la del docente, quien señaló que el sistema parecía procesar el video como un conjunto de imágenes y no como una secuencia.
+
+Ninguno de los cuatro candidatos modela el orden. La línea de base promedia los fotogramas; el bosque aleatorio y la fusión se apoyan en \PoseRasgos{} rasgos calculados sobre la ventana, algunos de los cuales (como las velocidades) resumen el movimiento pero no su secuencia; y el MIL corregido mantiene una atención sin posición. En ese sentido, la comparación no pone a prueba la hipótesis temporal sino que la deja sin respaldo: con este conjunto, esta ventana de hasta 7~s y estas representaciones, no se encontró evidencia de que el orden de los fotogramas mejore la clasificación. Lo que sí aportan varios fotogramas respecto de uno solo es información de varios instantes: la auditoría midió una mejora de 0,059 al pasar de un fotograma a 16 (IC95 [0,001; 0,116]). Por ello el sistema debe describirse como una agregación espacial de varios fotogramas y no como un modelo espacio-temporal. La conclusión es acotada: no implica que la dinámica sea irrelevante en la expresión equina, que se reportó importante en el reconocimiento del dolor \parencite{broome2019}, sino que este trabajo no la modeló ni la puso a prueba.
+
+\section{Identidad Duplicada de los Caballos 123 y 169}
+La devolución del docente señaló que los identificadores \texttt{123} y \texttt{169} podían corresponder al mismo caballo. Ambos videos son de \clase{Interesado} y se filmaron el mismo día con 34~s de diferencia; la comparación de fotogramas confirmó que se trata del mismo animal. Las particiones estaban fijadas antes de comparar y no se rehicieron; se midió, en cambio, el efecto. Los \ParClips{} clips del par quedaron separados entre entrenamiento y prueba en \ParRepsSeparado{} de las \Repeticiones{} repeticiones del 5\,$\times$\,4. Al quitarlos del \fmacro{} agrupado, el valor de la fusión pasa de \ParFusionAntes{} a \ParFusionDespues{} (\ParFusionDif{}), el del bosque aleatorio de \ParRFAntes{} a \ParRFDespues{} (\ParRFDif{}), el del MIL de \ParMILAntes{} a \ParMILDespues{} (\ParMILDif{}) y el de la línea de base de \ParBaseAntes{} a \ParBaseDespues{} (\ParBaseDif{}). El efecto es de a lo sumo cuatro milésimas, mucho menor que cualquier diferencia entre candidatos, y no altera el orden de los candidatos ni la elección. El par no afecta a la reserva, que no lo contiene; a la validación por sesión, porque ambos son de la misma sesión, que siempre se evalúa entera con exclusión de sus caballos; ni al modelo final, que se entrena con todos los clips. No se revisó visualmente la existencia de otros pares de identificadores duplicados, por lo que no puede descartarse que haya alguno.
+
+\section{Variantes No Adoptadas}
+Durante el desarrollo se exploraron numerosas variantes que no se incorporaron al modelo final, con el motivo de cada descarte documentado en el Anexo~C. Entre ellas, el ajuste fino parcial de la red convolucional, que mejoraba poco frente a la variabilidad entre particiones y aumentaba el riesgo de sobreajuste; un canal de entrada enriquecido con más puntos anatómicos, de boca y de ollares; la validación cruzada anidada para elegir la época de entrenamiento; el enmascarado de clips incompletos; la representación del movimiento de la cabeza; y la herramienta SimBA real, de la que sólo se aprovechó el cálculo de movimiento, con un rendimiento inferior al de los rasgos geométricos propios. La conclusión común de esas exploraciones es que ninguna variante de arquitectura movió el resultado más que lo que lo movieron las decisiones de datos y de protocolo, y que la complejidad adicional no se justificó con un conjunto de este tamaño.
+
+\section{Limitaciones}
+\begin{enumerate}
+  \item \textit{Confusor de filmación.} La duración y el formato de los clips se asocian con la clase, los rasgos de pose los codifican en parte y los resultados en el subconjunto limpio son unos 12 puntos inferiores. El rendimiento del desarrollo completo no debe tomarse como estimación de lo que ocurriría con filmaciones sin esa asociación.
+  \item \textit{Ventaja mínima de la fusión sobre el bosque aleatorio.} La diferencia es de \DifFusionRFDev{} con un límite inferior de +0,002 en el 5\,$\times$\,4, no se distingue de cero en el subconjunto limpio ni en la validación por sesión, y con la regla de empate ganaría el candidato más simple. La fusión, además, está dominada por la pose (peso \PesoPose{}).
+  \item \textit{Reserva pequeña.} Los \CaballosReserva{} caballos y \ClipsReserva{} clips de la reserva producen un intervalo ancho ({\FusionReservaIC{}}); el valor es una estimación aproximada, no una cota.
+  \item \textit{Un único etiquetador.} Todas las etiquetas provienen de una veterinaria codificadora; no hay acuerdo interobservador medido sobre este conjunto, de modo que se desconoce el techo de rendimiento que impone la ambigüedad de las etiquetas.
+  \item \textit{Sin validación con veterinarios ni prueba externa.} La utilidad de la herramienta para el público al que se dirige no fue medida, y no se evaluó el modelo con videos de otras fuentes, cámaras o regiones (observación D5 de la devolución del docente).
+  \item \textit{Una sola población.} Los \CaballosTotal{} caballos y las \SesionesTotal{} sesiones provienen de una misma zona, por lo que la generalización a otras poblaciones es una hipótesis y no un resultado.
+  \item \textit{Modelo final reentrenado con todo.} La aplicación usa un modelo ajustado con todos los clips, incluida la reserva, que ya no tiene una estimación independiente propia; sus resultados se infieren de los del modelo ajustado sólo con el desarrollo.
+  \item \textit{Sobreajuste.} Todos los candidatos reproducen el entrenamiento casi por completo y la brecha con la prueba es de entre \FusionGap{} y \BaseGap{} puntos.
+  \item \textit{Tamaño efectivo.} La unidad de análisis es el caballo, no el clip; los \CaballosDesarrollo{} caballos del desarrollo limitan la precisión de todas las estimaciones, y las repeticiones del 5\,$\times$\,4 no aumentan los datos.
+\end{enumerate}
+
+\section{Discusión General}
+\subsection{Qué muestran los resultados}
+Los resultados indican que los videos cortos de celular contienen señal suficiente para discriminar las tres clases afectivas del conjunto con animales no vistos: \FusionDevF{} de \fmacro{} en el desarrollo, \FusionSesionF{} ante sesiones nuevas y \FusionReservaF{} en la reserva, muy por encima de un \fmacro{} de azar de alrededor de un tercio. La señal proviene sobre todo de la pose facial, y la fusión con la apariencia agrega muy poco. El segundo resultado es metodológico: el modelo que era el centro del trabajo anterior, el MIL, quedó tercero con el protocolo común (\MILDevF{}), y la cifra anterior de 0,740 no puede compararse directamente con la actual porque se midió con otra partición y otro conjunto. Lo que muestra el protocolo común es que las correcciones no acercaron al MIL a los dos mejores candidatos, y que un clasificador mucho más simple (un bosque aleatorio sobre rasgos geométricos) obtiene un rendimiento similar o mejor.
+
+\subsection{Relación con la literatura}
+La mayor parte de la literatura de reconocimiento automático en caballos se concentra en el dolor \parencite{broome2023}, y los primeros trabajos mostraron la viabilidad de reconocer expresiones de dolor sobre imágenes con redes convolucionales \parencite{lencioni2021,hummel2020,pessanha2023}. Los trabajos sobre emociones son menos numerosos \parencite{corujo2021,feighelstein2024}, y esta tesina se ubica en esa zona: clasifica tres categorías afectivas amplias (\clase{Sereno}, \clase{Interesado} y \clase{Disgustado}) a partir de videos de campo, sobre un conjunto propio. Los resultados no son directamente comparables con los de esos estudios, que difieren en las clases, los conjuntos y los protocolos de evaluación; en particular, ninguno de ellos define las mismas categorías, y esta comparación se limita a señalar que el orden de magnitud es compatible con el de los trabajos sobre expresión facial equina.
+
+El resultado de que los rasgos de pose igualen o superen a modelos más complejos concuerda con la utilidad que las revisiones atribuyen a los puntos clave como entrada intermedia \parencite{broome2023,mathis2018} y con el enfoque de SimBA \parencite{goodwin2024}, del que proviene la idea de calcular rasgos geométricos a partir de la pose y alimentarlos a clasificadores supervisados. El bosque aleatorio \parencite{breiman2001} es un modelo adecuado para pocos individuos y muchos rasgos correlacionados, y su desempeño frente al MIL ilustra que, con un conjunto pequeño, un modelo más simple y con rasgos bien elegidos puede ser más difícil de superar que una arquitectura más expresiva. En cuanto a la combinación de clasificadores, la combinación ponderada de salidas se inscribe en el marco clásico de las reglas de combinación \parencite{kittler1998}; que el peso de la pose domine es compatible con que la apariencia aporte poco.
+
+En cuanto al orden temporal, la diferencia con el trabajo sobre dolor equino en video \parencite{broome2019}, donde la dinámica resultó importante, no es necesariamente una contradicción: los videos de esta tesina son más cortos, el problema es de afecto y no de dolor, y las etiquetas corresponden a segmentos y no a una evolución prolongada. Además, ninguno de los candidatos modela el orden, de modo que este trabajo no aporta evidencia en contra de la hipótesis temporal, sino simplemente no la pone a prueba.
+
+\subsection{Lo que aporta la forma de evaluar}
+Un resultado transversal es que la forma de evaluar determinó cuánto se podía creer en los números. Con muestras pequeñas, las estimaciones por validación cruzada tienen barras de error grandes \parencite{varoquaux2018}; por eso se informaron intervalos por \textit{bootstrap} de caballos \parencite{efron1993}, y el agrupamiento por caballo evitó la fuga de información entre entrenamiento y prueba \parencite{roberts2017,kaufman2012}, una causa conocida de resultados optimistas \parencite{kapoor2023}. Elegir y estimar sobre los mismos datos introduce además un sesgo de selección \parencite{cawley2010}, que se evitó reservando \CaballosReserva{} caballos de un único uso. El protocolo declarado antes de medir permitió además que el resultado fuera menos favorable a las expectativas previas: el modelo propio terminó tercero y la ventaja del ganador es mínima. Finalmente, el confusor de filmación hallado ilustra el riesgo de los atajos \parencite{geirhos2020} y justifica reportar el subconjunto limpio junto con el resultado principal.
+
+En síntesis, el trabajo ofrece una estimación honesta, con sus límites, de lo que puede lograrse con estos datos: un clasificador de pose que acierta más de ocho de cada diez clips en animales nuevos, cuyo rendimiento baja unos 12 puntos cuando se elimina la asociación entre formato y clase, y que no justifica afirmar que la complejidad del modelo ni el orden temporal expliquen el resultado.

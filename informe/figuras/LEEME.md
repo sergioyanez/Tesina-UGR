@@ -1,0 +1,15 @@
+# Figuras del informe
+
+Generadas por `informe/generar_figuras.py` (PDF vectorial para Overleaf, PNG 300 dpi de respaldo). Sin título dentro de la figura: el título va en el LaTeX (APA 7: «Figura N» en negrita, título en cursiva debajo). Todas se leen en escala de grises (relleno + patrón o marcador distinto).
+
+| Archivo | Título APA sugerido (cursiva) | Nota sugerida | Fuente |
+|---|---|---|---|
+| `f1_candidatos.pdf` | *F1 macro de los cuatro candidatos en el desarrollo y en el subconjunto limpio* | *Nota.* Barras: media de las 20 evaluaciones de la validación 5×4 por caballo (5 repeticiones × 4 folds; 113 caballos, 291 clips); barras de error: ± 1 desvío estándar (en el subconjunto limpio, de las 5 repeticiones; 188 clips). | `comparacion/resultados/<candidato>.json` (`global.f1_macro`, `limpio.f1_macro_oof_por_repeticion`) |
+| `ic_pareados.pdf` | *Diferencia de F1 macro entre la fusión y cada uno de los otros candidatos* | *Nota.* Puntos: diferencia de F1 macro agrupado; segmentos: IC95 bootstrap pareado por caballo (2 000 réplicas, semilla 7). La línea punteada marca la diferencia nula. n = 291 clips (113 caballos); subconjunto limpio, 188 clips (71 caballos). | `comparaciones_pareadas.json`, `validacion_por_sesion.json` (`intervalos.todo.diferencia_vs_fusion_tardia_pose_visual`) |
+| `confusion_reserva.pdf` | *Matriz de confusión de la fusión pose + visual en la reserva* | *Nota.* Conteos de clips; filas: clase real; columnas: clase predicha. n = 68 clips de 20 caballos no usados en el desarrollo (único uso de la reserva). | `fusion_tardia_pose_visual__reserva.json` (`metricas.matriz`) |
+| `confusion_desarrollo.pdf` | *Matrices de confusión de los cuatro candidatos en el desarrollo* | *Nota.* Suma de las 20 evaluaciones de la validación 5×4: cada uno de los 291 clips se predice una vez por repetición, así que aparece 5 veces. Filas: clase real. | `<candidato>.json` (`global.matriz_confusion_suma`) |
+| `f1_por_clase.pdf` | *F1 por clase de los cuatro candidatos en el desarrollo* | *Nota.* Media de las 20 evaluaciones del 5×4; barras de error: ± 1 desvío estándar. n = 291 clips. | `<candidato>.json` (`global.por_clase.*.f1`) |
+| `sesion_vs_5x4.pdf` | *F1 macro agrupado en la validación por caballo y dejando afuera una sesión de filmación* | *Nota.* F1 macro agrupado de las predicciones fuera de muestra (n = 291 clips; 5×4: media de 5 repeticiones; sesión: 20 sesiones evaluadas). Barras de error: IC95 bootstrap por caballo. | `comparaciones_pareadas.json` (`f1_a`, `f1_b`), `validacion_por_sesion.json` (`intervalos.todo.f1_agrupado`) |
+| `pipeline.pdf` | *Esquema del sistema de clasificación de la expresión facial* | *Nota.* Los 160 rasgos de pose se calculan con las coordenadas de DeepLabCut; la rama visual usa ResNet-18 sobre 16 fotogramas por clip. El peso de la pose, w = 0,75, se elige por validación interna (0,75 en 19 de 20 folds). | `comparacion/DECISION.md`; `fusion_tardia_pose_visual.json` (`descripcion`) |
+
+Inclusión en LaTeX: `\includegraphics[width=\textwidth]{figuras/f1_candidatos.pdf}` (o `width=0.6\textwidth` para `confusion_reserva`).
