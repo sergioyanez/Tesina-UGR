@@ -282,6 +282,11 @@ def preparar_clip(ruta_video, progreso=None, parametros=None, normalizar=True, i
 
     Devuelve `(recortes, filas_pose)` donde `filas_pose` ya viene con `orden` renumerado a la
     posición en la secuencia, que es lo que `MultimodalEquineDataset` espera.
+
+    Si `info` trae `conservar=True`, la copia normalizada NO se borra y la pose completa queda en
+    `info["filas_pose"]` (con la copia en `info["ruta_normalizada"]` y su carpeta en
+    `info["carpeta"]`, que borra quien la pidió). Es para que `monitoreo` dibuje sobre el mismo
+    video sin repetir la pasada de DeepLabCut, que es lo que más tarda.
     """
     import shutil
     import tempfile
@@ -296,14 +301,18 @@ def preparar_clip(ruta_video, progreso=None, parametros=None, normalizar=True, i
     # En el temporal del sistema y no bajo la raíz de datos: DeepLabCut deja auxiliares junto a
     # la entrada y la raíz puede ser de sólo lectura o estar en Drive.
     carpeta = Path(tempfile.mkdtemp(prefix="equinos_inf_"))
+    conservar = bool(info is not None and info.get("conservar"))
     try:
         copia = carpeta / (Path(ruta_video).stem + ".mp4")
         meta = video.normalizar_video(ruta_video, copia)
+        if conservar:
+            info.update(ruta_normalizada=copia, carpeta=carpeta)
         if meta["frames"] <= 0:
             return Negativa("SIN_VIDEO", MOTIVOS["SIN_VIDEO"], 0)
         return _preparar_desde(copia, progreso, parametros, info, rotacion=meta["rotacion"])
     finally:
-        shutil.rmtree(carpeta, ignore_errors=True)
+        if not conservar:
+            shutil.rmtree(carpeta, ignore_errors=True)
 
 
 def _preparar_desde(ruta_video, progreso, parametros, info, rotacion):
@@ -345,6 +354,8 @@ def _preparar_desde(ruta_video, progreso, parametros, info, rotacion):
     # oportunidad de encontrar la cara. La etapa 02 nunca hizo ese gateo.
     avisar("pose", f"estimando keypoints en {total} fotogramas")
     filas_pose = _pose_completa(ruta_video, total, p)
+    if info is not None:
+        info["filas_pose"] = filas_pose
     if not filas_pose:
         return Negativa("SIN_DETECCION", MOTIVOS["SIN_DETECCION"], 0)
 
@@ -443,15 +454,17 @@ def tramo_analizado(ordenes, total, fps) -> dict:
     return {"inicio_seg": float(inicio), "fin_seg": float(fin), "duracion_seg": float(duracion)}
 
 
-def clasificar_video(ruta_video, progreso=None, normalizar=True, modelo=MODELO_POR_OMISION):
+def clasificar_video(ruta_video, progreso=None, normalizar=True, modelo=MODELO_POR_OMISION,
+                     info=None):
     """Punto de entrada de la interfaz: un video, una `Prediccion` o una `Negativa`.
 
     `modelo`: "fusion" (por omisión, el ganador de la comparación) o "mil" (el MIL multimodal).
+    `info`: dict opcional que se completa con lo elegido; ver `preparar_clip` (`conservar`).
     """
     if modelo not in MODELOS:
         raise ValueError(f"Modelo desconocido: {modelo!r}. Opciones: {', '.join(MODELOS)}")
     avisar = progreso or _sin_progreso
-    info: dict = {}
+    info = {} if info is None else info
     preparado = preparar_clip(ruta_video, progreso=progreso, normalizar=normalizar, info=info)
     if isinstance(preparado, Negativa):
         return preparado
