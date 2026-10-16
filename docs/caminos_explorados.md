@@ -1,6 +1,6 @@
 # Caminos explorados y decisiones de la tesina
 
-Documento de trazabilidad metodológica. Estado del repositorio al 08/10/2026 (`main` @ `20af58b`, más la rama `feat/validacion-por-sesion`).
+Documento de trazabilidad metodológica. Estado del repositorio al 08/10/2026 (`main` @ `1b63be6`, más la rama `feat/validacion-por-sesion`).
 Reconstruido a partir del historial de Git (todas las ramas y el reflog local), los changes de
 OpenSpec, los informes de `docs/`, la auditoría v2, el experimento SimBA, el protocolo de comparación
 y las notas de trabajo del asistente.
@@ -126,7 +126,7 @@ notas de trabajo, no verificado en el repo»**.
   todas las clases (la lista no es igual en todas), archivo de configuración externo y recorrido
   recursivo sin declaración (el defecto que se corregía). Copiar los videos a la raíz de proyecto
   también se descartó por duplicar ~2 GB.
-- **Evidencia:** change `catalogo-de-videos-por-clase` (proposal y design); commit `24c8555`.
+- **Evidencia:** change `catalogo-de-videos-por-clase` (proposal y design); commit `f6c9782`.
 
 #### C-03. Fuente única de videos
 
@@ -159,7 +159,7 @@ notas de trabajo, no verificado en el repo»**.
   ejemplares de `Disgustado` y encarece la etapa 02: 4,2 h contra 2,7 h; **otra razón**), sostener
   5–7 s (**otra razón**: conserva el problema).
 - **Evidencia:** changes `piso-de-video-corto` (design) y `interpolacion-temporal-de-keypoints`;
-  commits `7870a16`, `4b6c9e3`.
+  commits `d6ae693`, `ea924f2`.
 - **Consecuencia que sigue vigente:** la duración del clip separa casi sola a `Disgustado`
   (mediana 3,15 s contra 6,0 s en el conjunto de la vía C); ver C-25 y la lección L-3.
 
@@ -219,7 +219,7 @@ notas de trabajo, no verificado en el repo»**.
   acción (EquiFACS / Horse Grimace Scale). Ambas **descartadas** por decisión de Sergio (08/10/2026):
   no forman parte del modelo final.
 - **Evidencia:** `docs/protocolo_de_etiquetado.md`; `docs/formulario_etiquetado_2026-09-28.docx`;
-  commit `ee47298`; `openspec/project.md` (Riesgos 8 y estado del 07/10); `openspec/caminos-e-impedimentos.md`
+  commit `b75afd6`; `openspec/project.md` (Riesgos 8 y estado del 07/10); `openspec/caminos-e-impedimentos.md`
   del commit huérfano `4c13c20` (I-3 y caminos A y B).
 
 ### B. Preprocesamiento
@@ -240,7 +240,7 @@ notas de trabajo, no verificado en el repo»**.
   recortes en la inferencia (la pose ya estaría mal), códec sin pérdida en la inferencia (sería
   distinto de lo que vio el modelo).
 - **Evidencia:** changes `orientacion-de-video-en-origen` y `base-comun-comparacion-de-modelos`
-  (D1, H1–H3); commits `bb58202`, `888afa7`, `bb88234`.
+  (D1, H1–H3); commits `ffc42b6`, `e95d431`, `1f69797`.
 
 #### C-09. Detección y estimación de pose
 
@@ -257,7 +257,7 @@ notas de trabajo, no verificado en el repo»**.
   (**otra razón**: no hay relación geométrica estable entre caja y cara; sin medición), detector
   propio entrenado (**sin medición**, por costo), modelo ajustado con Horse-30 (**descartado: no forma parte del modelo final; decisión de Sergio del 08/10/2026, sin medición**; no hay
   referencias en el repo).
-- **Evidencia:** change `roi-normalizacion-pose` (design); commit `cf23ded`; `auditoria/secciones/12_preprocesamiento_inferencia.md`
+- **Evidencia:** change `roi-normalizacion-pose` (design); commit `a6b7bf9`; `auditoria/secciones/12_preprocesamiento_inferencia.md`
   §12.1 y §12.3; `auditoria/secciones/01_plan_de_trabajo.md` §1.5.
 
 #### C-10. Puntos de anclaje de la alineación y bodypart del hocico
@@ -295,7 +295,7 @@ notas de trabajo, no verificado en el repo»**.
   imposible ya descartado). Filtrar recortes con relleno excesivo: **descartado por ahora, sin
   medición**.
 - **Evidencia:** changes `encuadre-canonico-y-relleno` y `encuadre-que-incluye-las-orejas` (`medicion.md`);
-  commits `4d26415`, `7bbd4de`, `7d140ee`.
+  commits `de0af1c`, `b8266eb`, `b274309`.
 
 #### C-12. Relleno temporal de keypoints (interpolación)
 
@@ -313,7 +313,7 @@ notas de trabajo, no verificado en el repo»**.
   camino de construcción y error en píxeles) y rellenar cualquier hueco (**otra razón**: indefendible).
   El error validado es optimista (el error crece con el movimiento, correlación +0,286).
 - **Evidencia:** change `interpolacion-temporal-de-keypoints` (design, `validacion.md`); commits
-  `97d276a`, `7865ae3`; `docs/informe_mejora_pipeline_mil.md` §2.2.
+  `95f746d`, `82d5fd9`; `docs/informe_mejora_pipeline_mil.md` §2.2.
 
 #### C-13. Anotación manual de keypoints
 
@@ -329,7 +329,7 @@ notas de trabajo, no verificado en el repo»**.
   se reconstruyó verificando las 14 filas contra la corrida.
 - **Decisión:** **Adoptado**, luego **reemplazado**: la v4 (359 clips) usa 0 anotaciones manuales
   (C-14). La deuda de que la descarga pueda pisar el almacén **no se arregló** (candidato a change).
-- **Evidencia:** commits `a4a38e7`, `5816083`, `12d4b5e`; change `clasificacion-orientada-a-video`
+- **Evidencia:** commits `75b54c1`, `fa1d217`, `12d4b5e`; change `clasificacion-orientada-a-video`
   (resultado final); memoria de trabajo «la descarga pisa el almacén».
 
 #### C-14. Selección de los 16 fotogramas de cada clip
@@ -349,8 +349,8 @@ notas de trabajo, no verificado en el repo»**.
   ventana y 91,3 % para el conjunto final; la diferencia no se explica en él.)
 - **Decisión:** (c) **adoptado**. (a) **reemplazado**. (b) **reemplazado** (admitía mezclas; motivo
   del abandono posterior no documentado más allá del criterio estricto de 16 alineados restituido).
-- **Evidencia:** commit `cf23ded`; `docs/informe_mejora_pipeline_mil.md` §1–3; `docs/implementation_plan_2.md`
-  y `docs/walkthrough_2.md` (variante b); commit `6b66044`.
+- **Evidencia:** commit `a6b7bf9`; `docs/informe_mejora_pipeline_mil.md` §1–3; `docs/implementation_plan_2.md`
+  y `docs/walkthrough_2.md` (variante b); commit `d872458`.
 
 #### C-15. Umbral de confianza de keypoints
 
@@ -367,7 +367,7 @@ notas de trabajo, no verificado en el repo»**.
   parámetro de preprocesamiento; el repo muestra que se introdujo en una limpieza de código, que no
   se midió su efecto sobre el modelo y que se revirtió el 07/10 por romper la equivalencia entre la
   app y el entrenamiento. Se registra la respuesta tal cual.
-- **Evidencia:** commits `db2dd6d`, `80ec497`; `openspec/project.md` (estado del 07/10).
+- **Evidencia:** commits `7dc16c7`, `bff0b90`; `openspec/project.md` (estado del 07/10).
 
 #### C-16. Enmascarado: admitir clips incompletos (254 × 12)
 
@@ -518,7 +518,7 @@ notas de trabajo, no verificado en el repo»**.
   La columna de ancho de boca es casi vacía (máscara 0,09).
 - **Decisión:** v2 **adoptada** como módulo propio (la v1 queda intacta); el MIL corregido
   **descartado: peor** frente a la fusión (C-35).
-- **Evidencia:** commit `774a20d`; change `base-comun-comparacion-de-modelos` (D2, H4); rama
+- **Evidencia:** commit `fefc67e`; change `base-comun-comparacion-de-modelos` (D2, H4); rama
   `feat/candidato-mil` (`e0f7e15`, `3db7e8e`).
 
 #### C-24. Geometría facial pura (seis derivadas interpretables, 177 × 8)
@@ -573,7 +573,7 @@ notas de trabajo, no verificado en el repo»**.
 - **Decisión:** **Adoptado** como base del candidato RF de pose y de la rama de pose de la fusión
   (C-33, C-35). La cifra titular es 0,841, no 0,851 (semilla más alta).
 - **Evidencia:** `experimentos/simba/README.md` y `verificacion/README.md`; `auditoria/secciones/17_experimento_simba.md`;
-  commit `1a00e2f`; change `experimento-comparativo-simba`.
+  commit `b0f1b26`; change `experimento-comparativo-simba`.
 
 ### D. Modelos
 
@@ -647,7 +647,7 @@ notas de trabajo, no verificado en el repo»**.
 - **Decisión:** **Adoptado** el 15/09; **conservado** el 25/09 por decisión de los autores (D7,
   revisable); **reemplazado** por la fusión el 08/10 (queda tercero, C-35). Adoptar el promedio estático
   por parsimonia: **descartado: sin diferencia** (era defendible; queda medido).
-- **Evidencia:** commits `6b66044`, `e64e0a2`, `cf23ded`, `4e51800`; `docs/informe_resultados_03.md`;
+- **Evidencia:** commits `d872458`, `aff78ee`, `a6b7bf9`, `b16e45b`; `docs/informe_resultados_03.md`;
   `docs/informe_mejora_pipeline_mil.md`; change `mejoras-prioridad-alta` (D7);
   `objetivo3_evaluacion_v2.json`, `objetivo3_lineas_de_base.json`.
 
@@ -674,7 +674,7 @@ notas de trabajo, no verificado en el repo»**.
 - **Decisión:** **Reemplazado** como candidato por la fusión (C-35). Hoy es la línea de base de
   humo del protocolo.
 - **Evidencia:** `objetivo3_lineas_de_base.json`; `comparacion/resultados/baseline_logreg_media_frames.json`;
-  commit `3c11d32`.
+  commit `1dd7db6`.
 
 #### C-33. Random Forest de pose tipo SimBA como candidato
 
@@ -716,7 +716,7 @@ notas de trabajo, no verificado en el repo»**.
   Descartados para la app: mantener el MIL (peor), servir solo el RF (la regla de simplicidad no
   aplicó), reutilizar `w = 0,75` fijo y copiar `vector_del_clip` (**otra razón**).
 - **Evidencia:** `comparacion/DECISION.md`; `comparacion/resultados/fusion_tardia_pose_visual*.json`;
-  commits `2e8075b`, `fbceb5a`, `e2e5667`, `e6c715f`, `dac4a24`; change `app-modelo-fusion` (design).
+  commits `ea1cf53`, `b5b3a26`, `69b228b`, `30acc23`, `9977bd5`; change `app-modelo-fusion` (design).
 
 ### E. Validación
 
@@ -765,7 +765,7 @@ notas de trabajo, no verificado en el repo»**.
   apartar ~70 clips para validación, no una degradación. (c) sube la validación a 22–28 caballos.
 - **Decisión:** (a) **reemplazado**; (b) **adoptado** en la v4; (c) **adoptado** como opción nueva para
   el protocolo común (`mas_clips` sigue por omisión para reproducir lo medido).
-- **Evidencia:** commit `4e51800`, `06e1b15`; `docs/analisis_sobreajuste.md`;
+- **Evidencia:** commit `b16e45b`, `4cf9d3e`; `docs/analisis_sobreajuste.md`;
   `auditoria/secciones/07_validacion_early_stopping.md`; change `base-comun-comparacion-de-modelos` (D3, H5).
 
 #### C-39. Validación cruzada anidada
@@ -797,8 +797,8 @@ notas de trabajo, no verificado en el repo»**.
   La reserva se usó una sola vez, con autorización explícita, y se registró en `reserva_uso.log`.
 - **Decisión:** **Adoptado.** Quedan declarados como límites: el agrupamiento es por caballo y no por
   sesión; hay un solo observador; las repeticiones remuestrean la partición, no los datos.
-- **Evidencia:** `comparacion/PROTOCOLO.md`; `comparacion/DECISION.md`; commits `cceea65`, `fbceb5a`,
-  `e2e5667`.
+- **Evidencia:** `comparacion/PROTOCOLO.md`; `comparacion/DECISION.md`; commits `3eaa38e`, `b5b3a26`,
+  `69b228b`.
 
 #### C-41. Subconjunto limpio y control de confusores de filmación
 
@@ -838,7 +838,7 @@ notas de trabajo, no verificado en el repo»**.
   limitación; el ganador no cambia, porque el criterio estaba fijado antes (`PROTOCOLO.md` §5).
 - **Evidencia:** `comparacion/validacion_por_sesion.py`, `comparacion/resultados/validacion_por_sesion.json`;
   `comparacion/DECISION.md` (sección «Validación por sesión de filmación»); `comparacion/PROTOCOLO.md`
-  (enmienda del 08/10/2026); `comparacion/sesiones_de_filmacion.csv`; commit `a3bd933`.
+  (enmienda del 08/10/2026); `comparacion/sesiones_de_filmacion.csv`; commit `59f5144`.
 
 ### F. Entorno de ejecución
 
@@ -892,7 +892,7 @@ notas de trabajo, no verificado en el repo»**.
   **no se volvió a medir** tras la v4.
 - **Decisión:** la fusión **adoptada** para la app; el MIL queda como opción `modelo="mil"`. Los tres
   anteriores **reemplazados**, cada uno por una medición de la sección correspondiente.
-- **Evidencia:** commits `ac54df2`, `4baac03`, `e64e0a2`, `dac4a24`, `a19b90a`; changes
+- **Evidencia:** commits `55c6cd3`, `4baac03`, `aff78ee`, `9977bd5`, `a19b90a`; changes
   `interfaz-de-inferencia`, `servir-el-modelo-del-objetivo-3` (rama `ejecucion-local-gpu` y
   `nuevo-intento-con-enmascarado-y-geometria`) y `app-modelo-fusion`; bitácora E-2.
 
@@ -927,7 +927,7 @@ notas de trabajo, no verificado en el repo»**.
 - **Decisión:** **Adoptado.** Repetir la prueba con otra persona: **no se realiza** (decisión de Sergio del 08/10/2026 de cerrar el
   trabajo; los textos se reescribieron después con su revisión directa).
 - **Evidencia:** commits `d6fb240`, `c15aac7`, `f4071ac` (rama `nuevo-intento-con-enmascarado-y-geometria`,
-  `prueba_con_persona_ajena.md`); commits de `main` `4e39d58`, `51777b1`, `0860b75`, `5e69bfc`, `e38d5b7`, `1c543ee` y `760a276`;
+  `prueba_con_persona_ajena.md`); commits de `main` `935753d`, `0aab1eb`, `6090154`, `3a39454`, `36db174`, `d471e66` y `fb5fa21`;
   `openspec/bitacora/2026-09-06-y-07.md`.
 
 ---
@@ -939,18 +939,18 @@ notas de trabajo, no verificado en el repo»**.
 | C-01 | Plan B de dos clases | Datos | Descartado: otra razón | Dejó de ser necesario al llegar a 32 caballos de `Disgustado` | `project.md` |
 | C-02 | Catálogo declarado por clase | Datos | Adoptado | Etiqueta del catálogo, no de la carpeta; +11 videos | `catalogo-de-videos-por-clase` |
 | C-03 | Fuente única de videos | Datos | Adoptado | Una corrida usó un espejo parcial y publicó 72,0 % falso | `fuente-unica-de-videos` |
-| C-04 | Piso de video corto (2 s, luego 1,0 s) | Datos | Adoptado | Recupera a `Disgustado` (11 a 32 caballos) con desviación declarada | `piso-de-video-corto`, `4b6c9e3` |
+| C-04 | Piso de video corto (2 s, luego 1,0 s) | Datos | Adoptado | Recupera a `Disgustado` (11 a 32 caballos) con desviación declarada | `piso-de-video-corto`, `ea924f2` |
 | C-05 | Ampliación del dataset / plan de filmación | Datos | Adoptado / Plan de filmación no ejecutado | Tamaño muestral = caballos; el plan del 08/09 no se ejecutó (respuesta de Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores»; motivo específico no documentado) | `project.md`, `5ad6b64` |
 | C-06 | Búsqueda de duplicados y conflictos | Datos | Adoptado (501 excluido) | 0 duplicados; `178` es contiguo, no duplicado | `orientacion-de-video-en-origen` |
-| C-07 | Protocolo de etiquetado / observador único / etiqueta débil / EquiFACS | Datos | Adoptado / Sin medición / A y B descartados | Un solo observador; A y B no forman parte del modelo final (decisión de Sergio, 08/10/2026) | `protocolo_de_etiquetado.md`, `ee47298` |
+| C-07 | Protocolo de etiquetado / observador único / etiqueta débil / EquiFACS | Datos | Adoptado / Sin medición / A y B descartados | Un solo observador; A y B no forman parte del modelo final (decisión de Sergio, 08/10/2026) | `protocolo_de_etiquetado.md`, `b75afd6` |
 | C-08 | Orientación de video | Preproc. | Adoptado | 42/146 videos rotados perdían 55,6 % de frames; 8/16 a 16/16 en la app | `orientacion-de-video-en-origen`, `base-comun` |
 | C-09 | YOLO + DLC SuperAnimal, sin ajuste | Preproc. | Adoptado | Cero anotación propia; detector propio y Horse-30 sin evaluar | `roi-normalizacion-pose` |
 | C-10 | Hocico `upper_jaw` / máxima confianza | Preproc. | Descartado: peor / sin diferencia | 54,4 % contra 62,4 % de `nose` | `pose-completa-y-bodypart-hocico` |
 | C-11 | Encuadre 224×343 con orejas | Preproc. | Adoptado | Vector de oreja 4,3 % a 77,2 %; alternativas medidas peores | `encuadre-que-incluye-las-orejas` |
 | C-12 | Relleno temporal de keypoints | Preproc. | Adoptado, luego Reemplazado | Solo el hueco de 1 supera la línea de base; la ventana lo dejó sin uso | `interpolacion-temporal-de-keypoints` |
 | C-13 | Anotación manual de keypoints | Preproc. | Adoptado, luego Reemplazado | +5 caballos; la v4 usa 0 anotaciones | `12d4b5e` |
-| C-14 | 16 fotogramas por ventana temporal | Preproc. | Adoptado | 153 a 359 clips (91,3 %); 16 fijos y muestreo variable reemplazados | `cf23ded` |
-| C-15 | Umbral de confianza 0,55 | Preproc. | Revertido a 0,50 | Cambió la preparación de la app sin avisar; respuesta de Sergio (08/10/2026): «se fueron probando nuevos modelos pero no daban mejoras o eran peores» | `db2dd6d`, `80ec497` |
+| C-14 | 16 fotogramas por ventana temporal | Preproc. | Adoptado | 153 a 359 clips (91,3 %); 16 fijos y muestreo variable reemplazados | `a6b7bf9` |
+| C-15 | Umbral de confianza 0,55 | Preproc. | Revertido a 0,50 | Cambió la preparación de la app sin avisar; respuesta de Sergio (08/10/2026): «se fueron probando nuevos modelos pero no daban mejoras o eran peores» | `7dc16c7`, `bff0b90` |
 | C-16 | Enmascarado 254×12 | Datos/Modelo | Descartado: sin diferencia; Abandonado | No cumple su criterio (0,736 contra 0,7847); mismo objetivo logrado por C-14; no se retomó (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | bitácora D-29 |
 | C-17 | Oreja medible en N fotogramas (177×8) | Datos | Descartado (diseños peores); construido | La fuga pasa de «cuántos» a «cuáles» (+0,143); no se retomó (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | `clasificar-desde-la-geometria-facial` |
 | C-18 | Backbone: congelado / fine-tuning / red de video | Representación | Congelado adoptado; fine-tuning descartado: sin diferencia | 0,747 ± 0,057 contra 0,740 ± 0,052 | `feat/finetuning-visual` |
@@ -958,7 +958,7 @@ notas de trabajo, no verificado en el repo»**.
 | C-20 | Retirar el canal geométrico v1 | Representación | Descartado: peor | 0,686 sin canal; el canal le gana al ruido por +0,059 | `informe_mejora_pipeline_mil.md` §7 |
 | C-21 | Canal enriquecido de 21 dimensiones | Representación | Descartado: sin diferencia | 0,698 ± 0,103; margen sobre ruido +0,018 | `feat/enriquecer-canal-geometrico` |
 | C-22 | Comisuras y ollares (15 dimensiones) | Representación | Descartado: peor (sin fusionar) | 0,669 ± 0,077; ruido de pose mayor que la señal; no fusionado (Sergio, 08/10/2026: «se fueron probando nuevos modelos pero no daban mejoras o eran peores») | `origin/feat/microexpresiones-ollares` |
-| C-23 | Geometría v2 (17 columnas) | Representación | Adoptado (módulo); MIL corregido descartado | Descripción más rica; el MIL con v2 no supera al vigente | `774a20d` |
+| C-23 | Geometría v2 (17 columnas) | Representación | Adoptado (módulo); MIL corregido descartado | Descripción más rica; el MIL con v2 no supera al vigente | `fefc67e` |
 | C-24 | Geometría pura (6 derivadas), factorial 12 celdas | Representación | Descartado: peor | 0,184 por debajo de Apariencia; 1/12 celdas cumple | `clasificar-desde-la-geometria-facial` |
 | C-25 | Movimiento de cabeza (vía C) | Representación | Descartado: peor / sin señal | Ningún modelo supera el piso 0,571; la duración sola da 0,578 | `4c13c20` (reflog), `b9ba1fb` |
 | C-26 | Features tipo SimBA propias (160) | Representación | Adoptado | RF 0,841 contra MIL 0,740, con alerta de filmación | `experimentos/simba` |
@@ -970,12 +970,12 @@ notas de trabajo, no verificado en el repo»**.
 | C-32 | Regresión logística sobre la media de frames | Modelo | Reemplazado como candidato | Cuarto: 0,694 en 5×4 | `baseline_logreg_media_frames.json` |
 | C-33 | RF de pose tipo SimBA como candidato | Modelo | Descartado: sin diferencia | Segundo: 0,844; −0,026 [−0,051; −0,002] frente a la fusión | `DECISION.md` |
 | C-34 | SimBA real | Modelo | Descartado: otra razón | Para un animal solo da movimiento (0,720) | `experimentos/simba` |
-| C-35 | Fusión pose más visual | Modelo | Adoptado | 0,868 en desarrollo y 0,834 en reserva (único uso) | `DECISION.md`, `e2e5667` |
+| C-35 | Fusión pose más visual | Modelo | Adoptado | 0,868 en desarrollo y 0,834 en reserva (único uso) | `DECISION.md`, `69b228b` |
 | C-36 | Partición por clip, hold-out, 5 folds | Validación | Descartado: peor / otra razón | La identidad sola da +0,338 con partición ingenua | `clasificacion-orientada-a-video` |
 | C-37 | Criterio declarado y anclado | Validación | Adoptado (reemplazado por criterio de elección) | Evita elegir el número que conviene; re-declaración del 25/09 consta como tal | `f10b02b`, `PROTOCOLO.md` §5 |
-| C-38 | Validación interna y early stopping | Validación | Adoptado | 50 épocas fijas no permitían detectar sobreajuste | `4e51800`, `06e1b15` |
+| C-38 | Validación interna y early stopping | Validación | Adoptado | 50 épocas fijas no permitían detectar sobreajuste | `b16e45b`, `4cf9d3e` |
 | C-39 | Validación cruzada anidada | Validación | Descartado: peor | Triplica el desvío de la época sobre el canal real | `feat/validacion-cruzada-anidada-NestedCV` |
-| C-40 | Protocolo 5×4 con reserva del 15 % | Validación | Adoptado | Incertidumbre acotada y una estimación final fuera de muestra | `PROTOCOLO.md`, `cceea65` |
+| C-40 | Protocolo 5×4 con reserva del 15 % | Validación | Adoptado | Incertidumbre acotada y una estimación final fuera de muestra | `PROTOCOLO.md`, `3eaa38e` |
 | C-41 | Subconjunto limpio; recortar clips a igual duración | Validación | Adoptado / Sin medición | Los candidatos pierden 10–13 puntos; igualar duración cambia el dataset | `mejoras-prioridad-alta` (D4) |
 | C-42 | Leave-session-out | Validación | Adoptado (análisis complementario) | El ranking y el nivel de la fusión se sostienen con sesiones no vistas (0,864); fusión − RF ya no se distingue de cero | `validacion_por_sesion.json`, `DECISION.md` |
 | C-43 | Colab a máquina local con GPU | Entorno | Adoptado | Colab cortó la GPU; driver 580, Python del sistema y abandonar Colab descartados | `ejecucion-local-con-gpu` |

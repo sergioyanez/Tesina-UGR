@@ -50,4 +50,4 @@ Ninguna de estas cifras es comparable con 0,740: cambian el conjunto de clips y,
 
 {{TABLA:historico}}
 
-**Regla de uso:** citar sólo `objetivo3_evaluacion_v2.json` como resultado del modelo vigente, siempre acompañado de `objetivo3_lineas_de_base.json`. La cifra **0,754** no tiene artefacto que la respalde (apareció escrita a mano en `clasificacion.py` el 15/09, en el commit `6b66044`, y se retiró el 18/09) y no debe citarse.
+**Regla de uso:** citar sólo `objetivo3_evaluacion_v2.json` como resultado del modelo vigente, siempre acompañado de `objetivo3_lineas_de_base.json`. La cifra **0,754** no tiene artefacto que la respalde (apareció escrita a mano en `clasificacion.py` el 15/09, en el commit `d872458`, y se retiró el 18/09) y no debe citarse.

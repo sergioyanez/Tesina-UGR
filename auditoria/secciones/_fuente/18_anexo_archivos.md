@@ -8,7 +8,7 @@
 - `docs/registro_de_experimentos.md`, `docs/protocolo_de_etiquetado.md`, `docs/analisis_sobreajuste.md`, `docs/informe_mejora_pipeline_mil.md`.
 - `material para presentar/informe/informe_final_tesina_equinos.tex` y `referencias.bib` (borrador; sólo lectura).
 
-## 18.2 Código revisado (rama `main` @ `caf5564`)
+## 18.2 Código revisado (rama `main` @ `cd66fe9`)
 
 `equinos/`: `particion.py`, `clasificacion.py`, `caracteristicas.py`, `secuencia.py`, `alineado.py`, `dataset.py`, `inferencia.py`, `lineas_de_base.py`, `reproceso.py`, `pose.py`, `encuadre.py`, `rutas.py`; `scripts/evaluar_v2.py`, `scripts/evaluar_lineas_de_base.py`; `app_inferencia.py`; `requirements-local.txt`; notebooks `01_preparar_dataset_equinos.ipynb` y `02_roi_y_normalizacion.ipynb` (parámetros y clips); los 15 archivos de `tests/`, ejecutados (15/15 pasan).
 

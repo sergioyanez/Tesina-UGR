@@ -25,7 +25,7 @@
   "semilla del bootstrap (lineas_de_base)": "SEMILLA_BOOTSTRAP = 1"
  },
  "estado_git": {
-  "commit_base": "caf5564",
+  "commit_base": "cd66fe9",
   "rama_de_la_auditoria": "feat/auditoria-y-experimento-simba",
   "ramas": [
    "chore/deuda-menor-y-observador-unico",

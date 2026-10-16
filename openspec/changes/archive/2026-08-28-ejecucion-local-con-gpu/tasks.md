@@ -69,7 +69,7 @@ producido un dataset distinto del que generó la pose, sin fallar. Documentado e
 **2.4 verificada ejecutando en Colab**, que era la única forma de comprobarla. Con la rama
 `ejecucion-local-gpu` ya en el remoto y el clone apuntando a ella:
 
-- el sync trajo el commit correcto — `Versión del código en Drive: 0ca7c09`, coincidente con el
+- el sync trajo el commit correcto — `Versión del código en Drive: 5c66ba1`, coincidente con el
   remoto, que es la comprobación que evita correr una versión vieja sin enterarse;
 - las dependencias se instalaron sin romper el stack: los conflictos que informa pip son los
   esperados —DeepLabCut fija `numpy 1.26.4` y los paquetes preinstalados de Colab piden numpy 2—

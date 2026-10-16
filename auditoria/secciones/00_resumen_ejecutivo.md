@@ -1,6 +1,6 @@
 # Auditoría técnica y metodológica — Tesina «Detección automática de expresiones faciales en equinos»
 
-**Fecha:** 07 de octubre de 2026 · **Estado auditado:** rama `main`, commit `caf5564`, más las fusiones `feat/mejoras-prioridad-alta` y `chore/deuda-menor-y-observador-unico` · **Referencia:** `docs/plan_de_trabajo_corregido.pdf` · **Antecedente:** auditoría del 25/09/2026 y devolución docente.
+**Fecha:** 07 de octubre de 2026 · **Estado auditado:** rama `main`, commit `cd66fe9`, más las fusiones `feat/mejoras-prioridad-alta` y `chore/deuda-menor-y-observador-unico` · **Referencia:** `docs/plan_de_trabajo_corregido.pdf` · **Antecedente:** auditoría del 25/09/2026 y devolución docente.
 
 **Naturaleza.** Auditoría crítica. Cada cifra sale de un script de `auditoria/scripts/` que lee los artefactos del repositorio (sólo lectura) y escribe en `auditoria/datos/`; lo que no pudo comprobarse se declara como tal. Nada se copió de la auditoría anterior sin recalcularlo.
 

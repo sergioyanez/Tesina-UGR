@@ -450,7 +450,7 @@
    "modelo": "Un frame + voto (LogReg)",
    "dataset": "141 clips / 73 caballos",
    "fecha": "2026-08-28",
-   "commit": "6f50a59 (línea de base) / 425c592 (evaluación final)",
+   "commit": "dbf1435 (línea de base) / 2a10634 (evaluación final)",
    "protocolo": "GroupKFold por caballo, sin validación interna",
    "artefacto_local": "no (objetivo3_evaluacion.json lo sobrescribió; se cita en project.md)",
    "vigente": "No"
@@ -470,7 +470,7 @@
    "modelo": "MIL multimodal (otra corrida)",
    "dataset": "257 clips / 113 caballos (según docs)",
    "fecha": "2026-09-15",
-   "commit": "6b66044 (primera aparición, escrito a mano en clasificacion.py); retirado en 5e41c63 (18/09)",
+   "commit": "d872458 (primera aparición, escrito a mano en clasificacion.py); retirado en e6cc497 (18/09)",
    "protocolo": "50 épocas fijas",
    "artefacto_local": "NO: sin artefacto que lo respalde",
    "vigente": "No (no citar)"
@@ -490,7 +490,7 @@
    "modelo": "MIL multimodal (MILFusionModel)",
    "dataset": "359 clips / 133 caballos",
    "fecha": "2026-09-18 (re-ejecutado 25/09)",
-   "commit": "4e51800 (protocolo), cf23ded (selección de frames); archivo objetivo3_evaluacion_v2.json",
+   "commit": "b16e45b (protocolo), a6b7bf9 (selección de frames); archivo objetivo3_evaluacion_v2.json",
    "protocolo": "4 folds por caballo + validación interna + early stopping",
    "artefacto_local": "sí: objetivo3_evaluacion_v2.json",
    "vigente": "SÍ (única cifra vigente)"
@@ -500,7 +500,7 @@
    "modelo": "Estática: media de 16 frames + LogReg",
    "dataset": "359 / 133",
    "fecha": "2026-09-25",
-   "commit": "e75f13a",
+   "commit": "5116160",
    "protocolo": "mismos folds",
    "artefacto_local": "sí: objetivo3_lineas_de_base.json",
    "vigente": "Línea de base vigente"
@@ -510,7 +510,7 @@
    "modelo": "Solo metadatos de filmación (LogReg)",
    "dataset": "359 / 133",
    "fecha": "2026-09-25",
-   "commit": "e75f13a",
+   "commit": "5116160",
    "protocolo": "mismos folds",
    "artefacto_local": "sí: objetivo3_lineas_de_base.json",
    "vigente": "Línea de base vigente"

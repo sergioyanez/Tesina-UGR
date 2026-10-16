@@ -125,17 +125,17 @@ Ninguna de estas cifras es comparable con 0,740: cambian el conjunto de clips y,
 
 | Cifra | Modelo | Dataset | Fecha | Commit / origen | Artefacto | ¿Vigente? |
 |---|---|---|---|---|---|---|
-| 0,626 ± 0,065 | Un frame + voto (LogReg) | 141 clips / 73 caballos | 2026-08-28 | 6f50a59 (línea de base) / 425c592 (evaluación final) | no (objetivo3_evaluacion.json lo sobrescribió; se cita en project.md) | No |
+| 0,626 ± 0,065 | Un frame + voto (LogReg) | 141 clips / 73 caballos | 2026-08-28 | dbf1435 (línea de base) / 2a10634 (evaluación final) | no (objetivo3_evaluacion.json lo sobrescribió; se cita en project.md) | No |
 | 0,704 ± 0,044 | Cabeza «promedio» (MLP sobre media de frames) | 153 clips / 83 caballos | 2026-09-15 | archivo objetivo3_evaluacion.json (mtime 15/09) | sí: objetivo3_evaluacion.json | No |
-| 0,754 | MIL multimodal (otra corrida) | 257 clips / 113 caballos (según docs) | 2026-09-15 | 6b66044 (primera aparición, escrito a mano en clasificacion.py); retirado en 5e41c63 (18/09) | NO: sin artefacto que lo respalde | No (no citar) |
+| 0,754 | MIL multimodal (otra corrida) | 257 clips / 113 caballos (según docs) | 2026-09-15 | d872458 (primera aparición, escrito a mano en clasificacion.py); retirado en e6cc497 (18/09) | NO: sin artefacto que lo respalde | No (no citar) |
 | 0,618 | MIL con validación interna | 153 clips / 83 caballos | 2026-09-18 | docs/informe_mejora_pipeline_mil.md §6 | no (cifra en el informe) | No |
-| 0,740 ± 0,052 | MIL multimodal (MILFusionModel) | 359 clips / 133 caballos | 2026-09-18 (re-ejecutado 25/09) | 4e51800 (protocolo), cf23ded (selección de frames); archivo objetivo3_evaluacion_v2.json | sí: objetivo3_evaluacion_v2.json | SÍ (única cifra vigente) |
-| 0,741 ± 0,020 | Estática: media de 16 frames + LogReg | 359 / 133 | 2026-09-25 | e75f13a | sí: objetivo3_lineas_de_base.json | Línea de base vigente |
-| 0,618 ± 0,034 | Solo metadatos de filmación (LogReg) | 359 / 133 | 2026-09-25 | e75f13a | sí: objetivo3_lineas_de_base.json | Línea de base vigente |
+| 0,740 ± 0,052 | MIL multimodal (MILFusionModel) | 359 clips / 133 caballos | 2026-09-18 (re-ejecutado 25/09) | b16e45b (protocolo), a6b7bf9 (selección de frames); archivo objetivo3_evaluacion_v2.json | sí: objetivo3_evaluacion_v2.json | SÍ (única cifra vigente) |
+| 0,741 ± 0,020 | Estática: media de 16 frames + LogReg | 359 / 133 | 2026-09-25 | 5116160 | sí: objetivo3_lineas_de_base.json | Línea de base vigente |
+| 0,618 ± 0,034 | Solo metadatos de filmación (LogReg) | 359 / 133 | 2026-09-25 | 5116160 | sí: objetivo3_lineas_de_base.json | Línea de base vigente |
 | 0,686 | MIL visual puro (sin geometría) | 359 / 133 | 2026-09-18 | docs/informe_mejora_pipeline_mil.md §7 | no (cifra en el informe) | No (variante) |
 | 0,747 ± 0,057 | MIL con fine-tuning del backbone | 359 / 133 | 2026-09-22 | rama feat/finetuning-visual (c6d6f80, 544d323) | sí: objetivo3_finetuning_evaluacion.json | No (no adoptado) |
 | 0,698 ± 0,103 | MIL con canal geométrico enriquecido | 359 / 133 | 2026-09-22 | rama feat/enriquecer-canal-geometrico | sí | No (no adoptado) |
 | 0,755 ± 0,022 | MIL reentrenado sobre 100 % del train_val | 359 / 133 | 2026-09-23 | rama feat/validacion-cruzada-anidada-NestedCV (23d4b25) | sí | No (no adoptado) |
 | 0,784 ± 0,036 | MIL con CV anidada (época promedio) | 359 / 133 | 2026-09-23 | rama feat/validacion-cruzada-anidada-NestedCV | sí | No (no adoptado; optimista) |
 
-**Regla de uso:** citar sólo `objetivo3_evaluacion_v2.json` como resultado del modelo vigente, siempre acompañado de `objetivo3_lineas_de_base.json`. La cifra **0,754** no tiene artefacto que la respalde (apareció escrita a mano en `clasificacion.py` el 15/09, en el commit `6b66044`, y se retiró el 18/09) y no debe citarse.
+**Regla de uso:** citar sólo `objetivo3_evaluacion_v2.json` como resultado del modelo vigente, siempre acompañado de `objetivo3_lineas_de_base.json`. La cifra **0,754** no tiene artefacto que la respalde (apareció escrita a mano en `clasificacion.py` el 15/09, en el commit `d872458`, y se retiró el 18/09) y no debe citarse.

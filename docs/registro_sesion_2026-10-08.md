@@ -14,7 +14,7 @@ quedó cada cosa. Las cifras salen de `comparacion/resultados/*.json` y de `comp
   - Los 28 videos sin fecha se asignaron por caballo y nombre de archivo.
   - La tanda con nombres de pelaje se filmó el 28/04/2023, junto con los videos «Box».
   - Los AVI de 2015 forman una sola sesión.
-- **Resultado:** 22 sesiones. El detalle está en `comparacion/propuesta_sesiones_sin_fecha.csv` (commit `a3bd933`).
+- **Resultado:** 22 sesiones. El detalle está en `comparacion/propuesta_sesiones_sin_fecha.csv` (commit `59f5144`).
 
 ## 2. Comparación de cuatro modelos
 
@@ -30,9 +30,9 @@ con el evaluador común (`equinos/comparacion.py`) sobre las mismas particiones 
 
 - **Criterio del protocolo (§5)** aplicado con IC95 bootstrap pareado por caballo: gana la fusión.
   Fusión − bosque aleatorio = +0,026 [+0,002; +0,051]; no hay empate.
-- **Registro:** la decisión se escribió en `comparacion/DECISION.md` **antes** de usar la reserva (commit `fbceb5a`).
+- **Registro:** la decisión se escribió en `comparacion/DECISION.md` **antes** de usar la reserva (commit `b5b3a26`).
 - **Reserva:** Sergio autorizó usarla, una sola vez y con el ganador. Resultado: F1 macro 0,834,
-  IC95 [0,698; 0,925]; exactitud 0,853; limpio 0,767 (commit `e2e5667`, `comparacion/reserva_uso.log`).
+  IC95 [0,698; 0,925]; exactitud 0,853; limpio 0,767 (commit `69b228b`, `comparacion/reserva_uso.log`).
 - **Pruebas:** `pytest tests -q` falla por un problema previo (`test_entorno.py` hace `sys.exit` durante la
   colección). Por eso las pruebas se corren como scripts: `python tests/test_X.py`.
 
@@ -135,5 +135,5 @@ con el evaluador común (`equinos/comparacion.py`) sobre las mismas particiones 
 
 ## 10. Repositorio remoto
 
-`main` se subió a GitHub (`sergioyanez/Tesina-UGR`) hasta `7a2bb84`. Desde entonces hay commits
+`main` se subió a GitHub (`sergioyanez/Tesina-UGR`) hasta `eebd48c`. Desde entonces hay commits
 locales sin subir: este registro y la rama `feat/informe-final`.

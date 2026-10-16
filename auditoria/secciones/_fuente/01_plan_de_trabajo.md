@@ -1,6 +1,6 @@
 # 1. Plan de trabajo: requisitos y matriz de cumplimiento
 
-Documento de referencia: `docs/plan_de_trabajo_corregido.pdf` (mayo de 2026), leído completo. Estado auditado: rama `main`, commit `caf5564` (07/10/2026), incluidas las fusiones `feat/mejoras-prioridad-alta` y `chore/deuda-menor-y-observador-unico`, y los artefactos de `datos_equinos/resultados/`. Todo lo que sigue se **re-verificó contra el estado actual**; no se copió ningún número de la auditoría del 25/09.
+Documento de referencia: `docs/plan_de_trabajo_corregido.pdf` (mayo de 2026), leído completo. Estado auditado: rama `main`, commit `cd66fe9` (07/10/2026), incluidas las fusiones `feat/mejoras-prioridad-alta` y `chore/deuda-menor-y-observador-unico`, y los artefactos de `datos_equinos/resultados/`. Todo lo que sigue se **re-verificó contra el estado actual**; no se copió ningún número de la auditoría del 25/09.
 
 ## 1.1 Qué dice el plan
 

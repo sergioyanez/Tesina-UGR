@@ -462,7 +462,7 @@ hipódromo → `Interesado`, manada → `Disgustado`).
 `Separar cabeza?` ya no existe en Drive ni en local: no hay nada que incorporar. La copia local
 coincide con Drive.
 
-`test_equivalencia.py` vuelve a pasar: la «limpieza» `db2dd6d` (21/09) había subido
+`test_equivalencia.py` vuelve a pasar: la «limpieza» `7dc16c7` (21/09) había subido
 `CONF_MINIMA_KEYPOINT` de 0,50 a 0,55 en el notebook 02, `encuadre.py` e `interpolacion.py`, y la
 interfaz preprocesaba distinto de como se construyó el dataset. Se restituyó 0,50, el valor con que
 se entrenó el modelo vigente.

@@ -87,7 +87,7 @@ def main():
 <table><tr><td>Proyecto</td><td>Detección Automática de Expresiones Faciales en Equinos mediante Aprendizaje Profundo en Secuencias de Video</td></tr>
 <tr><td>Integrantes</td><td>Héctor R. Liceaga · Sergio M. Yañez</td></tr>
 <tr><td>Referencia</td><td>docs/plan_de_trabajo_corregido.pdf</td></tr>
-<tr><td>Estado auditado</td><td>rama main, commit caf5564 (07/10/2026), artefactos de datos_equinos/ y experimentos/simba/</td></tr>
+<tr><td>Estado auditado</td><td>rama main, commit cd66fe9 (07/10/2026), artefactos de datos_equinos/ y experimentos/simba/</td></tr>
 <tr><td>Fecha</td><td>{hoy}</td></tr></table>
 <div class="pie">Todas las cifras provienen de scripts reproducibles en auditoria/scripts/ (solo lectura sobre los datos).</div></div>"""
     indice = f'<div class="toc"><h1>Índice</h1><ul>{items}</ul></div>'
