@@ -71,14 +71,15 @@
   \chapter*{Capítulo \arabic{chapter}. #1}%
   \addcontentsline{toc}{chapter}{Capítulo \arabic{chapter}. #1}}
 
-% Número de página arriba a la derecha (APA 7, sección 2.18); sin encabezado corrido.
+% Número de página abajo a la derecha en todas las hojas, a pedido de los autores (APA 7, sección
+% 2.18, lo pone arriba a la derecha); sin encabezado corrido.
 \usepackage{fancyhdr}
 \setlength{\headheight}{14.5pt}      % evita la advertencia de fancyhdr
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[R]{\thepage}
+\fancyfoot[R]{\thepage}
 \renewcommand{\headrulewidth}{0pt}
-\fancypagestyle{plain}{\fancyhf{}\fancyhead[R]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[R]{\thepage}\renewcommand{\headrulewidth}{0pt}}
 
 % ------------------------------------------------------------
 % REFERENCIAS APA 7
