@@ -139,46 +139,7 @@ C-47 & Textos de confiabilidad / prueba con persona ajena & App & Descartado: ot
 \end{longtable}
 \endgroup
 
-\section{Anexo D. Devolución del Docente}
-El profesor Juan Toloza anotó el informe de cumplimiento de condiciones con dieciséis observaciones: cuatro comentarios escritos (A), una nota sobre SimBA (B), una nota de diagnóstico con cinco indicaciones (C) y seis pasajes resaltados sin comentario (D). La Tabla~\ref{tab:a-devolucion} registra, para cada una, la acción tomada, el resultado y su estado: 11 resueltas, 4 atendidas en parte y 1 abierta.
-
-\begingroup\singlespacing\footnotesize
-\setlength{\LTleft}{0pt}\setlength{\LTright}{0pt}\setlength{\tabcolsep}{3pt}
-\begin{longtable}{@{}p{0.05\textwidth}p{0.23\textwidth}p{0.25\textwidth}p{0.27\textwidth}p{0.09\textwidth}@{}}
-\caption{Observaciones del docente, acción, resultado y estado}\label{tab:a-devolucion}\\
-\toprule
-Id & Observación & Acción & Resultado & Estado \\
-\midrule
-\endfirsthead
-\toprule
-Id & Observación & Acción & Resultado & Estado \\
-\midrule
-\endhead
-\midrule
-\multicolumn{5}{r}{\textit{Continúa en la página siguiente}} \\
-\endfoot
-\bottomrule
-\endlastfoot
-A1 & ¿Cómo está la repetibilidad? & La auditoría la midió en lugar de afirmarla; el protocolo común repite la validación 5 veces con particiones distintas de caballos y estratifica la validación interna. & MIL anterior: \ClipsTotal{} de \ClipsTotal{} predicciones idénticas con la misma semilla; 6 semillas, 0,739 $\pm$ 0,015. Fusión: \FusionAgrupF{} de media, con valores de 0,846 a 0,878 entre las 5 repeticiones (Tabla~\ref{tab:a-rep}). & Resuelta \\
-A2 & ¿Es espacio-temporal o sólo procesamiento del video, dado que es invariante al orden de los fotogramas? & Se verificó numéricamente: 0 de \ClipsTotal{} predicciones cambian al barajar o invertir los 16 fotogramas. El texto pasó a decir «agregación espacial de varios fotogramas». & El docente tenía razón. Los dos modelos que lideran la comparación tampoco modelan el orden. La hipótesis temporal no queda sostenida. & Resuelta \\
-A3 & Requisito «la evolución temporal aporta robustez»: no lo estamos haciendo, sacar. & Se retiró de la matriz de cumplimiento (18 requisitos en lugar de 19); la evidencia empírica se conserva como hallazgo. & Auditoría v2, secciones 1.5 y 2.4. & Resuelta \\
-A4 & ¿Se usó DeepLabCut con Horse-30, el subconjunto experto para caballos? & Se buscó en código, notebooks y documentos: no se usa; se aplica el modelo generalista SuperAnimal-Quadruped sin ajuste. & No se midió la calidad de los puntos contra anotación humana en el conjunto vigente ni se probó un modelo específico. & En parte \\
-B1 & Nota sobre SimBA: clasificadores supervisados sobre los puntos de DeepLabCut, con rasgos calculados y explicabilidad. & Experimento comparativo (07/10) en dos partes: (1) SimBA real, instalado y probado; (2) \PoseRasgos{} rasgos tipo SimBA programados con código propio, sin usar la herramienta, con bosque aleatorio y valores SHAP en la auditoría. & (1) SimBA real, para un solo animal, sólo da movimiento (0,720): descartado. (2) Bosque aleatorio de pose: 0,841 $\pm$ 0,003 (5 semillas) contra 0,740 del MIL en el protocolo anterior; en el protocolo común, \RFPoseDevF{}. Estos rasgos son la rama de pose de la fusión final. & Resuelta \\
-C1 & Aceptar la parsimonia: no ocultar la línea de base estática y preferir la solución más simple a igual resultado. & La línea de base es el candidato 1 y la regla de empate se declaró antes de medir. & La línea de base, en el protocolo común: último, \BaseDevF{}. Fusión menos bosque aleatorio no activa el desempate (\DifFusionRFDevIC{}); por sesión sí lo activaría (\DifFusionRFSesion{}, \DifFusionRFSesionIC{}). & Resuelta \\
-C2 & Blanquear el confusor de filmación: reportar el rendimiento sólo en clips limpios y declarar el desbalance de duraciones. & El subconjunto limpio es obligatorio en toda tabla; el criterio exige no inferioridad en limpio; se agregó la validación por sesión. & Fusión en limpio, \FusionLimpioF{}; reserva, \FusionReservaLimpio{}. Todos los modelos caen entre 10 y 13 puntos: el confusor se midió y se declara, pero no se eliminó. & En parte \\
-C3 & Sincerar el sobreajuste: no afirmar que no hay; mostrar entrenamiento contra validación. & La brecha entrenamiento menos prueba se informa por candidato; el MIL usa parada temprana con validación interna estratificada. & Brecha: fusión +\FusionGap{}, bosque aleatorio +\RFPoseGap{}, MIL +\MILGap{}, línea de base +\BaseGap{}. La \fmacro{} de entrenamiento de la fusión es \FusionTrainF{}. & Resuelta \\
-C4 & Documentar la falta de protocolo etológico y de acuerdo entre observadores como limitación. & La etiquetadora devolvió el formulario el 28/09; el criterio quedó en \path{protocolo_de_etiquetado.md}; se declaró la limitación. & Acuerdo medido sólo en un piloto sobre imágenes (kappa de Fleiss 0,99). Hay un único observador y no se midió el acuerdo interobservador. Las alternativas de etiqueta débil y de unidades de acción se descartaron. & En parte \\
-C5 & Limpiar la trazabilidad: sin cifras «fantasma»; corregir la huella de características. & Huella corregida; registro de experimentos y de caminos explorados; la cifra 0,754 quedó marcada «no citar». & Cada resultado de la comparación se regenera con un comando y lleva la huella del conjunto, de las particiones y de la reserva. & Resuelta \\
-D1 & El criterio de aceptación de 0,691 se definió sobre otro conjunto y otra línea de base. & Se reemplazó por el criterio de elección declarado antes de comparar. & Aplicado a los cuatro candidatos y registrado antes de usar la reserva. & Resuelta \\
-D2 & La validación anidada (0,784) no tiene script fuente; no se puede afirmar que el MIL sea «óptimo». & La validación anidada quedó registrada con su rama y su \textit{commit}; el MIL se comparó con otras tres arquitecturas en un protocolo común. & El MIL corregido queda tercero (\MILDevF{}). «Óptimo» ya no se afirma. & Resuelta \\
-D3 & IDs duplicados de caballos (par 123/169). & Se confirmó con fotogramas que son el mismo caballo y se midió el efecto sin rehacer las particiones. & Quitar sus \ParClips{} clips cambia el \textit{F}\textsubscript{1} agrupado en \ParFusionDif{} (fusión), \ParRFDif{} (bosque aleatorio), \ParMILDif{} (MIL) y \ParBaseDif{} (línea de base); el ranking no cambia. & Resuelta \\
-D4 & La interfaz procesa el video entero y elige la mejor ventana, que puede no ser el tramo etiquetado. & Primero, la aplicación informaba el tramo analizado; ese texto se retiró (15/10/2026). Ahora muestra el video marcado, con la expresión estimada en ventanas de 3~s a lo largo de todo el video. & El usuario ve qué expresión se estima en cada momento, pero la pantalla ya no indica de qué ventana sale la respuesta general. Prueba \path{tests/test_monitoreo.py}. & En parte \\
-D5 & La utilidad para el público objetivo no fue medida; no hay test externo. & La reserva da la única estimación fuera de muestra; la prueba de textos con una persona ajena (n = 1) no se repitió. & Sin validación con veterinarios ni test externo. Reserva: \FusionReservaF{}, IC95 \FusionReservaIC{}. & Abierta \\
-D6 & No hay un relevamiento bibliográfico formal en el repositorio. & Se realizó un relevamiento bibliográfico formal y se incorporó a este informe, con referencias verificadas una por una frente a su fuente. & El Capítulo~2 reúne la etología, EquiFACS y las escalas faciales; el Capítulo~3, el reconocimiento automático de dolor y emoción animal, la estimación de pose y la validación. Se agregaron 27 referencias nuevas. & Resuelta \\
-\end{longtable}
-\endgroup
-
-\section{Anexo E. Resultados por Repetición y por Sesión}
+\section{Anexo D. Resultados por Repetición y por Sesión}
 \subsection{Resumen por Candidato}
 \begin{table}[H]
 \caption{\fmacro{} de los cuatro candidatos en los tres análisis}\label{tab:a-resumen}
@@ -291,7 +252,7 @@ S024 & 14 & 8 & 14--0--0 & 1 & 1,00 & 1,00 \\
 \notatabla{Clips excluidos: clips de entrenamiento que se quitan por pertenecer a caballos presentes en la sesión de prueba (\ClipsTrainPerdidos{} en total). Las sesiones S004 y S009 no tienen clips de desarrollo y por eso no figuran en la tabla.}
 \end{table}
 
-\section{Anexo F. Aplicación: Pantallas y Textos}
+\section{Anexo E. Aplicación: Pantallas y Textos}
 La aplicación (\path{app_inferencia.py}) se levanta localmente con \path{./correr_local.sh interfaz}. Este anexo describe sus pantallas y los textos que ve la persona usuaria, en el orden en que aparecen. No se incluyen capturas de pantalla.
 
 \begin{enumerate}
@@ -305,7 +266,7 @@ La aplicación (\path{app_inferencia.py}) se levanta localmente con \path{./corr
   \item \textbf{Pesos de atención (sólo con el modelo MIL, opcional).} Gráfico de barras con el peso que el modelo asignó a cada fotograma, con la aclaración de que el modelo decide sobre toda la secuencia y no fotograma a fotograma.
 \end{enumerate}
 
-\section{Anexo G. Reproducibilidad}
+\section{Anexo F. Reproducibilidad}
 \subsection{Repositorio y Entorno}
 El código, las pruebas, los protocolos y la documentación están en \url{https://github.com/sergioyanez/Tesina-UGR}. El entorno se crea con Python 3.10 y las dependencias de \texttt{requirements-local.txt}. Dos variables de entorno indican dónde se escriben los artefactos (\texttt{TESINA\_EQUINOS\_RAIZ}) y dónde están los videos crudos (\texttt{TESINA\_EQUINOS\_VIDEOS}); los videos no se distribuyen con el repositorio.
 

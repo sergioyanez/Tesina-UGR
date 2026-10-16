@@ -34,13 +34,13 @@ Conviene agregar una conclusión sobre el modelo mismo. La ventaja de la fusión
   \item Un \textit{pipeline} reproducible, con pruebas automatizadas, que va del video crudo a la clase predicha, con un método de selección de fotogramas que mide antes de elegir.
   \item Un protocolo de comparación de modelos declarado antes de medir, con reserva de caballos de un solo uso protegida por un cerrojo mecánico, criterio de elección con regla de empate por parsimonia e intervalos de confianza pareados por caballo.
   \item Una validación dejando afuera una sesión de filmación, declarada como enmienda antes de ejecutarla, y un subconjunto limpio que permite separar el rendimiento de la asociación entre filmación y clase.
-  \item La documentación de 47 caminos explorados, con el motivo de cada descarte, y de la devolución del docente con la acción tomada para cada observación, que hacen auditable el recorrido y evitan que un resultado negativo se pierda.
+  \item La documentación de 47 caminos explorados, con el motivo de cada descarte, que hace auditable el recorrido y evitan que un resultado negativo se pierda.
   \item Una aplicación de inferencia que acompaña cada respuesta con el video marcado ---la cara enmarcada y la expresión estimada en cada momento--- y se niega a clasificar cuando no puede medir.
 \end{itemize}
 
 \section{Trabajo Futuro}
 \begin{enumerate}
-  \item \textit{Validación con veterinarios y prueba externa.} Es la observación abierta de la devolución del docente (D5). Debe medirse si la herramienta resulta útil para su público objetivo y evaluar el modelo con videos de otras fuentes, cámaras y regiones.
+  \item \textit{Validación con veterinarios y prueba externa.} Es la observación de la devolución del docente que quedó abierta. Debe medirse si la herramienta resulta útil para su público objetivo y evaluar el modelo con videos de otras fuentes, cámaras y regiones.
   \item \textit{Más etiquetadores y acuerdo interobservador.} Que otras personas capacitadas etiqueten a ciegas una muestra del conjunto con el criterio documentado, y calcular el acuerdo entre observadores \parencite{cohen1960}, para conocer el techo de rendimiento que imponen las etiquetas.
   \item \textit{Otras poblaciones y establecimientos.} Incorporar caballos de razas, edades y lugares distintos, para convertir en resultado la generalización que hoy es una hipótesis.
   \item \textit{Reducir el confusor de filmación.} Adoptar un protocolo de captura estandarizado (formato, duración y encuadre iguales para todas las clases) o equilibrar el contexto de filmación entre clases.
