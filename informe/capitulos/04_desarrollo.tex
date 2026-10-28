@@ -144,8 +144,11 @@ Se compararon cuatro modelos de complejidad creciente, todos con la misma entrad
 N.º & Candidato & Descripción & Entrada & Simplicidad \\
 \midrule
 1 & Línea de base & Regresión logística sobre la media de los \Fotogramas{} vectores visuales & Visual & 1 \\
+\addlinespace
 2 & Bosque aleatorio de pose & Bosque aleatorio (\textit{random forest}) sobre los \PoseRasgos{} rasgos tipo SimBA & Pose & 2 \\
+\addlinespace
 3 & Fusión pose + visual & Promedio ponderado de las probabilidades de los dos anteriores & Pose y visual & 3 \\
+\addlinespace
 4 & MIL multimodal corregido & Red con atención sobre los \Fotogramas{} fotogramas & Visual y pose & 4 \\
 \bottomrule
 \end{tabularx}}
@@ -153,7 +156,7 @@ N.º & Candidato & Descripción & Entrada & Simplicidad \\
 \end{table}
 
 \subsection{Candidato 1. Línea de Base sobre la Media Visual}
-Se promedian los \Fotogramas{} vectores de 512 características de cada clip, se estandarizan (media y desvío calculados sólo con el entrenamiento del pliegue) y se ajusta una regresión logística multinomial con regularización $C = 0{,}1$, pesos de clase balanceados y hasta 5\,000 iteraciones. Es el modelo más simple y ignora tanto el orden como la pose; sirve de referencia para saber qué aporta cada componente adicional.
+Se promedian los \Fotogramas{} vectores de 512 características de cada clip, se estandarizan (media y desvío calculados sólo con el entrenamiento del pliegue) y se ajusta una regresión logística multinomial con regularización $C = 0{,}1$, pesos de clase balanceados y hasta 5\,000 iteraciones. Es el modelo más simple e ignora tanto el orden como la pose; sirve de referencia para saber qué aporta cada componente adicional.
 
 \subsection{Candidato 2. Bosque Aleatorio de Pose}
 Sobre los \PoseRasgos{} rasgos tipo SimBA se ajusta un bosque aleatorio \parencite{breiman2001} de 500 árboles, con \texttt{max\_features} igual a la raíz del número de rasgos, hojas de al menos 2 muestras (\texttt{min\_samples\_leaf} = 2), pesos de clase balanceados y semilla 0, precedido de una imputación por la mediana del entrenamiento. Estos hiperparámetros se habían fijado en la auditoría, antes de la comparación, y no se eligieron mirando datos de prueba.
