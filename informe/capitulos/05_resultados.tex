@@ -222,6 +222,7 @@ Durante el desarrollo se exploraron numerosas variantes que no se incorporaron a
   \item \textit{Una sola población.} Los \CaballosTotal{} caballos y las \SesionesTotal{} sesiones provienen de una misma zona, por lo que la generalización a otras poblaciones es una hipótesis y no un resultado.
   \item \textit{Modelo final reentrenado con todo.} La aplicación usa un modelo ajustado con todos los clips, incluida la reserva, que ya no tiene una estimación independiente propia; sus resultados se infieren de los del modelo ajustado sólo con el desarrollo.
   \item \textit{Sobreajuste.} Todos los candidatos reproducen el entrenamiento casi por completo y la brecha con la prueba es de entre \FusionGap{} y \BaseGap{} puntos.
+  \item \textit{Cantidad de fotogramas no evaluada.} Los \Fotogramas{} fotogramas por clip se heredaron del diseño inicial y no se compararon con otras cantidades. Con ventanas de hasta 7~s, la separación entre fotogramas elegidos puede superar los 0,5~s, de modo que movimientos faciales breves pueden quedar sin observar.
   \item \textit{Tamaño efectivo.} La unidad de análisis es el caballo, no el clip; los \CaballosDesarrollo{} caballos del desarrollo limitan la precisión de todas las estimaciones, y las repeticiones del 5\,$\times$\,4 no aumentan los datos.
 \end{enumerate}
 
